@@ -5,10 +5,35 @@
 
 // problem-specific global variables
 // =======================================================================================
-static bool   var_bool;
-static double var_double;
-static int    var_int;
-static char   var_str[MAX_STRING];
+static double     *tur_table = NULL;              // used to store turbulence (1D)
+static int        tur_table_NBin;                 // number of row in turbulence table obtained by Aux_LoadTable
+static int        tur_table_Ncol;                 // number of column in turbulence table (set by user)
+static int       *CF_TargetCols = new int [6];    // Index of columns read from the turbulence table 
+static int        CF_ColIdx_X;                    // Column index of x coordinate in the turbulence table
+static int        CF_ColIdx_Y;                    // Column index of y coordinate in the turbulence table 
+static int        CF_ColIdx_Z;                    // Column index of z coordinate in the turbulence table 
+static int        CF_ColIdx_VelX;                 // Column index of x direction velocity in the turbulence table 
+static int        CF_ColIdx_VelY;                 // Column index of y direction velocity in the turbulence table 
+static int        CF_ColIdx_VelZ;                 // Column index of z direction velocity in the turbulence table 
+static double     *Table_X;                       // used to store the readed data
+static double     *Table_Y;
+static double     *Table_Z;
+static double     *Table_VelX;
+static double     *Table_VelY;
+static double     *Table_VelZ;
+static int        size;                           // turbulence cell number
+static double     Total_VelX;                     // used to calculate Vrms
+static double     Total_VelY;
+static double     Total_VelZ;
+static double     Total_VelX_SQR;
+static double     Total_VelY_SQR;
+static double     Total_VelZ_SQR;
+static double     Vrms;
+static double     Vrms_Scale;                     // used to rescale velocity
+static int        Total_Vrms_Count;
+
+static double           CF_n0;                    // intial density (/cm3)
+static double           CF_vflow;                 // the magnitude of flow velocity (km/s)
 // =======================================================================================
 
 
