@@ -1,0 +1,62 @@
+Compilation flags:
+========================================
+Enable : MODEL=HYDRO, GRAVITY, MHD, EOS=EOS_Saumon_Chabrier/EOS_Barotrop1D/EOS_ANALYTICAL_BAROTROP/EOS_ISOTHERMAL (default)
+Disable: PARTICLE, COMOVING
+
+
+Default setup:
+========================================
+1. Resolution = 256^3
+2. TESTPROB_ID = 100
+3. Simulation time: 3 * free fall time
+4. Gravitational constant = 1
+5. MOLECULAR_WEIGHT = 2.31
+6. Refinement criteria: Jeans Length / Cell Size = 20.0
+7. BOX_SIZE set by test problems
+8. Units
+    [L] = pc = 3.08e18 cm
+    [D] = MOLECULAR_WEIGHT * Const_amu = 3.8346e-24 g / cm^-3
+    [T] = 1 / SQRT( Const_NewtonG * UNIT_D ) = 1.9773e+15 s
+
+
+Note:
+========================================
+1. Enable EOS=EOS_Saumon_Chabrier to use Saumon_Chabrier EoS Table
+2. Enable EOS=EOS_Barotrop1D to use Vaytet et al. (2013) 1D results
+3. Enable EOS=EOS_ANALYTICAL_BAROTROP to use classic analytic law. --> ISM_Bg_Temp * ( 1.0 + POW( Dens/ISM_N_Star, Gamma-1.0) )
+4. Example parameters
+    (1) Boss & Bodenheimer initial condition
+        ISM_Prob                    0               # ISM Problems
+        ISM_Core_Mass               1000.0          # Mass of the initial dense core (in solar masses) [1]
+        ISM_Dens_Contrast           100.0           # density contrast between the dense core and the ambient medium [1]
+        ISM_Alpha                   0.5             # Ratio between thermal and gravitational energies [1]
+        ISM_Beta                    0.0             # Ratio between rotational and gravitational energies [1]
+        ISM_Delta_Dens              0.0             # Amplitude of the initial m=2 density perturbation [1]
+        ISM_Crit                    0.0             # Inverse of the mu parameter for magnetic field (crit=0.5 for mu=2) [1]
+        ISM_Mach                    0.0             # Turbulent mach number [1] --> Read ISM_Velocity_Turb_Table
+        ISM_Mag_Rot_Angle           0.0             # Angle between magnetic field and rotation axis (in degree)
+        ISM_Uniform_BField          false           # Activate uniform magnetic field initial conditions [false]
+        ISM_Bg_Temp                 10              # Background radiation field temperature [10.0]
+        ISM_N_Star                  0.1             # Used by Analytical Barotrop. Density at which the gas turns optically thick (in cgs unit) [0.1]
+        ISM_UNIT_T2                 0.0             # Convert ( Pres/Dens ) into (T/mu) in kelvin  --> must be set by test problems
+        ISM_Saumon_Chabrier_Table   tab_eos.dat     # Saumon_Chabrier EoS Table file path
+        ISM_Baratrop1D_Table        barotrop.dat    # Vaytet et al. (2013) 1D results file path
+        ISM_Velocity_Turb_Table     init_turb.data  # Velocity pertubation file path
+
+    (2) Bonner Ebert Like initial condition
+        ISM_Prob                    1               # ISM Problems
+        ISM_Core_Mass               1000.0          # Mass of the initial dense core (in solar masses) [1]
+        ISM_Axis_Ratio              1.0             # Aspect Ratio of the dense core [1]
+        ISM_Dens_Contrast           10.0            # Density contrast between the center and the border of the dense core [1]
+        ISM_FF_SCT                  0.3             # Free fall time / sound crossing time [1]
+        ISM_FF_RT                   0.0             # Free fall time / rotation time [1]
+        ISM_FF_ACT                  0.0             # Free fall time / alfven crossing time [1]
+        ISM_FF_VCT                  1.0             # Free fall time / Vrms crossing time [1] --> Read ISM_Velocity_Turb_Table
+        ISM_Mag_Rot_Angle           0.0             # Angle between magnetic field and rotation axis (in degree)
+        ISM_Uniform_BField          false           # Activate uniform magnetic field initial conditions [false]
+        ISM_Bg_Temp                 10.0            # Background radiation field temperature [10.0]
+        ISM_N_Star                  1e10            # Used by Analytical Barotrop. Density at which the gas turns optically thick (in cgs unit) [0.1]
+        ISM_UNIT_T2                 0.0             # Convert ( Pres/Dens ) into (T/mu) in kelvin  --> must be set by test problems
+        ISM_Saumon_Chabrier_Table   tab_eos.dat     # Saumon_Chabrier EoS Table file path
+        ISM_Baratrop1D_Table        barotrop.dat    # Vaytet et al. (2013) 1D results file path
+        ISM_Velocity_Turb_Table     init_turb.data  # Velocity pertubation file path

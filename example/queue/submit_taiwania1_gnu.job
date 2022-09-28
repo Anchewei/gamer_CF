@@ -1,0 +1,24 @@
+###############################################
+#       Gnu MPI job script example          #
+###############################################
+
+#!/bin/bash
+#PBS -l select=10:ncpus=40:mpiprocs=10
+#PBS -N GAMER
+#PBS -q ct400
+#PBS -l walltime=96:00:00
+#PBS -P MST108280
+#PBS -o out
+#PBS -e err
+#PBS -M daniellin456@gmail.com
+#PBS -m abe
+
+cd $PBS_O_WORKDIR
+
+module purge
+module load fftw2/openmpi/gcc/64/double/2.1.5
+module load hdf5/1.10.1
+module load mpi/openmpi-3.0.0/gcc485
+
+mpirun ./gamer 1>>log 2>&1
+

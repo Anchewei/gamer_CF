@@ -1,3 +1,4 @@
-# GAMER-CF
-This repository adds the simulation of convergent flow for GAMER.
-THe original GAMER repository (https://github.com/gamer-project/gamer) 
+# GAMER
+A GPU-accelerated adaptive mesh refinement code for astrophysics
+
+Documentation: [wiki](https://github.com/gamer-project/gamer/wiki)
