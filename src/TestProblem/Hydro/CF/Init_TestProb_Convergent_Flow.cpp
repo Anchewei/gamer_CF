@@ -240,7 +240,7 @@ void SetBFieldIC( real magnetic[], const double x, const double y, const double 
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  Init_TestProb_Convergent_Flow
+// Function    :  Init_TestProb_Hydro_CF
 // Description :  Test problem initializer
 //
 // Note        :  None
@@ -249,7 +249,7 @@ void SetBFieldIC( real magnetic[], const double x, const double y, const double 
 //
 // Return      :  None
 //-------------------------------------------------------------------------------------------------------
-void Init_TestProb_Convergent_Flow()
+void Init_TestProb_Hydro_CF()
 {
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ...\n", __FUNCTION__ );
@@ -314,4 +314,4 @@ void Init_TestProb_Convergent_Flow()
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ... done\n", __FUNCTION__ );
 
-} // FUNCTION : Init_TestProb_Convergent_Flow
+} // FUNCTION : Init_TestProb_Hydro_CF

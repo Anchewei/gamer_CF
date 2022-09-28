@@ -23,6 +23,7 @@ void Init_TestProb_Hydro_JeansInstability();
 void Init_TestProb_Hydro_ParEqmIC();
 void Init_TestProb_Hydro_BarredPot();
 void Init_TestProb_Hydro_ISM();
+void Init_TestProb_Hydro_CF();
 void Init_TestProb_ELBDM_ExtPot();
 
 

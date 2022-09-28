@@ -53,6 +53,7 @@ const TestProbID_t
    TESTPROB_HYDRO_PARTICLE_EQUILIBRIUM_IC      =   17,
    TESTPROB_HYDRO_BARRED_POT                   =   51,
    TESTPROB_HYDRO_ISM                          =  100,
+   TESTPROB_HYDRO_CF                           =  150,
    TESTPROB_ELBDM_EXTPOT                       = 1000;
 
 
