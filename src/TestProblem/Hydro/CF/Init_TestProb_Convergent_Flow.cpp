@@ -8,7 +8,7 @@
 static double     *tur_table = NULL;              // used to store turbulence (1D)
 static int        tur_table_NBin;                 // number of row in turbulence table obtained by Aux_LoadTable
 static int        tur_table_Ncol;                 // number of column in turbulence table (set by user)
-static int       *CF_TargetCols = new int [6];    // Index of columns read from the turbulence table 
+static int        *CF_TargetCols = new int [6];    // Index of columns read from the turbulence table 
 static int        CF_ColIdx_X;                    // Column index of x coordinate in the turbulence table
 static int        CF_ColIdx_Y;                    // Column index of y coordinate in the turbulence table 
 static int        CF_ColIdx_Z;                    // Column index of z coordinate in the turbulence table 
@@ -32,8 +32,7 @@ static double     Vrms;
 static double     Vrms_Scale;                     // used to rescale velocity
 static int        Total_Vrms_Count;
 
-static double           CF_n0;                    // intial density (/cm3)
-static double           CF_vflow;                 // the magnitude of flow velocity (km/s)
+static double     Cs;                             // sound spped
 // =======================================================================================
 
 
@@ -55,8 +54,7 @@ void Validate()
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "   Validating test problem %d ...\n", TESTPROB_ID );
 
 
-// examples
-/*
+
 // errors
 #  if ( MODEL != HYDRO )
    Aux_Error( ERROR_INFO, "MODEL != HYDRO !!\n" );
@@ -70,33 +68,18 @@ void Validate()
    Aux_Error( ERROR_INFO, "PARTICLE must be disabled !!\n" );
 #  endif
 
-#  ifdef GRAVITY
-   if ( OPT__BC_FLU[0] == BC_FLU_PERIODIC  ||  OPT__BC_POT == BC_POT_PERIODIC )
-      Aux_Error( ERROR_INFO, "do not use periodic BC for this test !!\n" );
+#  ifndef CF
+   Aux_Error( ERROR_INFO, "CF must be enabled !!\n" );
 #  endif
 
-
-// warnings
-   if ( MPI_Rank == 0 )
-   {
-#     ifndef DUAL_ENERGY
-         Aux_Message( stderr, "WARNING : it's recommended to enable DUAL_ENERGY for this test !!\n" );
-#     endif
-
-      if ( FLAG_BUFFER_SIZE < 5 )
-         Aux_Message( stderr, "WARNING : it's recommended to set FLAG_BUFFER_SIZE >= 5 for this test !!\n" );
-   } // if ( MPI_Rank == 0 )
-*/
-
+   if ( !OPT__UNIT ) Aux_Error( ERROR_INFO, "OPT__UNIT must be enabled !!\n" );
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "   Validating test problem %d ... done\n", TESTPROB_ID );
 
 } // FUNCTION : Validate
 
 
-
-// replace HYDRO by the target model (e.g., MHD/ELBDM) and also check other compilation flags if necessary (e.g., GRAVITY/PARTICLE)
-#if ( MODEL == HYDRO )
+#ifdef CF
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SetParameter
 // Description :  Load and set the problem-specific runtime parameters
@@ -129,22 +112,40 @@ void SetParameter()
 // ********************************************************************************************************************************
 // ReadPara->Add( "KEY_IN_THE_FILE",   &VARIABLE,              DEFAULT,       MIN,              MAX               );
 // ********************************************************************************************************************************
-   ReadPara->Add( "var_bool",          &var_bool,              true,          Useless_bool,     Useless_bool      );
-   ReadPara->Add( "var_double",        &var_double,            1.0,           Eps_double,       NoMax_double      );
-   ReadPara->Add( "var_int",           &var_int,               2,             0,                5                 );
-   ReadPara->Add( "var_str",            var_str,               NoDef_str,     Useless_str,      Useless_str       );
-
    ReadPara->Read( FileName );
 
    delete ReadPara;
 
 // (1-2) set the default values
+   CF_NCol = 6;
+   CF_TargetCols[0] =  0;
+   CF_TargetCols[1] =  1;
+   CF_TargetCols[2] =  2;
+   CF_TargetCols[3] =  3;
+   CF_TargetCols[4] =  4;
+   CF_TargetCols[5] =  5;
+   CF_ColIdx_X      =  0;
+   CF_ColIdx_Y      =  1;
+   CF_ColIdx_Z      =  2;
+   CF_ColIdx_VelX   =  3;
+   CF_ColIdx_VelY   =  4;
+   CF_ColIdx_VelZ   =  5;
+   Total_VelX = 0.0;
+   Total_VelY = 0.0;
+   Total_VelZ = 0.0;
+   Total_VelX_SQR = 0.0;
+   Total_VelY_SQR = 0.0;
+   Total_VelZ_SQR = 0.0;
+   Vrms = 0.0;
+   Vrms_Scale = 0.0;
+   Total_Vrms_Count = 0;
+   size = 129;
 
 // (1-3) check the runtime parameters
 
 
 // (2) set the problem-specific derived parameters
-
+   Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -166,11 +167,9 @@ void SetParameter()
    if ( MPI_Rank == 0 )
    {
       Aux_Message( stdout, "=============================================================================\n" );
-      Aux_Message( stdout, "  test problem ID           = %d\n",     TESTPROB_ID );
-      Aux_Message( stdout, "  var_bool                  = %d\n",     var_bool );
-      Aux_Message( stdout, "  var_double                = %13.7e\n", var_double );
-      Aux_Message( stdout, "  var_int                   = %d\n",     var_int );
-      Aux_Message( stdout, "  var_str                   = %s\n",     var_str );
+      Aux_Message( stdout, "  test problem ID       = %d\n",     TESTPROB_ID );
+      Aux_Message( stdout, "  Temperature           = %13.7e K\n",    ISO_TEMP );
+      Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n", Cs*UNIT_V/Const_km );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -179,7 +178,52 @@ void SetParameter()
 
 } // FUNCTION : SetParameter
 
+//-------------------------------------------------------------------------------------------------------
+// Function    :  Load_Turbulence
+// Description :
+// Note        :
+// Parameter   :
+// Return      :
+//-------------------------------------------------------------------------------------------------------
+void Load_Turbulence()
+{
+   const bool RowMajor_No  = false;           // load data into the column major
+   const bool AllocMem_Yes = true;            // allocate memory for ISM_Velocity_Perturbation
+   const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
+   const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
 
+   tur_table_NBin = Aux_LoadTable( tur_table, CF_Tur_Table, tur_table_Ncol, CF_TargetCols, RowMajor_No, AllocMem_Yes );
+
+   Table_X     = tur_table + CF_ColIdx_X * tur_table_NBin;
+   Table_Y     = tur_table + CF_ColIdx_Y * tur_table_NBin;
+   Table_Z     = tur_table + CF_ColIdx_Z * tur_table_NBin;
+   Table_VelX  = tur_table + CF_ColIdx_VelX * tur_table_NBin;
+   Table_VelY  = tur_table + CF_ColIdx_VelY * tur_table_NBin;
+   Table_VelZ  = tur_table + CF_ColIdx_VelZ * tur_table_NBin;
+
+   for ( int i = 0; i < tur_table_NBin; i++ )
+   {
+      double Xi = BoxSize[0] * ( (Table_X[i] + 0.5) / size ) - BoxCenter[0];
+      double Yi = BoxSize[1] * ( (Table_Y[i] + 0.5) / size ) - BoxCenter[1];
+      double Zi = BoxSize[2] * ( (Table_Z[i] + 0.5) / size ) - BoxCenter[2];
+      double Rs = SQRT( SQR(Xi) + SQR(Yi) + SQR(Zi) );
+
+      Total_VelX += Table_VelX[i];
+      Total_VelY += Table_VelY[i];
+      Total_VelZ += Table_VelZ[i];
+
+      Total_VelX_SQR += SQR(Table_VelX[i]);
+      Total_VelY_SQR += SQR(Table_VelY[i]);
+      Total_VelZ_SQR += SQR(Table_VelZ[i]);
+
+      Total_Vrms_Count ++;
+   }
+
+   // Vrms = SQRT( ( Vx^2 + Vy^2 + Vz^2 ) / N + ( Vx + Vy + Vz / N) ^ 2 )
+   Vrms = SQRT( (Total_VelX_SQR + Total_VelY_SQR + Total_VelZ_SQR) / Total_Vrms_Count - 
+                SQR( (Total_VelX + Total_VelY + Total_VelZ) / Total_Vrms_Count ) );
+   Vrms_Scale = CF_Mach * Cs / Vrms;
+} // Function : Load_Boss_Bodenheimer_Velocity_Pertubation
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SetGridIC
