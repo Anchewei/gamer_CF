@@ -1,0 +1,5 @@
+# test problem-specified parameters
+CF_n0                         100           # intial density (/cm3)
+CF_vflow                      2             # the magnitude of flow velocity (km/s)
+CF_Mach                       1             # the turbulence Mach number
+CF_Tur_Table           init_turb.data  # turbulence file path
