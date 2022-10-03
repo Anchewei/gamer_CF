@@ -41,9 +41,6 @@ SIMU_OPTION += -DGRAVITY
 # enable ISM
 SIMU_OPTION += -DISM
 
-# enable CF
-SIMU_OPTION += -DCF
-
 # enable particles
 # --> must enable GRAVITY
 #SIMU_OPTION += -DPARTICLE
