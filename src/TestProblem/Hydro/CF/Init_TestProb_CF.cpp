@@ -37,6 +37,8 @@ static double     Cs;                             // sound spped
 static double     CF_n0;
 static double     CF_vflow;
 static double     CF_Mach;
+static double     CF_B;
+static double     CF_theta_B;
 static char       CF_Tur_Table[MAX_STRING];
 // =======================================================================================
 
@@ -71,10 +73,6 @@ void Validate()
 
 #  ifdef PARTICLE
    Aux_Error( ERROR_INFO, "PARTICLE must be disabled !!\n" );
-#  endif
-
-#  ifndef CF
-   Aux_Error( ERROR_INFO, "CF must be enabled !!\n" );
 #  endif
 
    if ( !OPT__UNIT ) Aux_Error( ERROR_INFO, "OPT__UNIT must be enabled !!\n" );
@@ -120,6 +118,8 @@ void SetParameter()
    ReadPara->Add( "CF_n0",             &CF_n0,                 1.0,           1.0,              NoMax_double      );
    ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "CF_B",              &CF_B,                  0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "CF_theta_B",        &CF_theta_B,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
 
    ReadPara->Read( FileName );
@@ -261,7 +261,7 @@ void Load_Turbulence()
 //
 // Return      :  fluid
 //-------------------------------------------------------------------------------------------------------
-void Set_CF_GridIC( real fluid[], const double x, const double y, const double z, const double Time,
+void SetGridIC( real fluid[], const double x, const double y, const double z, const double Time,
                 const int lv, double AuxArray[] )
 {
 
@@ -300,6 +300,7 @@ void Set_CF_GridIC( real fluid[], const double x, const double y, const double z
    fluid[MOMY] = MomY;
    fluid[MOMZ] = MomZ;
    fluid[ENGY] = Etot;
+
 } // FUNCTION : SetGridIC
 
 
@@ -324,13 +325,13 @@ void Set_CF_GridIC( real fluid[], const double x, const double y, const double z
 void SetBFieldIC( real magnetic[], const double x, const double y, const double z, const double Time,
                   const int lv, double AuxArray[] )
 {
+   double MagX = 0.0, MagY = 0.0, MagZ = 0.0;
+   MagZ = CF_B*COS(CF_theta_B)/1000;
+   MagY = CF_B*SIN(CF_theta_B)/1000;
 
-   /*
-// example
-   magnetic[MAGX] = 1.0;
-   magnetic[MAGY] = 2.0;
-   magnetic[MAGZ] = 3.0;
-   */
+   magnetic[MAGX] = MagX;
+   magnetic[MAGY] = MagY;
+   magnetic[MAGZ] = MagZ;
 
 } // FUNCTION : SetBFieldIC
 #endif // #ifdef MHD
@@ -370,6 +371,7 @@ void Init_TestProb_Hydro_CF()
 // 3. set the corresponding function pointer below to the new problem-specific function
 // 4. enable the corresponding runtime option in "Input__Parameter"
 //    --> for instance, enable OPT__OUTPUT_USER for Output_User_Ptr
+   if ( OPT__INIT != INIT_BY_RESTART ) Load_Turbulence();
    Init_Function_User_Ptr            = SetGridIC;
 #  ifdef MHD
    Init_Function_BField_User_Ptr     = SetBFieldIC;
