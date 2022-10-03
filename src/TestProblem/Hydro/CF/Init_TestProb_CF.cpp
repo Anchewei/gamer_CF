@@ -33,6 +33,11 @@ static double     Vrms_Scale;                     // used to rescale velocity
 static int        Total_Vrms_Count;
 
 static double     Cs;                             // sound spped
+
+static double     CF_n0;
+static double     CF_vflow;
+static double     CF_Mach;
+static char       CF_Tur_Table[MAX_STRING];
 // =======================================================================================
 
 
@@ -112,6 +117,11 @@ void SetParameter()
 // ********************************************************************************************************************************
 // ReadPara->Add( "KEY_IN_THE_FILE",   &VARIABLE,              DEFAULT,       MIN,              MAX               );
 // ********************************************************************************************************************************
+   ReadPara->Add( "CF_n0",             &CF_n0,                 1.0,           1.0,              NoMax_double      );
+   ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
+
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -167,9 +177,13 @@ void SetParameter()
    if ( MPI_Rank == 0 )
    {
       Aux_Message( stdout, "=============================================================================\n" );
-      Aux_Message( stdout, "  test problem ID       = %d\n",     TESTPROB_ID );
-      Aux_Message( stdout, "  Temperature           = %13.7e K\n",    ISO_TEMP );
-      Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n", Cs*UNIT_V/Const_km );
+      Aux_Message( stdout, "  test problem ID       = %d\n",            TESTPROB_ID                          );
+      Aux_Message( stdout, "  Initial density       = %13.7e /cm3\n",   CF_n0                                );
+      Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
+      Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
+      Aux_Message( stdout, "  Temperature           = %13.7e K\n",      ISO_TEMP                             );
+      Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
+      Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -180,7 +194,7 @@ void SetParameter()
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  Load_Turbulence
-// Description :
+// Description : load turbulence and calculate Vrms_Scale
 // Note        :
 // Parameter   :
 // Return      :
@@ -223,7 +237,7 @@ void Load_Turbulence()
    Vrms = SQRT( (Total_VelX_SQR + Total_VelY_SQR + Total_VelZ_SQR) / Total_Vrms_Count - 
                 SQR( (Total_VelX + Total_VelY + Total_VelZ) / Total_Vrms_Count ) );
    Vrms_Scale = CF_Mach * Cs / Vrms;
-} // Function : Load_Boss_Bodenheimer_Velocity_Pertubation
+} // Function : Load_Turbulence
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SetGridIC
@@ -247,20 +261,37 @@ void Load_Turbulence()
 //
 // Return      :  fluid
 //-------------------------------------------------------------------------------------------------------
-void SetGridIC( real fluid[], const double x, const double y, const double z, const double Time,
+void Set_CF_GridIC( real fluid[], const double x, const double y, const double z, const double Time,
                 const int lv, double AuxArray[] )
 {
 
-// HYDRO example
-   double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
+   const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
+   const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+   int dir;
 
-   Dens = 1.0;
-   MomX = 0.0;
-   MomY = 0.0;
-   MomZ = 0.0;
-   Pres = 2.0;
-   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Pres, NULL, EoS_AuxArray_Flt,
-                                    EoS_AuxArray_Int, h_EoS_Table );   // assuming EoS requires no passive scalars
+   double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
+   double VelX, VelY, VelZ;
+
+   int i = (int) ( ( x / BoxSize[0] ) * size );    // turbulence box index (cude)
+   int j = (int) ( ( y / BoxSize[0] ) * size );
+   int k = (int) ( ( z / BoxSize[0] ) * size );
+   int mk = FMOD(k, size)                          // modify the k index to repeat the cude in z direction
+   int index = i * SQR(size) + j * size + k;
+   if ( i < 0 || i > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  i = %d", i  );
+   if ( j < 0 || j > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  j = %d", j  );
+   if ( mk < 0 || mk > size ) Aux_Error( ERROR_INFO, "index is out of bound\n, mk = %d", mk );
+   if ( index < 0 || index > tur_table_NBin ) Aux_Error( ERROR_INFO, "index is out of bound\n, index = %d", index );
+   VelX = Vrms_Scale * ( Table_VelX[ index ] - Total_VelX / Total_Vrms_Count );
+   VelY = Vrms_Scale * ( Table_VelY[ index ] - Total_VelY / Total_Vrms_Count );
+   if (z > BoxCenter[2]) dir = -1;
+   else dir = 1;
+   VelZ = dir*(CF_vflow*Const_km/UNIT_V) + Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
+
+   Dens = CF_n0*MOLECULAR_WEIGHT*Const_amu/UNIT_D;
+   MomX = Dens * VelX;
+   MomY = Dens * VelY;
+   MomZ = Dens * VelZ;
+   Eint = Dens * SQR(Cs) / ( GAMMA - 1.0 );
    Etot = Hydro_ConEint2Etot( Dens, MomX, MomY, MomZ, Eint, 0.0 );     // do NOT include magnetic energy here
 
 // set the output array
@@ -269,7 +300,6 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    fluid[MOMY] = MomY;
    fluid[MOMZ] = MomZ;
    fluid[ENGY] = Etot;
-
 } // FUNCTION : SetGridIC
 
 
