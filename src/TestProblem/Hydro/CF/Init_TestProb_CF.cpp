@@ -127,7 +127,7 @@ void SetParameter()
    delete ReadPara;
 
 // (1-2) set the default values
-   CF_NCol = 6;
+   tur_table_Ncol = 6;
    CF_TargetCols[0] =  0;
    CF_TargetCols[1] =  1;
    CF_TargetCols[2] =  2;
