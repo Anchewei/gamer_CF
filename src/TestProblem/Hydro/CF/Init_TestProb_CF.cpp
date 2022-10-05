@@ -275,7 +275,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    int i = (int) ( ( x / BoxSize[0] ) * size );    // turbulence box index (cude)
    int j = (int) ( ( y / BoxSize[0] ) * size );
    int k = (int) ( ( z / BoxSize[0] ) * size );
-   int mk = FMOD(k, size)                          // modify the k index to repeat the cude in z direction
+   int mk = FMOD(k, size);                          // modify the k index to repeat the cude in z direction
    int index = i * SQR(size) + j * size + mk;
    if ( i < 0 || i > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  i = %d", i  );
    if ( j < 0 || j > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  j = %d", j  );
