@@ -82,7 +82,7 @@ void Validate()
 } // FUNCTION : Validate
 
 
-#ifdef CF
+#if ( MODEL == HYDRO )
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SetParameter
 // Description :  Load and set the problem-specific runtime parameters
