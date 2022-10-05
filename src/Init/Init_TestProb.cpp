@@ -69,6 +69,7 @@ void Init_TestProb()
       case TESTPROB_HYDRO_JEANS_INSTABILITY :            Init_TestProb_Hydro_JeansInstability();            break;
       case TESTPROB_HYDRO_PARTICLE_EQUILIBRIUM_IC :      Init_TestProb_Hydro_ParEqmIC();                    break;
       case TESTPROB_HYDRO_ISM :                          Init_TestProb_Hydro_ISM();                         break;
+      case TESTPROB_HYDRO_CF :                           Init_TestProb_Hydro_CF();                          break;
       case TESTPROB_ELBDM_EXTPOT :                       Init_TestProb_ELBDM_ExtPot();                      break;
 
       default: Aux_Error( ERROR_INFO, "unsupported TESTPROB_ID (%d) !!\n", TESTPROB_ID );
