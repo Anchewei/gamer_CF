@@ -1,6 +1,6 @@
 #include "GAMER.h"
 
-void InterpolateGhostZone( const int lv, const int PID, real IntData_CC[], real IntData_FC[],
+void InterpolateGhostZone( const int lv, const int PID, real IntData_CC[], real IntData_FC[], real IntData_CC_IntTime[],
                            const int FSide, const double PrepTime, const int GhostSize,
                            const IntScheme_t IntScheme_CC, const IntScheme_t IntScheme_FC,
                            const int NTSib[], int *TSib[], const long TVarCC, const int NVarCC_Tot,
@@ -13,7 +13,7 @@ void InterpolateGhostZone( const int lv, const int PID, real IntData_CC[], real 
 static void SetTargetSibling( int NTSib[], int *TSib[] );
 static int Table_01( const int SibID, const char dim, const int Count, const int GhostSize );
 static int Table_02( const int lv, const int PID, const int Side );
-void SetTempIntPara( const int lv, const int Sg_Current, const double PrepTime, const double Time0, const double Time1,
+void SetTempIntPara( const int lv, const int Sg0, const double PrepTime, const double Time0, const double Time1,
                      bool &IntTime, int &Sg, int &Sg_IntT, real &Weighting, real &Weighting_IntT );
 #ifdef MHD
 static void MHD_SetFInterface( real *FInt_Data, real *FInt_Ptr[6], const real *Data1PG_FC, const int lv, const int PID0,
@@ -104,7 +104,7 @@ static void MHD_CheckDivB( const real *Data1PG_FC, const int GhostSize, const re
 //                TVarCC         : Target cell-centered variables to be prepared
 //                                 --> Supported variables in different models:
 //                                     HYDRO : _DENS, _MOMX, _MOMY, _MOMZ, _ENGY, _VELX, _VELY, _VELZ, _PRES, _TEMP, _ENTR
-//                                             [, _POTE]
+//                                             [, _POTE] [, _MAGX_CC, _MAGY_CC, _MAGZ_CC, _MAGE_CC]
 //                                     ELBDM : _DENS, _REAL, _IMAG [, _POTE]
 //                                 --> _FLUID, _PASSIVE, _TOTAL, and _DERIVED apply to all models
 //                TVarFC         : Target face-centered variables to be prepared
@@ -247,6 +247,12 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 #     if ( MODEL == ELBDM )
       if (  !(TVarCC & _REAL)  ||  !(TVarCC & _IMAG)  )
       Aux_Error( ERROR_INFO, "real and/or imag parts are not found for phase interpolation in ELBDM !!\n" );
+
+//    we have assumed in InterpolateGhostZone() that when adopting IntPhase this function will NOT prepare
+//    anything other than wave function and, optionally, density
+//    --> e.g., one cannot prepare wave function and potential at the same time when enabling IntPhase
+      if (  TVarCC & ~( _REAL | _IMAG | _DENS )  )
+      Aux_Error( ERROR_INFO, "unsupported parameter %s = %d for IntPhase !!\n", "TVarCC", TVarCC );
 #     else
       Aux_Error( ERROR_INFO, "\"interpolation on phase\" is useful only in ELBDM !!\n" );
 #     endif
@@ -257,7 +263,8 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
    for (int f=0; f<6; f++)
    {
       if ( FluBC[f] != BC_FLU_PERIODIC    &&  FluBC[f] != BC_FLU_OUTFLOW  &&
-           FluBC[f] != BC_FLU_REFLECTING  &&  FluBC[f] != BC_FLU_USER        )
+           FluBC[f] != BC_FLU_REFLECTING  &&  FluBC[f] != BC_FLU_DIODE    &&
+           FluBC[f] != BC_FLU_USER )
          Aux_Error( ERROR_INFO, "unsupported parameter FluBC[%d] = %d !!\n", f, FluBC[f] );
 
 #     if ( MODEL != HYDRO )
@@ -266,6 +273,9 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
       if ( FluBC[f] == BC_FLU_REFLECTING )
          Aux_Error( ERROR_INFO, "reflecting boundary condition (OPT__BC_FLU=3) only works with HYDRO !!\n" );
+
+      if ( FluBC[f] == BC_FLU_DIODE )
+         Aux_Error( ERROR_INFO, "diode boundary condition (OPT__BC_FLU=5) only works with HYDRO !!\n" );
 #     endif
    }
 
@@ -326,12 +336,19 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
    const int    PGSize3D_FC      = PGSize1D_FC*SQR(PGSize1D_CC);
 
 #  if   ( MODEL == HYDRO )
-   const bool PrepVx           = ( TVarCC & _VELX ) ? true : false;
-   const bool PrepVy           = ( TVarCC & _VELY ) ? true : false;
-   const bool PrepVz           = ( TVarCC & _VELZ ) ? true : false;
-   const bool PrepPres         = ( TVarCC & _PRES ) ? true : false;
-   const bool PrepTemp         = ( TVarCC & _TEMP ) ? true : false;
-   const bool PrepEntr         = ( TVarCC & _ENTR ) ? true : false;
+   const bool PrepVx           = ( TVarCC & _VELX    ) ? true : false;
+   const bool PrepVy           = ( TVarCC & _VELY    ) ? true : false;
+   const bool PrepVz           = ( TVarCC & _VELZ    ) ? true : false;
+   const bool PrepPres         = ( TVarCC & _PRES    ) ? true : false;
+   const bool PrepTemp         = ( TVarCC & _TEMP    ) ? true : false;
+   const bool PrepEntr         = ( TVarCC & _ENTR    ) ? true : false;
+#  ifdef MHD
+   const bool PrepMagX_CC      = ( TVarCC & _MAGX_CC ) ? true : false;
+   const bool PrepMagY_CC      = ( TVarCC & _MAGY_CC ) ? true : false;
+   const bool PrepMagZ_CC      = ( TVarCC & _MAGZ_CC ) ? true : false;
+   const bool PrepMagE_CC      = ( TVarCC & _MAGE_CC ) ? true : false;
+   const bool PrepMagCC        = ( PrepMagX_CC || PrepMagY_CC || PrepMagZ_CC || PrepMagE_CC );
+#  endif
 
 #  elif ( MODEL == ELBDM )
 // no derived variables yet
@@ -379,15 +396,21 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
    NVarCC_Der = 0;
 
 #  if   ( MODEL == HYDRO )
-   const int NVarCC_Der_Max = 5;
+   const int NVarCC_Der_Max = 9;
    long TVarCCList_Der[NVarCC_Der_Max];
 
-   if ( PrepVx   )   TVarCCList_Der[ NVarCC_Der ++ ] = _VELX;
-   if ( PrepVy   )   TVarCCList_Der[ NVarCC_Der ++ ] = _VELY;
-   if ( PrepVz   )   TVarCCList_Der[ NVarCC_Der ++ ] = _VELZ;
-   if ( PrepPres )   TVarCCList_Der[ NVarCC_Der ++ ] = _PRES;
-   if ( PrepTemp )   TVarCCList_Der[ NVarCC_Der ++ ] = _TEMP;
-   if ( PrepEntr )   TVarCCList_Der[ NVarCC_Der ++ ] = _ENTR;
+   if ( PrepVx      )   TVarCCList_Der[ NVarCC_Der ++ ] = _VELX;
+   if ( PrepVy      )   TVarCCList_Der[ NVarCC_Der ++ ] = _VELY;
+   if ( PrepVz      )   TVarCCList_Der[ NVarCC_Der ++ ] = _VELZ;
+   if ( PrepPres    )   TVarCCList_Der[ NVarCC_Der ++ ] = _PRES;
+   if ( PrepTemp    )   TVarCCList_Der[ NVarCC_Der ++ ] = _TEMP;
+   if ( PrepEntr    )   TVarCCList_Der[ NVarCC_Der ++ ] = _ENTR;
+#  ifdef MHD
+   if ( PrepMagX_CC )   TVarCCList_Der[ NVarCC_Der ++ ] = _MAGX_CC;
+   if ( PrepMagY_CC )   TVarCCList_Der[ NVarCC_Der ++ ] = _MAGY_CC;
+   if ( PrepMagZ_CC )   TVarCCList_Der[ NVarCC_Der ++ ] = _MAGZ_CC;
+   if ( PrepMagE_CC )   TVarCCList_Der[ NVarCC_Der ++ ] = _MAGE_CC;
+#  endif
 
 #  elif ( MODEL == ELBDM )
 // no derived variables yet
@@ -417,7 +440,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
    int NVarFC_Tot = 0;
 
 #  ifdef MHD
-   const bool PrepMag = ( TVarFC & _MAG ) ? true : false;
+   const bool PrepMagFC = ( TVarFC & _MAG ) ? true : false;
    int TVarFCIdxList[NCOMP_MAG];
 
    for (int v=0; v<NCOMP_MAG; v++)
@@ -455,7 +478,8 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 // fluid
    if ( NVarCC_Flu + NVarCC_Der != 0 )
    {
-      SetTempIntPara( lv, amr->FluSg[lv], PrepTime, amr->FluSgTime[lv][0], amr->FluSgTime[lv][1],
+      const int Sg0 = amr->FluSg[lv];
+      SetTempIntPara( lv, Sg0, PrepTime, amr->FluSgTime[lv][Sg0], amr->FluSgTime[lv][1-Sg0],
                       FluIntTime, FluSg, FluSg_IntT, FluWeighting, FluWeighting_IntT );
 
 //    check: although temporal interpolation is allowed, currently PrepTime is expected to be equal to either
@@ -473,9 +497,10 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
    real MagWeighting, MagWeighting_IntT;
 
 // check PrepPres, PrepTemp, and PrepEntr since they also require B field
-   if ( PrepMag || PrepPres || PrepTemp || PrepEntr )
+   if ( PrepMagFC || PrepMagCC || PrepPres || PrepTemp || PrepEntr )
    {
-      SetTempIntPara( lv, amr->MagSg[lv], PrepTime, amr->MagSgTime[lv][0], amr->MagSgTime[lv][1],
+      const int Sg0 = amr->MagSg[lv];
+      SetTempIntPara( lv, Sg0, PrepTime, amr->MagSgTime[lv][Sg0], amr->MagSgTime[lv][1-Sg0],
                       MagIntTime, MagSg, MagSg_IntT, MagWeighting, MagWeighting_IntT );
 
 //    check: although temporal interpolation is allowed, currently PrepTime is expected to be equal to either
@@ -495,7 +520,8 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
    if ( PrepPot )
    {
-      SetTempIntPara( lv, amr->PotSg[lv], PrepTime, amr->PotSgTime[lv][0], amr->PotSgTime[lv][1],
+      const int Sg0 = amr->PotSg[lv];
+      SetTempIntPara( lv, Sg0, PrepTime, amr->PotSgTime[lv][Sg0], amr->PotSgTime[lv][1-Sg0],
                       PotIntTime, PotSg, PotSg_IntT, PotWeighting, PotWeighting_IntT );
 
 //    check: although temporal interpolation is allowed, currently PrepTime is expected to be equal to either
@@ -530,8 +556,8 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
    }
 
 
+#  ifdef MASSIVE_PARTICLES
 // determine the patch list for assigning particle mass
-#  ifdef PARTICLE
    const int NNearByPatchMax   = 64;   // maximum number of neaby patches of a patch group (including 8 local patches)
    const int ParMass_NPatchMax = NPG*NNearByPatchMax;
 
@@ -615,6 +641,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
                ParMass_PID_List[ ParMass_NPatch_Dup ++ ] = PID;
             }
+
          }
       } // for (int TID=0; TID<NPG; TID++)
 
@@ -639,7 +666,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
       }
 
    } //if ( PrepParOnlyDens || PrepTotalDens )
-#  endif // #ifdef PARTICLE
+#  endif // #ifdef MASSIVE_PARTICLES
 
 
 // start to prepare data
@@ -683,9 +710,19 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
       if ( NVarFC_Tot > 0 )   FInterface_Data = new real [ SQR(PS2) + 4*PS2*GhostSize_Padded ];
 #     endif
 
+//    IntData_CC_IntTime: for temporal interpolation on density and phase in ELBDM
+#     if ( MODEL == ELBDM )
+      real *IntData_CC_IntTime = (  IntPhase  &&  OPT__INT_TIME  &&  lv > 0  &&
+                                   !Mis_CompareRealValue( PrepTime, amr->FluSgTime[lv-1][  amr->FluSg[lv-1]], NULL, false )  &&
+                                   !Mis_CompareRealValue( PrepTime, amr->FluSgTime[lv-1][1-amr->FluSg[lv-1]], NULL, false )  )
+                                 ? new real [ 2*PS2*PS2*GhostSize_Padded ] : NULL;
+#     else
+      real *IntData_CC_IntTime = NULL;
+#     endif
 
+
+#     ifdef MASSIVE_PARTICLES
 //    assign particle mass onto grids
-#     ifdef PARTICLE
       if ( PrepParOnlyDens || PrepTotalDens )
       {
 //       thread-private variables
@@ -745,8 +782,9 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                if ( UseInputMassPos )
                {
                   if ( InputMassPos[PAR_MASS] == NULL  ||  InputMassPos[PAR_POSX] == NULL  ||
-                       InputMassPos[PAR_POSY] == NULL  ||  InputMassPos[PAR_POSZ] == NULL  )
-                     Aux_Error( ERROR_INFO, "InputMassPos[0/1/2/3] == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
+                       InputMassPos[PAR_POSY] == NULL  ||  InputMassPos[PAR_POSZ] == NULL  ||
+                       InputMassPos[PAR_TYPE] == NULL )
+                     Aux_Error( ERROR_INFO, "InputMassPos[0/1/2/3/4] == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
                                 NPar, lv, PID );
                }
 
@@ -772,7 +810,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                                 Periodic_No, NULL, UnitDens_No, CheckFarAway_No, UseInputMassPos, InputMassPos );
          } // for (int t=0; t<ParMass_NPatch; t++)
       } // if ( PrepParOnlyDens || PrepTotalDens )
-#     endif // #ifdef PARTICLE
+#     endif // #ifdef MASSIVE_PARTICLES
 
 
 //    note that the total density array needs rho_ext[] of nearby patches
@@ -888,7 +926,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                for (int i=0; i<PS1; i++)  {
 
                   Data1PG_CC_Ptr[Idx1] = amr->patch[FluSg][lv][PID]->fluid[MOMZ][k][j][i] /
-                                          amr->patch[FluSg][lv][PID]->fluid[DENS][k][j][i];
+                                         amr->patch[FluSg][lv][PID]->fluid[DENS][k][j][i];
 
                   if ( FluIntTime ) // temporal interpolation
                   Data1PG_CC_Ptr[Idx1] =   FluWeighting     *Data1PG_CC_Ptr[Idx1]
@@ -1031,6 +1069,64 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
                Data1PG_CC_Ptr += PGSize3D_CC;
             } // if ( PrepEntr )
+
+#           ifdef MHD
+            if ( PrepMagCC )
+            {
+               for (int k=0; k<PS1; k++)  {  K    = k + Disp_k;
+               for (int j=0; j<PS1; j++)  {  J    = j + Disp_j;
+                                             Idx1 = IDX321( Disp_i, J, K, PGSize1D_CC, PGSize1D_CC );
+               for (int i=0; i<PS1; i++)  {
+
+                  real B_CC[NCOMP_MAG];
+                  int  OffsetB = 0;
+
+                  MHD_GetCellCenteredBFieldInPatch( B_CC, lv, PID, i, j, k, MagSg );
+
+                  if ( PrepMagX_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = B_CC[MAGX];  OffsetB += PGSize3D_CC; }
+                  if ( PrepMagY_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = B_CC[MAGY];  OffsetB += PGSize3D_CC; }
+                  if ( PrepMagZ_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = B_CC[MAGZ];  OffsetB += PGSize3D_CC; }
+                  if ( PrepMagE_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = (real)0.5*( SQR(B_CC[MAGX]) + SQR(B_CC[MAGY]) + SQR(B_CC[MAGZ]) ); }
+
+                  if ( FluIntTime ) // temporal interpolation
+                  {
+                     OffsetB = 0;
+
+                     MHD_GetCellCenteredBFieldInPatch( B_CC, lv, PID, i, j, k, MagSg_IntT );
+
+                     if ( PrepMagX_CC ) {
+                        Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                           + FluWeighting_IntT*B_CC[MAGX];
+                        OffsetB += PGSize3D_CC;
+                     }
+
+                     if ( PrepMagY_CC ) {
+                        Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                           + FluWeighting_IntT*B_CC[MAGY];
+                        OffsetB += PGSize3D_CC;
+                     }
+
+                     if ( PrepMagZ_CC ) {
+                        Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                           + FluWeighting_IntT*B_CC[MAGZ];
+                        OffsetB += PGSize3D_CC;
+                     }
+
+                     if ( PrepMagE_CC ) {
+                        Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                           + FluWeighting_IntT*(real)0.5*( SQR(B_CC[MAGX]) + SQR(B_CC[MAGY]) + SQR(B_CC[MAGZ]) );
+                     }
+                  } // if ( FluIntTime )
+
+                  Idx1 ++;
+               }}}
+
+               if ( PrepMagX_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+               if ( PrepMagY_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+               if ( PrepMagZ_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+               if ( PrepMagE_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+            } // if ( PrepMagCC )
+#           endif // #ifdef MHD
 
 
 #           elif ( MODEL == ELBDM )
@@ -1177,7 +1273,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // for (int v=0; v<NVarCC_Flu; v++)
 
 
 //                (b1-2) derived variables (cell-centered)
@@ -1200,7 +1296,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepVx )
 
                   if ( PrepVy )
                   {
@@ -1220,7 +1316,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepVy )
 
                   if ( PrepVz )
                   {
@@ -1240,7 +1336,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepVz )
 
                   if ( PrepPres )
                   {
@@ -1284,7 +1380,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepPres )
 
                   if ( PrepTemp )
                   {
@@ -1328,7 +1424,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepTemp )
 
                   if ( PrepEntr )
                   {
@@ -1372,7 +1468,66 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepEntr )
+
+#                 ifdef MHD
+                  if ( PrepMagCC )
+                  {
+                     for (int k=0; k<loop[2]; k++)  { K = k + disp[2];   K2 = k + disp2[2];
+                     for (int j=0; j<loop[1]; j++)  { J = j + disp[1];   J2 = j + disp2[1];
+                                                      Idx1 = IDX321( disp[0], J, K, PGSize1D_CC, PGSize1D_CC );
+                     for (I2=disp2[0]; I2<disp2[0]+loop[0]; I2++) {
+
+                        real B_CC[NCOMP_MAG];
+                        int  OffsetB = 0;
+
+                        MHD_GetCellCenteredBFieldInPatch( B_CC, lv, SibPID, I2, J2, K2, MagSg );
+
+                        if ( PrepMagX_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = B_CC[MAGX];  OffsetB += PGSize3D_CC; }
+                        if ( PrepMagY_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = B_CC[MAGY];  OffsetB += PGSize3D_CC; }
+                        if ( PrepMagZ_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = B_CC[MAGZ];  OffsetB += PGSize3D_CC; }
+                        if ( PrepMagE_CC ) { Data1PG_CC_Ptr[ Idx1 + OffsetB ] = (real)0.5*( SQR(B_CC[MAGX]) + SQR(B_CC[MAGY]) + SQR(B_CC[MAGZ]) ); }
+
+                        if ( FluIntTime ) // temporal interpolation
+                        {
+                           OffsetB = 0;
+
+                           MHD_GetCellCenteredBFieldInPatch( B_CC, lv, SibPID, I2, J2, K2, MagSg_IntT );
+
+                           if ( PrepMagX_CC ) {
+                              Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                                 + FluWeighting_IntT*B_CC[MAGX];
+                              OffsetB += PGSize3D_CC;
+                           }
+
+                           if ( PrepMagY_CC ) {
+                              Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                                 + FluWeighting_IntT*B_CC[MAGY];
+                              OffsetB += PGSize3D_CC;
+                           }
+
+                           if ( PrepMagZ_CC ) {
+                              Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                                 + FluWeighting_IntT*B_CC[MAGZ];
+                              OffsetB += PGSize3D_CC;
+                           }
+
+                           if ( PrepMagE_CC ) {
+                              Data1PG_CC_Ptr[ Idx1 + OffsetB ] =   FluWeighting     *Data1PG_CC_Ptr[ Idx1 + OffsetB ]
+                                                                 + FluWeighting_IntT*(real)0.5*( SQR(B_CC[MAGX]) + SQR(B_CC[MAGY]) + SQR(B_CC[MAGZ]) );
+                           }
+                        } // if ( FluIntTime )
+
+                        Idx1 ++;
+                     }}}
+
+                     if ( PrepMagX_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+                     if ( PrepMagY_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+                     if ( PrepMagZ_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+                     if ( PrepMagE_CC )   Data1PG_CC_Ptr += PGSize3D_CC;
+                  } // if ( PrepMagCC )
+#                 endif // #ifdef MHD
+
 
 #                 elif ( MODEL == ELBDM )
 //                no derived variables yet
@@ -1400,7 +1555,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      }}}
 
                      Data1PG_CC_Ptr += PGSize3D_CC;
-                  }
+                  } // if ( PrepPot )
 #                 endif // #ifdef GRAVITY
 
 
@@ -1522,7 +1677,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
 
 //             (b2-3) perform interpolation and store the results in IntData_CC[] and IntData_FC[]
-               InterpolateGhostZone( lv-1, FaSibPID, IntData_CC, IntData_FC, Side, PrepTime, GhostSize,
+               InterpolateGhostZone( lv-1, FaSibPID, IntData_CC, IntData_FC, IntData_CC_IntTime, Side, PrepTime, GhostSize,
                                      IntScheme_CC, IntScheme_FC, NTSib, TSib, TVarCC, NVarCC_Tot, NVarCC_Flu,
                                      TVarCCIdxList_Flu, NVarCC_Der, TVarCCList_Der, TVarFC, NVarFC_Tot, TVarFCIdxList,
                                      IntPhase, FluBC, PotBC, BC_Face, MinPres, MinTemp, MinEntr, DE_Consistency,
@@ -1661,6 +1816,12 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                                                             PGSize1D_CC, PGSize1D_CC, PGSize1D_CC, BC_Idx_Start, BC_Idx_End,
                                                             TVarCCIdxList_Flu, NVarCC_Der, TVarCCList_Der );
                      break;
+
+                     case BC_FLU_DIODE:
+                        Hydro_BoundaryCondition_Diode     ( Data1PG_CC_Ptr, BC_Face[BC_Sibling], NVarCC_Flu,            GhostSize,
+                                                            PGSize1D_CC, PGSize1D_CC, PGSize1D_CC, BC_Idx_Start, BC_Idx_End,
+                                                            TVarCCIdxList_Flu, NVarCC_Der, TVarCCList_Der );
+                     break;
 #                    endif
 
                      case BC_FLU_USER:
@@ -1716,6 +1877,12 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                                                           TVarFCIdxList );
                      break;
 
+                     case BC_FLU_DIODE:
+                        MHD_BoundaryCondition_Diode     ( MagDataPtr, BC_Face[BC_Sibling], NVarFC_Tot, GhostSize,
+                                                          PGSize1D_CC, PGSize1D_CC, PGSize1D_CC, BC_Idx_Start, BC_Idx_End,
+                                                          TVarFCIdxList );
+                     break;
+
                      case BC_FLU_USER:
                         MHD_BoundaryCondition_User      ( MagDataPtr, BC_Face[BC_Sibling], NVarFC_Tot,
                                                           PGSize1D_CC, PGSize1D_CC, PGSize1D_CC, BC_Idx_Start, BC_Idx_End,
@@ -1739,7 +1906,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
 //       c. deposit particle mass onto grids
 // ------------------------------------------------------------------------------------------------------------
-#        ifdef PARTICLE
+#        ifdef MASSIVE_PARTICLES
          if ( PrepParOnlyDens || PrepTotalDens )
          {
 //          (c1) determine the array index for DENS
@@ -1914,8 +2081,9 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                      if ( UseInputMassPos )
                      {
                         if ( InputMassPos[PAR_MASS] == NULL  ||  InputMassPos[PAR_POSX] == NULL  ||
-                             InputMassPos[PAR_POSY] == NULL  ||  InputMassPos[PAR_POSZ] == NULL  )
-                           Aux_Error( ERROR_INFO, "InputMassPos[0/1/2/3] == NULL for NPar (%d) > 0 (lv %d, FaSibPID %d) !!\n",
+                             InputMassPos[PAR_POSY] == NULL  ||  InputMassPos[PAR_POSZ] == NULL  ||
+                             InputMassPos[PAR_TYPE] == NULL )
+                           Aux_Error( ERROR_INFO, "InputMassPos[0/1/2/3/4] == NULL for NPar (%d) > 0 (lv %d, FaSibPID %d) !!\n",
                                       NPar, lv-1, FaSibPID );
                      }
 
@@ -1937,8 +2105,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
                } // else if ( SibPID0 == -1 )
             } // for (int Side=0; Side<26; Side++) if ( amr->Par->GhostSize > 0  ||  GhostSize > 0 )
          } // if ( PrepParOnlyDens || PrepTotalDens )
-#        endif // #ifdef PARTICLE
-
+#        endif // #ifdef MASSIVE_PARTICLES
 
 //       d. checks
 // ------------------------------------------------------------------------------------------------------------
@@ -1964,7 +2131,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 
 //       (d2) divergence-free magnetic field
 #        if ( defined MHD  &&  defined MHD_CHECK_DIV_B )
-         if ( PrepMag )    MHD_CheckDivB( Data1PG_FC, GhostSize, DIV_B_TOLERANCE, lv, PrepTime );
+         if ( PrepMagFC )  MHD_CheckDivB( Data1PG_FC, GhostSize, DIV_B_TOLERANCE, lv, PrepTime );
 #        endif
 
 
@@ -2073,6 +2240,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
       }
       delete [] IntData_CC;
       delete [] IntData_FC;
+      delete [] IntData_CC_IntTime;
 
 #     ifdef MHD
       delete [] FInterface_Data;
@@ -2084,7 +2252,7 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 // free memroy
    for (int s=0; s<26; s++)   delete [] TSib[s];
 
-#  ifdef PARTICLE
+#  ifdef MASSIVE_PARTICLES
    if ( PrepParOnlyDens || PrepTotalDens )   delete [] ParMass_PID_List;
 #  endif
 
@@ -2101,10 +2269,10 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 //                3. Use call-by-reference to set the returned parameters
 //
 // Parameter   :  lv            : Target refinement level
-//                Sg_Current    : Current Sg
+//                Sg0           : Current Sg
 //                PrepTime      : Target physical time to prepare data
-//                Time0         : Physical time of Sg=0
-//                Time1         : Physical time of Sg=1
+//                Time0         : Physical time of Sg0
+//                Time1         : Physical time of 1-Sg0
 //                IntTime       : Whether or not the temporal interpolation is required
 //                Sg            : Sg if temporal interpolation is not required
 //                Sg_Int        : Sg if temporal interpolation is required
@@ -2113,14 +2281,16 @@ void Prepare_PatchData( const int lv, const double PrepTime, real *OutputCC, rea
 //
 // Return      :  IntTime, Sg, Sg_Int, Weighting, Weighting_Int
 //-------------------------------------------------------------------------------------------------------
-void SetTempIntPara( const int lv, const int Sg_Current, const double PrepTime, const double Time0, const double Time1,
+void SetTempIntPara( const int lv, const int Sg0, const double PrepTime, const double Time0, const double Time1,
                      bool &IntTime, int &Sg, int &Sg_IntT, real &Weighting, real &Weighting_IntT )
 {
+
+   const int Sg1 = 1 - Sg0;
 
    if      (  Mis_CompareRealValue( PrepTime, Time0, NULL, false )  )
    {
       IntTime        = false;
-      Sg             = 0;
+      Sg             = Sg0;
       Sg_IntT        = NULL_INT;
       Weighting      = NULL_REAL;
       Weighting_IntT = NULL_REAL;
@@ -2129,7 +2299,7 @@ void SetTempIntPara( const int lv, const int Sg_Current, const double PrepTime, 
    else if (  Mis_CompareRealValue( PrepTime, Time1, NULL, false )  )
    {
       IntTime        = false;
-      Sg             = 1;
+      Sg             = Sg1;
       Sg_IntT        = NULL_INT;
       Weighting      = NULL_REAL;
       Weighting_IntT = NULL_REAL;
@@ -2151,16 +2321,16 @@ void SetTempIntPara( const int lv, const int Sg_Current, const double PrepTime, 
       if ( OPT__INT_TIME )
       {
          IntTime        = true;
-         Sg             = 0;
-         Sg_IntT        = 1;
-         Weighting      =   ( +Time1 - PrepTime ) / ( Time1 - Time0 );
-         Weighting_IntT =   ( -Time0 + PrepTime ) / ( Time1 - Time0 );
+         Sg             = Sg0;
+         Sg_IntT        = Sg1;
+         Weighting      = ( +Time1 - PrepTime ) / ( Time1 - Time0 );
+         Weighting_IntT = ( -Time0 + PrepTime ) / ( Time1 - Time0 );
       }
 
       else
       {
          IntTime        = false;
-         Sg             = Sg_Current;
+         Sg             = Sg0;
          Sg_IntT        = NULL_INT;
          Weighting      = NULL_REAL;
          Weighting_IntT = NULL_REAL;
@@ -2860,8 +3030,7 @@ void SetTargetSibling( int NTSib[], int *TSib[] )
 } // FUNCTION : SetTargetSibling
 
 
-
-#ifdef PARTICLE
+#  ifdef MASSIVE_PARTICLES
 //-------------------------------------------------------------------------------------------------------
 // Function    :  Prepare_PatchData_InitParticleDensityArray
 // Description :  Initialize rho_ext[] by setting rho_ext[0][0][0] = RHO_EXT_NEED_INIT
@@ -2920,7 +3089,7 @@ void Prepare_PatchData_FreeParticleDensityArray( const int lv )
    ParDensArray_Initialized = false;
 
 } // FUNCTION : Prepare_PatchData_FreeParticleDensityArray
-#endif // #ifdef PARTICLE
+#endif // #ifdef MASSIVE_PARTICLES
 
 
 

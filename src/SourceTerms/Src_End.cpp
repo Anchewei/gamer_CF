@@ -6,9 +6,6 @@
 #if ( MODEL == HYDRO )
 void Src_End_Deleptonization();
 #endif
-#if ( defined ISM && MODEL == HYDRO )
-void Src_End_Cooling();
-#endif
 
 // this function pointer can be set by a test problem initializer for a non-built-in source term
 void (*Src_End_User_Ptr)() = NULL;
@@ -37,10 +34,6 @@ void Src_End()
 #  if ( MODEL == HYDRO )
    if ( SrcTerms.Deleptonization )
       Src_End_Deleptonization();
-#  endif
-
-#  if ( defined ISM && MODEL == HYDRO )
-   if ( SrcTerms.Cooling ) Src_End_Cooling();
 #  endif
 
 // users may not define Src_End_User_Ptr

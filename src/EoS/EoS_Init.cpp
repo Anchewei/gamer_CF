@@ -10,13 +10,7 @@ void EoS_Init_Gamma();
 #elif ( EOS == EOS_ISOTHERMAL )
 void EoS_Init_Isothermal();
 #elif ( EOS == EOS_NUCLEAR )
-#error : ERROR : EOS_NUCLEAR is NOT supported yet !!
-#elif ( EOS == EOS_SAUMON_CHABRIER )
-void EoS_Init_Saumon_Chabrier();
-#elif ( EOS == EOS_BAROTROP1D )
-void EoS_Init_Barotrop1D();
-#elif ( EOS == EOS_ANALYTICAL_BAROTROP )
-void EoS_Init_Analytical_Barotrop();
+# error : ERROR : EOS_NUCLEAR is NOT supported yet !!
 #endif // # EOS
 
 // this function pointer must be set by a test problem initializer for non-built-in EoS
@@ -72,12 +66,6 @@ void EoS_Init()
    EoS_Init_Ptr = EoS_Init_Isothermal;
 #  elif ( EOS == EOS_NUCLEAR )
 #  error : ERROR : EOS_NUCLEAR is NOT supported yet !!
-#  elif ( EOS == EOS_SAUMON_CHABRIER)
-   EoS_Init_Ptr = EoS_Init_Saumon_Chabrier;
-#  elif ( EOS == EOS_BAROTROP1D)
-   EoS_Init_Ptr = EoS_Init_Barotrop1D;
-#  elif ( EOS == EOS_ANALYTICAL_BAROTROP)
-   EoS_Init_Ptr = EoS_Init_Analytical_Barotrop;
 #  endif // # EOS
 
 

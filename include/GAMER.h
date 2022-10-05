@@ -25,38 +25,18 @@
 #  include <omp.h>
 #endif
 
-// Other Clusters
-// -----------------------------------------------------------------------------
-//#ifdef GRAVITY
-//#  ifdef FLOAT8
-//#     ifdef SERIAL
-//#        include <drfftw.h>
-//#     else
-//#        include <drfftw_mpi.h>
-//#     endif
-//#  else
-//#     ifdef SERIAL
-//#        include <srfftw.h>
-//#     else
-//#        include <srfftw_mpi.h>
-//#     endif
-//#  endif
-//#endif
-
-// ONLY for NCHC-Taiwania1
-// -----------------------------------------------------------------------------
 #ifdef GRAVITY
 #  ifdef FLOAT8
 #     ifdef SERIAL
-#        include <rfftw.h>
+#        include <drfftw.h>
 #     else
-#        include <rfftw_mpi.h>
+#        include <drfftw_mpi.h>
 #     endif
 #  else
 #     ifdef SERIAL
-#        include <rfftw.h>
+#        include <srfftw.h>
 #     else
-#        include <rfftw_mpi.h>
+#        include <srfftw_mpi.h>
 #     endif
 #  endif
 #endif

@@ -7,10 +7,6 @@
 void Src_Init_Deleptonization();
 #endif
 
-#if ( defined ISM && MODEL == HYDRO )
-void Src_Init_Cooling();
-#endif
-
 // this function pointer can be set by a test problem initializer for a user-specified source term
 void (*Src_Init_User_Ptr)() = NULL;
 
@@ -40,9 +36,6 @@ void Src_Init()
 #       if ( MODEL == HYDRO )
         SrcTerms.Deleptonization  ||
 #       endif
-#       if ( defined ISM && MODEL == HYDRO )
-        SrcTerms.Cooling ||
-#       endif
         SrcTerms.User
       )
       SrcTerms.Any = true;
@@ -68,17 +61,21 @@ void Src_Init()
 // initialize all function pointers as NULL
 #  if ( MODEL == HYDRO )
    SrcTerms.Dlep_FuncPtr              = NULL;
+   SrcTerms.Dlep_CPUPtr               = NULL;
+#  ifdef GPU
+   SrcTerms.Dlep_GPUPtr               = NULL;
+#  endif
    SrcTerms.Dlep_AuxArrayDevPtr_Flt   = NULL;
    SrcTerms.Dlep_AuxArrayDevPtr_Int   = NULL;
    SrcTerms.Dlep_Profile_DataDevPtr   = NULL;
    SrcTerms.Dlep_Profile_RadiusDevPtr = NULL;
 #  endif
-#  if ( defined ISM && MODEL == HYDRO )
-   SrcTerms.Cooling_FuncPtr            = NULL;
-   SrcTerms.Cooling_AuxArrayDevPtr_Flt = NULL;
-   SrcTerms.Cooling_AuxArrayDevPtr_Int = NULL;
-#  endif
+
    SrcTerms.User_FuncPtr              = NULL;
+   SrcTerms.User_CPUPtr               = NULL;
+#  ifdef GPU
+   SrcTerms.User_GPUPtr               = NULL;
+#  endif
    SrcTerms.User_AuxArrayDevPtr_Flt   = NULL;
    SrcTerms.User_AuxArrayDevPtr_Int   = NULL;
 
@@ -92,17 +89,10 @@ void Src_Init()
 
 //    check if the source-term function is set properly
       if ( SrcTerms.Dlep_FuncPtr == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.Dlep_FuncPtr == NULL !!\n" );
-   }
-#  endif
-
-// (2) Cooling
-#  if ( defined ISM && MODEL == HYDRO )
-   if ( SrcTerms.Cooling )
-   {
-      Src_Init_Cooling();
-
-//    check if the source-term function is set properly
-      if ( SrcTerms.Cooling_FuncPtr == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.Cooling_FuncPtr == NULL !!\n" );
+      if ( SrcTerms.Dlep_CPUPtr  == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.Dlep_CPUPtr  == NULL !!\n" );
+#     ifdef GPU
+      if ( SrcTerms.Dlep_GPUPtr  == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.Dlep_GPUPtr  == NULL !!\n" );
+#     endif
    }
 #  endif
 
@@ -115,6 +105,10 @@ void Src_Init()
 
 //    check if the source-term function is set properly
       if ( SrcTerms.User_FuncPtr == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.User_FuncPtr == NULL !!\n" );
+      if ( SrcTerms.User_CPUPtr  == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.User_CPUPtr  == NULL !!\n" );
+#     ifdef GPU
+      if ( SrcTerms.User_GPUPtr  == NULL )   Aux_Error( ERROR_INFO, "SrcTerms.User_GPUPtr  == NULL !!\n" );
+#     endif
    }
 
 

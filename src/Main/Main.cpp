@@ -30,7 +30,7 @@ double               dTime_Base;
 double               Time_Prev            [NLEVEL];
 double               FlagTable_Rho        [NLEVEL-1];
 double               FlagTable_RhoGradient[NLEVEL-1];
-double               FlagTable_Lohner     [NLEVEL-1][4];
+double               FlagTable_Lohner     [NLEVEL-1][5];
 double              *FlagTable_User       [NLEVEL-1];
 double              *DumpTable = NULL;
 int                  DumpTable_NDump;
@@ -57,7 +57,7 @@ bool                 OPT__FLAG_RHO, OPT__FLAG_RHO_GRADIENT, OPT__FLAG_USER, OPT_
 int                  OPT__FLAG_USER_NUM, MONO_MAX_ITER;
 bool                 OPT__DT_USER, OPT__RECORD_DT, OPT__RECORD_MEMORY, OPT__MEMORY_POOL, OPT__RESTART_RESET;
 bool                 OPT__FIXUP_RESTRICT, OPT__INIT_RESTRICT, OPT__VERBOSE, OPT__MANUAL_CONTROL, OPT__UNIT;
-bool                 OPT__INT_TIME, OPT__OUTPUT_USER, OPT__OUTPUT_BASE, OPT__OVERLAP_MPI, OPT__TIMING_BALANCE;
+bool                 OPT__INT_TIME, OPT__OUTPUT_USER, OPT__OUTPUT_BASE, OPT__OUTPUT_RESTART, OPT__OVERLAP_MPI, OPT__TIMING_BALANCE;
 bool                 OPT__OUTPUT_BASEPS, OPT__CK_REFINE, OPT__CK_PROPER_NESTING, OPT__CK_FINITE, OPT__RECORD_PERFORMANCE;
 bool                 OPT__CK_RESTRICT, OPT__CK_PATCH_ALLOCATE, OPT__FIXUP_FLUX, OPT__CK_FLUX_ALLOCATE, OPT__CK_NORMALIZE_PASSIVE;
 bool                 OPT__UM_IC_DOWNGRADE, OPT__UM_IC_REFINE, OPT__TIMING_MPI;
@@ -90,7 +90,7 @@ OptRSolver1st_t      OPT__1ST_FLUX_CORR_SCHEME;
 bool                 OPT__FLAG_PRES_GRADIENT, OPT__FLAG_LOHNER_ENGY, OPT__FLAG_LOHNER_PRES, OPT__FLAG_LOHNER_TEMP, OPT__FLAG_LOHNER_ENTR;
 bool                 OPT__FLAG_VORTICITY, OPT__FLAG_JEANS, JEANS_MIN_PRES, OPT__LAST_RESORT_FLOOR;
 bool                 OPT__OUTPUT_DIVVEL, OPT__OUTPUT_MACH, OPT__OUTPUT_PRES, OPT__OUTPUT_CS;
-bool                 OPT__OUTPUT_TEMP, OPT__OUTPUT_ENTR;
+bool                 OPT__OUTPUT_TEMP, OPT__OUTPUT_ENTR, OPT__INT_PRIM;
 int                  OPT__CK_NEGATIVE, JEANS_MIN_PRES_LEVEL, JEANS_MIN_PRES_NCELL, OPT__CHECK_PRES_AFTER_FLU;
 int                  MINMOD_MAX_ITER;
 double               MIN_DENS, MIN_PRES, MIN_EINT, MIN_TEMP, MIN_ENTR;
@@ -187,6 +187,8 @@ ParOutputDens_t      OPT__OUTPUT_PAR_DENS;
 #ifdef SUPPORT_LIBYT
 char                 YT_SCRIPT[MAX_STRING];
 yt_verbose           YT_VERBOSE;
+char                 YT_FIG_BASENAME[MAX_STRING];
+int                  YT_GID_Offset[NLEVEL];
 #endif
 
 // (2-7) Grackle
@@ -253,12 +255,6 @@ SrcTerms_t SrcTerms;
 double     Src_Dlep_AuxArray_Flt[SRC_NAUX_DLEP];
 int        Src_Dlep_AuxArray_Int[SRC_NAUX_DLEP];
 #endif
-
-# if ( MODEL == HYDRO )
-double     Src_Cooling_AuxArray_Flt[SRC_NAUX_COOLING];
-int        Src_Cooling_AuxArray_Int[SRC_NAUX_COOLING];
-# endif
-
 double     Src_User_AuxArray_Flt[SRC_NAUX_USER];
 int        Src_User_AuxArray_Int[SRC_NAUX_USER];
 
@@ -468,32 +464,6 @@ Timer_t *Timer_Poi_PreRho  [NLEVEL];
 Timer_t *Timer_Poi_PreFlu  [NLEVEL];
 Timer_t *Timer_Poi_PrePot_C[NLEVEL];
 Timer_t *Timer_Poi_PrePot_F[NLEVEL];
-#endif
-
-// 6. test problem specified parameters
-// =======================================================================================================
-#ifdef ISM
-int ISM_Prob;
-real ISM_Core_Mass;
-real ISM_Axis_Ratio;
-real ISM_Dens_Contrast;
-real ISM_Alpha;
-real ISM_Beta;
-real ISM_Delta_Dens;
-real ISM_Crit;
-real ISM_Mach;
-real ISM_FF_SCT;
-real ISM_FF_RT;
-real ISM_FF_ACT;
-real ISM_FF_VCT;
-real ISM_Mag_Rot_Angle;
-int  ISM_Uniform_BField;
-real ISM_Bg_Temp;
-real ISM_N_Star;
-real ISM_UNIT_T2;
-char ISM_Saumon_Chabrier_Table[MAX_STRING];
-char ISM_Baratrop1D_Table[MAX_STRING];
-char ISM_Velocity_Turb_Table[MAX_STRING];
 #endif
 
 

@@ -29,7 +29,7 @@ extern double     dTime_Base;                         // physical time interval 
 
 extern double     FlagTable_Rho        [NLEVEL-1];    // refinement criterion of density
 extern double     FlagTable_RhoGradient[NLEVEL-1];    // refinement criterion of density gradient
-extern double     FlagTable_Lohner     [NLEVEL-1][4]; // refinement criterion based on Lohner's error estimator
+extern double     FlagTable_Lohner     [NLEVEL-1][5]; // refinement criterion based on Lohner's error estimator
 extern double    *FlagTable_User       [NLEVEL-1];    // user-defined refinement criterion
 extern double    *DumpTable;                          // dump table recording the physical times to output data
 extern int        DumpTable_NDump;                    // number of data dumps in the dump table
@@ -63,7 +63,7 @@ extern bool       OPT__FLAG_RHO, OPT__FLAG_RHO_GRADIENT, OPT__FLAG_USER, OPT__FL
 extern int        OPT__FLAG_USER_NUM, MONO_MAX_ITER;
 extern bool       OPT__DT_USER, OPT__RECORD_DT, OPT__RECORD_MEMORY, OPT__MEMORY_POOL, OPT__RESTART_RESET;
 extern bool       OPT__FIXUP_RESTRICT, OPT__INIT_RESTRICT, OPT__VERBOSE, OPT__MANUAL_CONTROL, OPT__UNIT;
-extern bool       OPT__INT_TIME, OPT__OUTPUT_USER, OPT__OUTPUT_BASE, OPT__OVERLAP_MPI, OPT__TIMING_BALANCE;
+extern bool       OPT__INT_TIME, OPT__OUTPUT_USER, OPT__OUTPUT_BASE, OPT__OUTPUT_RESTART, OPT__OVERLAP_MPI, OPT__TIMING_BALANCE;
 extern bool       OPT__OUTPUT_BASEPS, OPT__CK_REFINE, OPT__CK_PROPER_NESTING, OPT__CK_FINITE, OPT__RECORD_PERFORMANCE;
 extern bool       OPT__CK_RESTRICT, OPT__CK_PATCH_ALLOCATE, OPT__FIXUP_FLUX, OPT__CK_FLUX_ALLOCATE, OPT__CK_NORMALIZE_PASSIVE;
 extern bool       OPT__UM_IC_DOWNGRADE, OPT__UM_IC_REFINE, OPT__TIMING_MPI;
@@ -98,7 +98,7 @@ extern OptRSolver1st_t  OPT__1ST_FLUX_CORR_SCHEME;
 extern bool             OPT__FLAG_PRES_GRADIENT, OPT__FLAG_LOHNER_ENGY, OPT__FLAG_LOHNER_PRES, OPT__FLAG_LOHNER_TEMP, OPT__FLAG_LOHNER_ENTR;
 extern bool             OPT__FLAG_VORTICITY, OPT__FLAG_JEANS, JEANS_MIN_PRES, OPT__LAST_RESORT_FLOOR;
 extern bool             OPT__OUTPUT_DIVVEL, OPT__OUTPUT_MACH, OPT__OUTPUT_PRES, OPT__OUTPUT_CS;
-extern bool             OPT__OUTPUT_TEMP, OPT__OUTPUT_ENTR;
+extern bool             OPT__OUTPUT_TEMP, OPT__OUTPUT_ENTR, OPT__INT_PRIM;
 extern int              OPT__CK_NEGATIVE, JEANS_MIN_PRES_LEVEL, JEANS_MIN_PRES_NCELL, OPT__CHECK_PRES_AFTER_FLU;
 extern int              MINMOD_MAX_ITER;
 extern double           MIN_DENS, MIN_PRES, MIN_EINT, MIN_TEMP, MIN_ENTR;
@@ -200,6 +200,8 @@ extern ParOutputDens_t OPT__OUTPUT_PAR_DENS;
 #ifdef SUPPORT_LIBYT
 extern char            YT_SCRIPT[MAX_STRING];
 extern yt_verbose      YT_VERBOSE;
+extern char            YT_FIG_BASENAME[MAX_STRING];
+extern int             YT_GID_Offset[NLEVEL];
 #endif
 
 
@@ -268,10 +270,6 @@ extern SrcTerms_t SrcTerms;
 #if ( MODEL == HYDRO )
 extern double     Src_Dlep_AuxArray_Flt[SRC_NAUX_DLEP];
 extern int        Src_Dlep_AuxArray_Int[SRC_NAUX_DLEP];
-#endif
-#if ( defined ISM && MODEL == HYDRO )
-extern double     Src_Cooling_AuxArray_Flt[SRC_NAUX_COOLING];
-extern int        Src_Cooling_AuxArray_Int[SRC_NAUX_COOLING];
 #endif
 extern double     Src_User_AuxArray_Flt[SRC_NAUX_USER];
 extern int        Src_User_AuxArray_Int[SRC_NAUX_USER];
@@ -372,34 +370,6 @@ extern real        *h_SrcDlepProf_Radius;
 // 6. global variables related to different fields
 // ============================================================================================================
 /*** Defined in Field.h ***/
-
-
-
-// 7. test problem specified parameters
-// ============================================================================================================
-#ifdef ISM
-extern int ISM_Prob;
-extern real ISM_Core_Mass;
-extern real ISM_Axis_Ratio;
-extern real ISM_Dens_Contrast;
-extern real ISM_Alpha;
-extern real ISM_Beta;
-extern real ISM_Delta_Dens;
-extern real ISM_Crit;
-extern real ISM_Mach;
-extern real ISM_FF_SCT;
-extern real ISM_FF_RT;
-extern real ISM_FF_ACT;
-extern real ISM_FF_VCT;
-extern real ISM_Mag_Rot_Angle;
-extern int  ISM_Uniform_BField;
-extern real ISM_Bg_Temp;
-extern real ISM_N_Star;
-extern real ISM_UNIT_T2;
-extern char ISM_Saumon_Chabrier_Table[MAX_STRING];
-extern char ISM_Baratrop1D_Table[MAX_STRING];
-extern char ISM_Velocity_Turb_Table[MAX_STRING];
-#endif
 
 
 

@@ -114,13 +114,7 @@ void CPU_SrcSolver_IterateAllCells(
                                    SrcTerms.Dlep_AuxArrayDevPtr_Flt, SrcTerms.Dlep_AuxArrayDevPtr_Int );
 #        endif
 
-//       (2) deleptonization
-#        if ( defined ISM && MODEL == HYDRO )
-         if ( SrcTerms.Cooling )
-            SrcTerms.Cooling_FuncPtr( fluid, B, &SrcTerms, dt, dh, x, y, z, TimeNew, TimeOld, MinDens, MinPres, MinEint, &EoS,
-                                      SrcTerms.Cooling_AuxArrayDevPtr_Flt, SrcTerms.Cooling_AuxArrayDevPtr_Int );
-#        endif
-//       (3) user-defined
+//       (2) user-defined
          if ( SrcTerms.User )
             SrcTerms.User_FuncPtr( fluid, B, &SrcTerms, dt, dh, x, y, z, TimeNew, TimeOld, MinDens, MinPres, MinEint, &EoS,
                                    SrcTerms.User_AuxArrayDevPtr_Flt, SrcTerms.User_AuxArrayDevPtr_Int );

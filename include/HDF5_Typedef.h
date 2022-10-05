@@ -116,6 +116,10 @@ struct Makefile_t
    int Laohu;
    int SupportHDF5;
    int SupportGSL;
+   int SupportLibYT;
+#  ifdef SUPPORT_LIBYT
+   int LibYTUsePatchGroup;
+#  endif
    int SupportGrackle;
    int RandomNumber;
 
@@ -149,6 +153,8 @@ struct Makefile_t
 #  endif // MODEL
 
 #  ifdef PARTICLE
+   int MassiveParticles;
+   int Tracer;
    int StoreParAcc;
    int StarFormation;
    int Par_NAttUser;
@@ -215,7 +221,6 @@ struct SymConst_t
 
 #  if   ( POT_SCHEME == SOR )
    int    Pot_BlockSize_z;
-   int    UsePSolver_10to14;
    int    SOR_RhoShared;
    int    SOR_CPotShared;
    int    SOR_UseShuffle;
@@ -230,8 +235,10 @@ struct SymConst_t
 
 #  ifdef PARTICLE
    int    Par_NAttStored;
+   int    Par_NType;
+#  ifdef GRAVITY
    int    RhoExt_GhostSize;
-
+#  endif
    int    Debug_Particle;
 
    double ParList_GrowthFactor;
@@ -327,30 +334,6 @@ struct InputPara_t
 // test problems
    int   TestProb_ID;
 
-#  if ( defined ISM && MODEL == HYDRO )
-   int    Ism_Prob;
-   double Ism_Core_Mass;
-   double Ism_Axis_Ratio;
-   double Ism_Dens_Contrast;
-   double Ism_Alpha;
-   double Ism_Beta;
-   double Ism_Delta_Dens;
-   double Ism_Crit;
-   double Ism_Mach;
-   double Ism_FF_SCT;
-   double Ism_FF_RT;
-   double Ism_FF_ACT;
-   double Ism_FF_VCT;
-   double Ism_Mag_Rot_Angle;
-   int    Ism_Uniform_BField;
-   double Ism_Bg_Temp;
-   double Ism_N_Star;
-   double Ism_Unit_T2;
-   char   *Ism_Saumon_Chabrier_Table;
-   char   *Ism_Barotrop1D_Table;
-   char   *Ism_Velocity_Table;
-#  endif
-
 // code units
    int    Opt__Unit;
    double Unit_L;
@@ -376,13 +359,18 @@ struct InputPara_t
    int    Par_Init;
    int    Par_ICFormat;
    double Par_ICMass;
+   int    Par_ICType;
    int    Par_Interp;
+   int    Par_InterpTracer;
    int    Par_Integ;
+   int    Par_IntegTracer;
    int    Par_ImproveAcc;
    int    Par_PredictPos;
    double Par_RemoveCell;
    int    Opt__FreezePar;
    int    Par_GhostSize;
+   int    Par_GhostSizeTracer;
+   int    Par_TracerVelCorr;
    char  *ParAttLabel[PAR_NATT_TOTAL];
 #  endif
 
@@ -619,6 +607,9 @@ struct InputPara_t
 
 // interpolation schemes
    int    Opt__Int_Time;
+#  if ( MODEL == HYDRO )
+   int    Opt__Int_Prim;
+#  endif
 #  if ( MODEL == ELBDM )
    int    Opt__Int_Phase;
 #  endif
@@ -669,6 +660,7 @@ struct InputPara_t
 #  endif // #if ( MODEL == HYDRO )
    int    Opt__Output_UserField;
    int    Opt__Output_Mode;
+   int    Opt__Output_Restart;
    int    Opt__Output_Step;
    double Opt__Output_Dt;
    double Output_PartX;
@@ -713,7 +705,7 @@ struct InputPara_t
 // flag tables
    double FlagTable_Rho         [NLEVEL-1];
    double FlagTable_RhoGradient [NLEVEL-1];
-   double FlagTable_Lohner      [NLEVEL-1][4];
+   double FlagTable_Lohner      [NLEVEL-1][5];
    hvl_t  FlagTable_User        [NLEVEL-1];
 #  if   ( MODEL == HYDRO )
    double FlagTable_PresGradient[NLEVEL-1];
