@@ -24,7 +24,7 @@ void Init_TestProb_Hydro_ParEqmIC();
 void Init_TestProb_Hydro_BarredPot();
 void Init_TestProb_Hydro_ParticleTest();
 void Init_TestProb_Hydro_CDM_LSS();
-
+void Init_TestProb_Hydro_CF();
 void Init_TestProb_ELBDM_ExtPot();
 
 
@@ -71,7 +71,7 @@ void Init_TestProb()
       case TESTPROB_HYDRO_PARTICLE_EQUILIBRIUM_IC :      Init_TestProb_Hydro_ParEqmIC();                    break;
       case TESTPROB_HYDRO_PARTICLE_TEST :                Init_TestProb_Hydro_ParticleTest();                break;
       case TESTPROB_HYDRO_CDM_LSS :                      Init_TestProb_Hydro_CDM_LSS();                     break;
-
+      case TESTPROB_HYDRO_CF :                           Init_TestProb_Hydro_CF();                          break;
       case TESTPROB_ELBDM_EXTPOT :                       Init_TestProb_ELBDM_ExtPot();                      break;
 
       default: Aux_Error( ERROR_INFO, "unsupported TESTPROB_ID (%d) !!\n", TESTPROB_ID );
