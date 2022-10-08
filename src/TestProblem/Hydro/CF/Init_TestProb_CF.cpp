@@ -291,7 +291,9 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    MomX = Dens * VelX;
    MomY = Dens * VelY;
    MomZ = Dens * VelZ;
-   Eint = Dens * SQR(Cs) / ( GAMMA - 1.0 );
+   // Eint = Dens * SQR(Cs) / ( GAMMA - 1.0 );
+   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
+                                    EoS_AuxArray_Int, h_EoS_Table );
    Etot = Hydro_ConEint2Etot( Dens, MomX, MomY, MomZ, Eint, 0.0 );     // do NOT include magnetic energy here
 
 // set the output array
