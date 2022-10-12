@@ -183,6 +183,7 @@ void SetParameter()
       Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
       Aux_Message( stdout, "  Temperature           = %13.7e K\n",      ISO_TEMP                             );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
+      Aux_Message( stdout, "  Magnetic field        = %13.7e G\n",      CF_B                                 );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
       Aux_Message( stdout, "=============================================================================\n" );
    }
@@ -328,8 +329,8 @@ void SetBFieldIC( real magnetic[], const double x, const double y, const double 
                   const int lv, double AuxArray[] )
 {
    double MagX = 0.0, MagY = 0.0, MagZ = 0.0;
-   MagZ = CF_B*COS(CF_theta_B)/1000;
-   MagY = CF_B*SIN(CF_theta_B)/1000;
+   MagZ = CF_B*COS(CF_theta_B)/UNIT_B;
+   MagY = CF_B*SIN(CF_theta_B)/UNIT_B;
 
    magnetic[MAGX] = MagX;
    magnetic[MAGY] = MagY;

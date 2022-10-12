@@ -2,6 +2,6 @@
 CF_n0                       100           # intial density (/cm3) [1.0]
 CF_vflow                      2.0         # the magnitude of flow velocity (km/s) [0.0]
 CF_Mach                       1.0         # the turbulence Mach number [0.0]
-CF_B                          0.0         # intial B field strength (mG) [0.0]
+CF_B                          0.0         # intial B field strength (G) [0.0]
 CF_theta_B                    0.0         # intial B field angle (degree) on y-z plane [0.0]
 CF_Tur_Table           init_turb.data     # turbulence file path
