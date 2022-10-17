@@ -75,8 +75,6 @@ void Validate()
    Aux_Error( ERROR_INFO, "PARTICLE must be disabled !!\n" );
 #  endif
 
-   if ( !OPT__UNIT ) Aux_Error( ERROR_INFO, "OPT__UNIT must be enabled !!\n" );
-
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "   Validating test problem %d ... done\n", TESTPROB_ID );
 
 } // FUNCTION : Validate
