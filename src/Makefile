@@ -223,6 +223,9 @@ SIMU_OPTION += -DOPENMP
 #     use RNG_CPP11   for compilers supporting c++11 (**may need to add -std=c++11 to CXXFLAG**)
 SIMU_OPTION += -DRANDOM_NUMBER=RNG_GNU_EXT
 
+# enable debug mode
+SIMU_OPTION += -DMY_DEBUG
+
 
 
 
