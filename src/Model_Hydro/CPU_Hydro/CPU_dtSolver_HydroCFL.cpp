@@ -143,16 +143,19 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
          MaxCFL = FMAX( CFLz, MaxCFL );
 #        else
 #        error : ERROR : unsupported FLU_SCHEME !!
-
-#        ifdef MY_DEBUG
-         Aux_Message( "%4d  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e", 
-                  p, a2*UNIT_V/Const_km, 1/_Rho*UNIT_D, Vx*UNIT_V, Vy*UNIT_V, Vz*UNIT_V, dhSafety/MaxCFL*UNIT_T);
-#        endif
-
          /*
 //       no longer used
          MaxCFL = FMAX( CFLx+CFLy+CFLz, MaxCFL );
          */
+#        endif
+
+#        ifdef MY_DEBUG
+         const char  FileName[] = "Record__cell_dt";
+         FILE *File = fopen( FileName, "a" );
+         fprintf( File, "%4d  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e", 
+                  p, a2*UNIT_V/Const_km, 1/_Rho*UNIT_D, Vx*UNIT_V, Vy*UNIT_V, Vz*UNIT_V, dhSafety/MaxCFL*UNIT_T);
+         fprintf( File, "\n" );
+         fclose( File );
 #        endif
       } // CGPU_LOOP( t, CUBE(PS1) )
 
