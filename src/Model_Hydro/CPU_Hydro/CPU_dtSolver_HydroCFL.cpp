@@ -151,6 +151,7 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
          fprintf( File, "%4d  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e", 
                   p, a2*UNIT_V/Const_km, 1/_Rho*UNIT_D, Vx*UNIT_V, Vy*UNIT_V, Vz*UNIT_V, dhSafety/MaxCFL*UNIT_T);
          fprintf( File, "\n" );
+         fclose( File );
 #        endif
 
          /*
