@@ -144,7 +144,7 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
 #        else
 #        error : ERROR : unsupported FLU_SCHEME !!
 
-#        ifdef MY_DEBUG
+// #        ifdef MY_DEBUG
          static bool FirstTime  = true;
          const char  FileName[] = "Record__cell_dt";
          if ( FirstTime  &&  Aux_CheckFileExist(FileName) )
@@ -158,7 +158,7 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
          fclose( File );
 
          FirstTime = false;
-#        endif
+// #        endif
 
          /*
 //       no longer used
