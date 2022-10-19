@@ -64,6 +64,11 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
 
    const bool CheckMinPres_Yes = true;
    const real dhSafety         = Safety*dh;
+   
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__cell_dt";
+   FILE *File = fopen( FileName, "a" );
+#  endif
 
 // loop over all patches
 // --> CPU/GPU solver: use different (OpenMP threads) / (CUDA thread blocks)
@@ -150,12 +155,15 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
 #        endif
 
 #        ifdef MY_DEBUG
-         const char  FileName[] = "Record__cell_dt";
-         FILE *File = fopen( FileName, "a" );
-         fprintf( File, "%4d  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e", 
-                  p, a2*UNIT_V/Const_km, 1/_Rho*UNIT_D, Vx*UNIT_V, Vy*UNIT_V, Vz*UNIT_V, dhSafety/MaxCFL*UNIT_T);
-         fprintf( File, "\n" );
-         fclose( File );
+         real My_MaxCFL=(real)0.0;
+         My_MaxCFL = FMAX( CFLx, My_MaxCFL );
+         My_MaxCFL = FMAX( CFLy, My_MaxCFL );
+         My_MaxCFL = FMAX( CFLz, My_MaxCFL );
+         if (dhSafety/My_MaxCFL < 1e-10) {
+               fprintf( File, "%4d  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e  %13.7e", 
+                        p, SQRT( a2 ), 1/_Rho, Vx, Vy, Vz, dhSafety/My_MaxCFL);
+               fprintf( File, "\n" );
+         }
 #        endif
       } // CGPU_LOOP( t, CUBE(PS1) )
 
@@ -172,6 +180,10 @@ void CPU_dtSolver_HydroCFL  ( real g_dt_Array[], const real g_Flu_Array[][FLU_NI
       g_dt_Array[p] = dhSafety/MaxCFL;
 
    } // for (int p=0; p<8*NPG; p++)
+
+#  ifdef MY_DEBUG
+   fclose( File );
+#  endif
 
 } // FUNCTION : CPU/CUFLU_dtSolver_HydroCFL
 
