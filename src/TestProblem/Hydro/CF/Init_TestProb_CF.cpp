@@ -216,11 +216,6 @@ void Load_Turbulence()
 
    for ( int i = 0; i < tur_table_NBin; i++ )
    {
-      double Xi = BoxSize[0] * ( (Table_X[i] + 0.5) / size ) - BoxCenter[0];
-      double Yi = BoxSize[1] * ( (Table_Y[i] + 0.5) / size ) - BoxCenter[1];
-      double Zi = BoxSize[2] * ( (Table_Z[i] + 0.5) / size ) - BoxCenter[2];
-      double Rs = SQRT( SQR(Xi) + SQR(Yi) + SQR(Zi) );
-
       Total_VelX += Table_VelX[i];
       Total_VelY += Table_VelY[i];
       Total_VelZ += Table_VelZ[i];
