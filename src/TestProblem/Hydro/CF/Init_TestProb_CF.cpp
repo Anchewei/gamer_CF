@@ -261,10 +261,9 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
    const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
-   int dir;
 
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
-   double VelX, VelY, VelZ;
+   double VelX, VelY, VelZ, dir;
 
    int i = (int) ( ( x / BoxSize[0] ) * size );    // turbulence box index (cude)
    int j = (int) ( ( y / BoxSize[0] ) * size );
@@ -277,8 +276,8 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    if ( index < 0 || index > tur_table_NBin ) Aux_Error( ERROR_INFO, "index is out of bound\n, index = %d", index );
    VelX = Vrms_Scale * ( Table_VelX[ index ] - Total_VelX / Total_Vrms_Count );
    VelY = Vrms_Scale * ( Table_VelY[ index ] - Total_VelY / Total_Vrms_Count );
-   if (z > BoxCenter[2]) dir = -1;
-   else dir = 1;
+   if (z > BoxCenter[2]) dir = -1.0;
+   else dir = 1.0;
    VelZ = dir*(CF_vflow*Const_km/UNIT_V) + Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
 
    Dens = CF_n0*MOLECULAR_WEIGHT*Const_amu/UNIT_D;
