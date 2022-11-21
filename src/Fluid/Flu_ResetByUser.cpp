@@ -1,20 +1,12 @@
 #include "GAMER.h"
 
 // declare as static so that other functions cannot invoke them directly and must use the function pointers
-<<<<<<< HEAD
-static bool Flu_ResetByUser_Func_Template( real fluid[], const double x, const double y, const double z, const double Time,
-=======
 static bool Flu_ResetByUser_Func_Template( real fluid[], const double Emag, const double x, const double y, const double z, const double Time,
->>>>>>> gamer/master
                                            const double dt, const int lv, double AuxArray[] );
 static void Flu_ResetByUser_API_Default( const int lv, const int FluSg, const double TimeNew, const double dt );
 
 // this function pointer **must** be set by a test problem initializer
-<<<<<<< HEAD
-bool (*Flu_ResetByUser_Func_Ptr)( real fluid[], const double x, const double y, const double z, const double Time,
-=======
 bool (*Flu_ResetByUser_Func_Ptr)( real fluid[], const double Emag, const double x, const double y, const double z, const double Time,
->>>>>>> gamer/master
                                   const double dt, const int lv, double AuxArray[] ) = NULL;
 // this function pointer **may** be overwritten by a test problem initializer
 void (*Flu_ResetByUser_API_Ptr)( const int lv, const int FluSg, const double TimeNew, const double dt ) = Flu_ResetByUser_API_Default;
@@ -38,10 +30,7 @@ void (*Flu_ResetByUser_API_Ptr)( const int lv, const int FluSg, const double Tim
 //
 // Parameter   :  fluid    : Fluid array storing both the input (original) and reset values
 //                           --> Including both active and passive variables
-<<<<<<< HEAD
-=======
 //                Emag     : Magnetic energy (MHD only)
->>>>>>> gamer/master
 //                x/y/z    : Target physical coordinates
 //                Time     : Target physical time
 //                dt       : Time interval to advance solution
@@ -51,11 +40,7 @@ void (*Flu_ResetByUser_API_Ptr)( const int lv, const int FluSg, const double Tim
 // Return      :  true  : This cell has been reset
 //                false : This cell has not been reset
 //-------------------------------------------------------------------------------------------------------
-<<<<<<< HEAD
-bool Flu_ResetByUser_Func_Template( real fluid[], const double x, const double y, const double z, const double Time,
-=======
 bool Flu_ResetByUser_Func_Template( real fluid[], const double Emag, const double x, const double y, const double z, const double Time,
->>>>>>> gamer/master
                                     const double dt, const int lv, double AuxArray[] )
 {
 
@@ -84,12 +69,9 @@ bool Flu_ResetByUser_Func_Template( real fluid[], const double Emag, const doubl
       fluid[MOMY] = 0.0;
       fluid[MOMZ] = 0.0;
       fluid[ENGY] = Hydro_ConEint2Etot( fluid[DENS], fluid[MOMX], fluid[MOMY], fluid[MOMZ], MinEint, MinEmag );
-<<<<<<< HEAD
-=======
 #     ifdef MHD
       fluid[ENGY] += Emag;
 #     endif
->>>>>>> gamer/master
 
 //    set passive scalars
 #     if ( NCOMP_PASSIVE > 0 )
@@ -154,10 +136,6 @@ void Flu_ResetByUser_API_Default( const int lv, const int FluSg, const double Ti
 
          for (int v=0; v<NCOMP_TOTAL; v++)   fluid[v] = amr->patch[FluSg][lv][PID]->fluid[v][k][j][i];
 
-<<<<<<< HEAD
-//       reset this cell
-         Reset = Flu_ResetByUser_Func_Ptr( fluid, x, y, z, TimeNew, dt, lv, NULL );
-=======
 #        ifdef MHD
          const real Emag = MHD_GetCellCenteredBEnergyInPatch( lv, PID, i, j, k, amr->MagSg[lv] );
 #        else
@@ -166,21 +144,11 @@ void Flu_ResetByUser_API_Default( const int lv, const int FluSg, const double Ti
 
 //       reset this cell
          Reset = Flu_ResetByUser_Func_Ptr( fluid, Emag, x, y, z, TimeNew, dt, lv, NULL );
->>>>>>> gamer/master
 
 //       operations necessary only when this cell has been reset
          if ( Reset )
          {
 #           if ( MODEL == HYDRO )
-<<<<<<< HEAD
-#           ifdef MHD
-            const real Emag = MHD_GetCellCenteredBEnergyInPatch( lv, PID, i, j, k, amr->MagSg[lv] );
-#           else
-            const real Emag = NULL_REAL;
-#           endif
-
-=======
->>>>>>> gamer/master
 //          apply density and internal energy floors
             fluid[DENS] = FMAX( fluid[DENS], (real)MIN_DENS );
             fluid[ENGY] = Hydro_CheckMinEintInEngy( fluid[DENS], fluid[MOMX], fluid[MOMY], fluid[MOMZ], fluid[ENGY],

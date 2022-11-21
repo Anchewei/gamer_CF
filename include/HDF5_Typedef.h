@@ -251,11 +251,8 @@ struct SymConst_t
    int    BitRep_Electric;
 #  endif
 
-<<<<<<< HEAD
-=======
    int    InterpMask;
 
->>>>>>> gamer/master
 
 #  if   ( MODEL == HYDRO )
    int    Flu_BlockSize_x;
@@ -264,10 +261,7 @@ struct SymConst_t
    int    CharReconstruction;
    int    LR_Eint;
    int    CheckIntermediate;
-<<<<<<< HEAD
-=======
    int    RSolverRescue;
->>>>>>> gamer/master
    int    HLL_NoRefState;
    int    HLL_IncludeAllWaves;
    int    HLLC_WaveSpeed;
@@ -416,11 +410,6 @@ struct InputPara_t
    int    AutoReduceDt;
    double AutoReduceDtFactor;
    double AutoReduceDtFactorMin;
-<<<<<<< HEAD
-
-// domain refinement
-   int    RegridCount;
-=======
 #  if ( MODEL == HYDRO )
    double AutoReduceMinModFactor;
    double AutoReduceMinModMin;
@@ -431,7 +420,6 @@ struct InputPara_t
 // domain refinement
    int    RegridCount;
    int    RefineNLevel;
->>>>>>> gamer/master
    int    FlagBufferSize;
    int    FlagBufferSizeMaxM1Lv;
    int    FlagBufferSizeMaxM2Lv;
@@ -493,9 +481,6 @@ struct InputPara_t
    int    Opt__LR_Limiter;
    int    Opt__1stFluxCorr;
    int    Opt__1stFluxCorrScheme;
-<<<<<<< HEAD
-#  endif
-=======
 #  ifdef DUAL_ENERGY
    double DualEnergySwitch;
 #  endif
@@ -503,7 +488,6 @@ struct InputPara_t
    int    Opt__SameInterfaceB;
 #  endif
 #  endif // HYDRO
->>>>>>> gamer/master
 
 // ELBDM solvers
 #  if ( MODEL == ELBDM )
@@ -514,11 +498,7 @@ struct InputPara_t
 #  endif
    double ELBDM_Taylor3_Coeff;
    int    ELBDM_Taylor3_Auto;
-<<<<<<< HEAD
-#  endif
-=======
 #  endif // ELBDM
->>>>>>> gamer/master
 
 // fluid solvers in different models
    int    Flu_GPU_NPGroup;
@@ -556,12 +536,6 @@ struct InputPara_t
    int    JeansMinPres_Level;
    int    JeansMinPres_NCell;
 #  endif
-<<<<<<< HEAD
-#  ifdef DUAL_ENERGY
-   double DualEnergySwitch;
-#  endif
-=======
->>>>>>> gamer/master
 
 // gravity
 #  ifdef GRAVITY
@@ -665,12 +639,9 @@ struct InputPara_t
    int    Opt__RefPot_IntScheme;
 #  endif
    double IntMonoCoeff;
-<<<<<<< HEAD
-=======
 #  ifdef MHD
    double IntMonoCoeffB;
 #  endif
->>>>>>> gamer/master
    int    Mono_MaxIter;
    int    IntOppSign0thOrder;
 
@@ -746,10 +717,7 @@ struct InputPara_t
    int    Opt__Ck_InterfaceB;
    int    Opt__Ck_DivergenceB;
 #  endif
-<<<<<<< HEAD
-=======
    int    Opt__Ck_InputFluid;
->>>>>>> gamer/master
 
 // flag tables
    double FlagTable_Rho         [NLEVEL-1];

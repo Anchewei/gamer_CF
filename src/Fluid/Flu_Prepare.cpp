@@ -98,8 +98,6 @@ void Flu_Prepare( const int lv, const double PrepTime,
    }
 #  endif // #ifdef UNSPLIT_GRAVITY
 
-<<<<<<< HEAD
-=======
 
 // validate input arrays for debugging purposes
    if ( OPT__CK_INPUT_FLUID )
@@ -212,5 +210,4 @@ void Flu_Prepare( const int lv, const double PrepTime,
 
    } // if ( OPT__CK_INPUT_FLUID )
 
->>>>>>> gamer/master
 } // FUNCTION : Flu_Prepare

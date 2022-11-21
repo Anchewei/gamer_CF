@@ -483,11 +483,7 @@ void Init_TestProb_Hydro_Plummer()
    if ( OPT__EXT_POT == EXT_POT_FUNC )
    Init_ExtPot_Ptr         = Init_ExtPot_Plummer;
 #  ifdef MASSIVE_PARTICLES
-<<<<<<< HEAD
-   Par_Init_ByFunction_Ptr  = Par_Init_ByFunction_Plummer;
-=======
    Par_Init_ByFunction_Ptr = Par_Init_ByFunction_Plummer;
->>>>>>> gamer/master
 #  endif
 #  endif
 #  endif // #if ( MODEL == HYDRO )

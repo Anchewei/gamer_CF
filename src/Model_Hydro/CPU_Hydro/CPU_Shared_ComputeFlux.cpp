@@ -12,17 +12,6 @@
 // external functions
 #ifdef __CUDACC__
 
-<<<<<<< HEAD
-#if   ( RSOLVER == EXACT )
-# include "CUFLU_Shared_RiemannSolver_Exact.cu"
-#elif ( RSOLVER == ROE )
-# include "CUFLU_Shared_RiemannSolver_Roe.cu"
-#elif ( RSOLVER == HLLE )
-# include "CUFLU_Shared_RiemannSolver_HLLE.cu"
-#elif ( RSOLVER == HLLC )
-# include "CUFLU_Shared_RiemannSolver_HLLC.cu"
-#elif ( RSOLVER == HLLD )
-=======
 #if ( RSOLVER == EXACT  ||  RSOLVER_RESCUE == EXACT )
 # include "CUFLU_Shared_RiemannSolver_Exact.cu"
 #endif
@@ -36,57 +25,36 @@
 # include "CUFLU_Shared_RiemannSolver_HLLC.cu"
 #endif
 #if ( RSOLVER == HLLD   ||  RSOLVER_RESCUE == HLLD  )
->>>>>>> gamer/master
 # include "CUFLU_Shared_RiemannSolver_HLLD.cu"
 #endif
 
 #else // #ifdef __CUDACC__
 
-<<<<<<< HEAD
-#if   ( RSOLVER == EXACT )
-=======
 #if ( RSOLVER == EXACT  ||  RSOLVER_RESCUE == EXACT )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_Exact( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                 const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                 const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                                 const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == ROE )
-=======
 #endif
 #if ( RSOLVER == ROE    ||  RSOLVER_RESCUE == ROE   )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_Roe( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                               const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                               const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                               const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == HLLE )
-=======
 #endif
 #if ( RSOLVER == HLLE   ||  RSOLVER_RESCUE == HLLE  )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_HLLE( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                                const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == HLLC )
-=======
 #endif
 #if ( RSOLVER == HLLC   ||  RSOLVER_RESCUE == HLLC  )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_HLLC( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                                const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == HLLD )
-=======
 #endif
 #if ( RSOLVER == HLLD   ||  RSOLVER_RESCUE == HLLD  )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_HLLD( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
@@ -341,9 +309,6 @@ void Hydro_ComputeFlux( const real g_FC_Var [][NCOMP_TOTAL_PLUS_MAG][ CUBE(N_FC_
 #        endif
 
 
-<<<<<<< HEAD
-//       3. store the fluxes of all cells in g_FC_Flux[]
-=======
 //       3. switch to a different Riemann solver if the default one fails
 #        if ( RSOLVER_RESCUE != NONE )
          for (int v=0; v<NCOMP_TOTAL_PLUS_MAG; v++)
@@ -396,16 +361,11 @@ void Hydro_ComputeFlux( const real g_FC_Var [][NCOMP_TOTAL_PLUS_MAG][ CUBE(N_FC_
 
 
 //       4. store the fluxes of all cells in g_FC_Flux[]
->>>>>>> gamer/master
 //       --> including the magnetic components since they are required for CT
          for (int v=0; v<NCOMP_TOTAL_PLUS_MAG; v++)   g_FC_Flux[d][v][idx_flux] = Flux_1Face[v];
 
 
-<<<<<<< HEAD
-//       4. store the inter-patch fluxes in g_IntFlux[]
-=======
 //       5. store the inter-patch fluxes in g_IntFlux[]
->>>>>>> gamer/master
 //       --> no need to store the magnetic components since this array is only for the flux fix-up operation
          if ( DumpIntFlux )
          {

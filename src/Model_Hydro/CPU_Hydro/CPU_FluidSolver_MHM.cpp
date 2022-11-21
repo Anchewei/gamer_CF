@@ -15,17 +15,6 @@
 #include "CUFLU_Shared_ConstrainedTransport.cu"
 #endif
 
-<<<<<<< HEAD
-#if   ( RSOLVER == EXACT )
-# include "CUFLU_Shared_RiemannSolver_Exact.cu"
-#elif ( RSOLVER == ROE )
-# include "CUFLU_Shared_RiemannSolver_Roe.cu"
-#elif ( RSOLVER == HLLE )
-# include "CUFLU_Shared_RiemannSolver_HLLE.cu"
-#elif ( RSOLVER == HLLC )
-# include "CUFLU_Shared_RiemannSolver_HLLC.cu"
-#elif ( RSOLVER == HLLD )
-=======
 #if ( RSOLVER == EXACT  ||  RSOLVER_RESCUE == EXACT )
 # include "CUFLU_Shared_RiemannSolver_Exact.cu"
 #endif
@@ -39,7 +28,6 @@
 # include "CUFLU_Shared_RiemannSolver_HLLC.cu"
 #endif
 #if ( RSOLVER == HLLD   ||  RSOLVER_RESCUE == HLLD  )
->>>>>>> gamer/master
 # include "CUFLU_Shared_RiemannSolver_HLLD.cu"
 #endif
 
@@ -71,51 +59,31 @@ void Hydro_FullStepUpdate( const real g_Input[][ CUBE(FLU_NXT) ], real g_Output[
                            const real dt, const real dh, const real MinDens, const real MinEint,
                            const real DualEnergySwitch, const bool NormPassive, const int NNorm, const int NormIdx[],
                            const EoS_t *EoS, int *s_FullStepFailure, const int Iteration, const int MinMod_MaxIter );
-<<<<<<< HEAD
-#if   ( RSOLVER == EXACT )
-=======
 #if ( RSOLVER == EXACT  ||  RSOLVER_RESCUE == EXACT )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_Exact( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                 const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                 const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                                 const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == ROE )
-=======
 #endif
 #if ( RSOLVER == ROE    ||  RSOLVER_RESCUE == ROE   )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_Roe( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                               const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                               const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                               const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == HLLE )
-=======
 #endif
 #if ( RSOLVER == HLLE   ||  RSOLVER_RESCUE == HLLE  )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_HLLE( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                                const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == HLLC )
-=======
 #endif
 #if ( RSOLVER == HLLC   ||  RSOLVER_RESCUE == HLLC  )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_HLLC( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
                                const int EoS_AuxArray_Int[], const real* const EoS_Table[EOS_NTABLE_MAX] );
-<<<<<<< HEAD
-#elif ( RSOLVER == HLLD )
-=======
 #endif
 #if ( RSOLVER == HLLD   ||  RSOLVER_RESCUE == HLLD  )
->>>>>>> gamer/master
 void Hydro_RiemannSolver_HLLD( const int XYZ, real Flux_Out[], const real L_In[], const real R_In[],
                                const real MinDens, const real MinPres, const EoS_DE2P_t EoS_DensEint2Pres,
                                const EoS_DP2C_t EoS_DensPres2CSqr, const double EoS_AuxArray_Flt[],
@@ -380,11 +348,6 @@ void CPU_FluidSolver_MHM(
       for (int P=0; P<NPatchGroup; P++)
 #     endif
       {
-<<<<<<< HEAD
-
-         s_FullStepFailure = 0;
-=======
->>>>>>> gamer/master
          Iteration = 0;
 
 //       1. half-step prediction
@@ -450,8 +413,6 @@ void CPU_FluidSolver_MHM(
 
          do {
 
-<<<<<<< HEAD
-=======
 #           ifdef __CUDACC__
             __syncthreads();
 #           endif
@@ -460,7 +421,6 @@ void CPU_FluidSolver_MHM(
             __syncthreads();
 #           endif
 
->>>>>>> gamer/master
             real AdaptiveMinModCoeff = ( MinMod_MaxIter == 0 ) ? MinMod_Coeff :
             MinMod_Coeff - (real)Iteration * MinMod_Coeff / (real)MinMod_MaxIter;
 
@@ -482,8 +442,6 @@ void CPU_FluidSolver_MHM(
 
          do {
 
-<<<<<<< HEAD
-=======
 #           ifdef __CUDACC__
             __syncthreads();
 #           endif
@@ -492,7 +450,6 @@ void CPU_FluidSolver_MHM(
             __syncthreads();
 #           endif
 
->>>>>>> gamer/master
             real AdaptiveMinModCoeff = ( MinMod_MaxIter == 0 ) ? MinMod_Coeff :
             MinMod_Coeff - (real)Iteration * MinMod_Coeff / (real)MinMod_MaxIter;
 
@@ -510,10 +467,6 @@ void CPU_FluidSolver_MHM(
 #        endif // #if ( FLU_SCHEME == MHM_RP ) ... else ...
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> gamer/master
 //          2. evaluate the full-step fluxes
 #           ifdef MHD
             const int NSkip_N = 0;
@@ -703,8 +656,6 @@ void Hydro_RiemannPredict_Flux( const real g_ConVar[][ CUBE(FLU_NXT) ],
 #        error : ERROR : unsupported Riemann solver (EXACT/ROE/HLLE/HLLC/HLLD) !!
 #        endif
 
-<<<<<<< HEAD
-=======
 //       switch to a different Riemann solver if the default one fails
 #        if ( RSOLVER_RESCUE != NONE )
          for (int v=0; v<NCOMP_TOTAL_PLUS_MAG; v++)
@@ -755,7 +706,6 @@ void Hydro_RiemannPredict_Flux( const real g_ConVar[][ CUBE(FLU_NXT) ],
          } // for (int v=0; v<NCOMP_TOTAL_PLUS_MAG; v++)
 #        endif // #if ( RSOLVER_RESCUE != NONE )
 
->>>>>>> gamer/master
 //       store the results in g_Flux_Half[]
          for (int v=0; v<NCOMP_TOTAL_PLUS_MAG; v++)   g_Flux_Half[d][v][idx_flux] = Flux_1Face[v];
       } // CGPU_LOOP( idx, N_HF_FLUX*SQR(N_HF_FLUX-1) )

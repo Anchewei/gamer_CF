@@ -447,10 +447,7 @@ void End_Jet()
 //
 // Parameter   :  fluid    : Fluid array storing both the input (origial) and reset values
 //                           --> Including both active and passive variables
-<<<<<<< HEAD
-=======
 //                Emag     : Magnetic energy (MHD only)
->>>>>>> gamer/master
 //                x/y/z    : Target physical coordinates
 //                Time     : Target physical time
 //                dt       : Time interval to advance solution
@@ -460,11 +457,7 @@ void End_Jet()
 // Return      :  true  : This cell has been reset
 //                false : This cell has not been reset
 //-------------------------------------------------------------------------------------------------------
-<<<<<<< HEAD
-bool Flu_ResetByUser_Jet( real fluid[], const double x, const double y, const double z, const double Time,
-=======
 bool Flu_ResetByUser_Jet( real fluid[], const double Emag, const double x, const double y, const double z, const double Time,
->>>>>>> gamer/master
                           const double dt, const int lv, double AuxArray[] )
 {
 

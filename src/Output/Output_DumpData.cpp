@@ -1,10 +1,7 @@
 #include "GAMER.h"
 
-<<<<<<< HEAD
-=======
 extern Timer_t Timer_OutputWalltime;
 
->>>>>>> gamer/master
 static void Write_DumpRecord();
 extern void (*Output_User_Ptr)();
 
@@ -184,8 +181,6 @@ void Output_DumpData( const int Stage )
    if ( OPT__MANUAL_CONTROL )    Output_DumpManually( OutputData_RunTime );
 
 
-<<<<<<< HEAD
-=======
 // dump data if the elapsed walltime exceeds the user-defined walltime
    int OutputData_Walltime = false;
 
@@ -219,7 +214,6 @@ void Output_DumpData( const int Stage )
    } // if ( OUTPUT_WALLTIME > 0.0 )
 
 
->>>>>>> gamer/master
 // set the acceleration of tracer particles to zero to make the output deterministic
 #  if ( defined TRACER  &&  defined STORE_PAR_ACC )
    for (long p=0; p<amr->Par->NPar_AcPlusInac; p++)
@@ -235,11 +229,7 @@ void Output_DumpData( const int Stage )
 
 
 // output data
-<<<<<<< HEAD
-   if ( OutputData || OutputData_RunTime )
-=======
    if ( OutputData || OutputData_RunTime || OutputData_Walltime )
->>>>>>> gamer/master
    {
 //    apply various corrections (e.g., synchronize particles, restrict data, recalculate potential and particle acceleration)
 //    before dumpting data --> for bitwise reproducibility

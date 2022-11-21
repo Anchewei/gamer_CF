@@ -10,11 +10,7 @@
 // Description :  Copy the longitudinal B field from the common interface of one patch to its sibling patch
 //
 // Note        :  1. Copy data from [lv][PID] to [lv][PID]->sibling[SibID]
-<<<<<<< HEAD
-//                2. Invoked by Flu_FixUp_Restrict() and LB_GetBufferData()
-=======
 //                2. Invoked by Flu_FixUp_Restrict(), LB_GetBufferData(), and MHD_SameInterfaceB()
->>>>>>> gamer/master
 //                3. Do nothing if the target sibling patch does not exist
 //
 // Parameter   :  lv    : AMR level
@@ -65,19 +61,11 @@ void MHD_CopyPatchInterfaceBField( const int lv, const int PID, const int SibID,
 
 // copy data
 #  ifdef GAMER_DEBUG
-<<<<<<< HEAD
-   if ( amr->patch[MagSg][lv][   PID]->magnetic[Bdir] == NULL )
-      Aux_Error( ERROR_INFO, "amr->patch[%d][%d][%d]->magnetic[%d] == NULL !!\n", MagSg, lv,    PID, Bdir );
-
-   if ( amr->patch[MagSg][lv][SibPID]->magnetic[Bdir] == NULL )
-      Aux_Error( ERROR_INFO, "amr->patch[%d][%d][%d]->magnetic[%d] == NULL !!\n", MagSg, lv, SibPID, Bdir );
-=======
    if ( amr->patch[MagSg][lv][   PID]->magnetic == NULL )
       Aux_Error( ERROR_INFO, "amr->patch[%d][%d][%d]->magnetic == NULL !!\n", MagSg, lv,    PID );
 
    if ( amr->patch[MagSg][lv][SibPID]->magnetic == NULL )
       Aux_Error( ERROR_INFO, "amr->patch[%d][%d][%d]->magnetic == NULL !!\n", MagSg, lv, SibPID );
->>>>>>> gamer/master
 #  endif
 
    const real    *MagPtr0 = amr->patch[MagSg][lv][   PID]->magnetic[Bdir] + Bidx_offset[           SibID  ];

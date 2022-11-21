@@ -32,11 +32,8 @@ static char    Merger_File_Prof3[1000];   // profile table of cluster 3
        double  Merger_Coll_VelY2;         // y-velocity of the second cluster
        double  Merger_Coll_VelX3;         // x-velocity of the third cluster
        double  Merger_Coll_VelY3;         // y-velocity of the third cluster
-<<<<<<< HEAD
-=======
        long    NPar_EachCluster[3];       // Number of particles in each cluster
        long    NPar_AllCluster;           // Number of particles in all clusters
->>>>>>> gamer/master
 
 static double *Table_R1 = NULL;           // radius of cluster 1
 static double *Table_D1 = NULL;           // density of cluster 1
@@ -65,10 +62,7 @@ static FieldIdx_t ColorField3Idx = Idx_Undefined;
 
 // problem-specific function prototypes
 #ifdef MASSIVE_PARTICLES
-<<<<<<< HEAD
-=======
 long Read_Particle_Number_ClusterMerger(std::string filename);
->>>>>>> gamer/master
 void Par_Init_ByFunction_ClusterMerger(const long NPar_ThisRank,
                                        const long NPar_AllRank,
                                        real *ParMass, real *ParPosX, real *ParPosY, real *ParPosZ,
@@ -120,13 +114,8 @@ void Validate()
       Aux_Error( ERROR_INFO, "OPT__UNIT must be enabled !!\n" );
 
    for (int f=0; f<6; f++)
-<<<<<<< HEAD
-   if ( OPT__BC_FLU[f] == BC_FLU_PERIODIC )
-      Aux_Error( ERROR_INFO, "do not use periodic BC (OPT__BC_FLU* = 1) for this test !!\n" );
-=======
      if ( OPT__BC_FLU[f] == BC_FLU_PERIODIC )
         Aux_Error( ERROR_INFO, "do not use periodic BC (OPT__BC_FLU* = 1) for this test !!\n" );
->>>>>>> gamer/master
 
 #  ifdef GRAVITY
    if ( OPT__BC_POT == BC_POT_PERIODIC )
@@ -225,15 +214,9 @@ void SetParameter()
    Merger_Coll_VelX3 *= (Const_km/Const_s) / UNIT_V;
    Merger_Coll_VelY3 *= (Const_km/Const_s) / UNIT_V;
 
-<<<<<<< HEAD
-// (2) load the radial profiles
-   if ( OPT__INIT != INIT_BY_RESTART ) {
-
-=======
    if ( OPT__INIT != INIT_BY_RESTART ) {
 
 //    (2) load the radial profiles
->>>>>>> gamer/master
       const std::string filename1(Merger_File_Prof1);
       const std::string filename2(Merger_File_Prof2);
       const std::string filename3(Merger_File_Prof3);
@@ -356,12 +339,6 @@ void SetParameter()
 
       } // if ( Merger_Coll_NumHalos > 2 && Merger_Coll_IsGas3 )
 
-<<<<<<< HEAD
-   } // if ( OPT__INIT != INIT_BY_RESTART )
-
-
-// (3) reset other general-purpose parameters
-=======
 //    (3) Determine particle number
 
       // check file existence
@@ -413,7 +390,6 @@ void SetParameter()
 
 
 // (4) reset other general-purpose parameters
->>>>>>> gamer/master
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
    const long   End_Step_Default = __INT_MAX__;
    const double End_T_Default    = 10.0*Const_Gyr/UNIT_T;
@@ -766,8 +742,6 @@ void Read_Profile_ClusterMerger(std::string filename, std::string fieldname,
 
 } // FUNCTION : Read_Profile_ClusterMerger
 
-<<<<<<< HEAD
-=======
 long Read_Particle_Number_ClusterMerger(std::string filename)
 {
 
@@ -791,7 +765,6 @@ long Read_Particle_Number_ClusterMerger(std::string filename)
 
 } // FUNCTION : Read_Particle_Number_ClusterMerger
 
->>>>>>> gamer/master
 #endif // #ifdef SUPPORT_HDF5
 
 #if ( MODEL == HYDRO )

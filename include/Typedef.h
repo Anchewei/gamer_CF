@@ -54,10 +54,7 @@ const TestProbID_t
    TESTPROB_HYDRO_PARTICLE_TEST                =   18,
    TESTPROB_HYDRO_BARRED_POT                   =   51,
    TESTPROB_HYDRO_CDM_LSS                      =  100,
-<<<<<<< HEAD
    TESTPROB_HYDRO_CF                           =  150,
-=======
->>>>>>> gamer/master
    TESTPROB_ELBDM_EXTPOT                       = 1000;
 
 

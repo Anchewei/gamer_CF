@@ -801,8 +801,6 @@ real Hydro_Con2Pres( const real Dens, const real MomX, const real MomY, const re
 
    if ( EintOut != NULL )  *EintOut = Eint;
 
-<<<<<<< HEAD
-=======
 // check unphysical results
 #  ifdef CHECK_UNPHYSICAL_IN_FLUID
    if (  Hydro_CheckUnphysical( UNPHY_MODE_SING, &Pres, "output pressure", ERROR_INFO, UNPHY_VERBOSE )  )
@@ -821,7 +819,6 @@ real Hydro_Con2Pres( const real Dens, const real MomX, const real MomY, const re
    }
 #  endif // #ifdef CHECK_UNPHYSICAL_IN_FLUID
 
->>>>>>> gamer/master
    return Pres;
 
 } // FUNCTION : Hydro_Con2Pres
