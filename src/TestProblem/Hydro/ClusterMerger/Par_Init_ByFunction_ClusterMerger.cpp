@@ -26,9 +26,17 @@ extern double  Merger_Coll_VelX2;
 extern double  Merger_Coll_VelY2;
 extern double  Merger_Coll_VelX3;
 extern double  Merger_Coll_VelY3;
+<<<<<<< HEAD
 
 #ifdef MASSIVE_PARTICLES
 long Read_Particle_Number_ClusterMerger(std::string filename);
+=======
+extern long    NPar_EachCluster[3];
+extern long    NPar_AllCluster;
+
+
+#ifdef MASSIVE_PARTICLES
+>>>>>>> gamer/master
 void Read_Particles_ClusterMerger(std::string filename, long offset, long num,
                                   real_par_in xpos[], real_par_in ypos[],
                                   real_par_in zpos[], real_par_in xvel[],
@@ -83,6 +91,7 @@ void Par_Init_ByFunction_ClusterMerger( const long NPar_ThisRank, const long NPa
 
 #ifdef SUPPORT_HDF5
 
+<<<<<<< HEAD
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ...\n", __FUNCTION__ );
 
@@ -131,6 +140,10 @@ void Par_Init_ByFunction_ClusterMerger( const long NPar_ThisRank, const long NPa
       Aux_Error( ERROR_INFO, "total number of particles found in cluster [%ld] != expect [%ld] !!\n",
                  NPar_AllCluster, NPar_AllRank );
 
+=======
+   if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ...\n", __FUNCTION__ );
+
+>>>>>>> gamer/master
    // prepare to load data
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "   Preparing to load data ... " );
 
@@ -325,6 +338,7 @@ void Par_Init_ByFunction_ClusterMerger( const long NPar_ThisRank, const long NPa
 
 #ifdef SUPPORT_HDF5
 
+<<<<<<< HEAD
 long Read_Particle_Number_ClusterMerger(std::string filename)
 {
 
@@ -348,6 +362,8 @@ long Read_Particle_Number_ClusterMerger(std::string filename)
 
 } // FUNCTION : Read_Particle_Number_ClusterMerger
 
+=======
+>>>>>>> gamer/master
 void Read_Particles_ClusterMerger( std::string filename, long offset, long num,
                                    real_par_in xpos[], real_par_in ypos[],
                                    real_par_in zpos[], real_par_in xvel[],

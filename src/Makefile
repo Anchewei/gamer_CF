@@ -239,6 +239,10 @@ SIMU_OPTION += -DRANDOM_NUMBER=RNG_GNU_EXT
 ##CXXFLAG     = -g -O3 -std=c++11 #-gxx-name=YOUR_G++
 ##CXXFLAG     = -g -fast
 # CXXFLAG    += -w1                                       # warning flags
+<<<<<<< HEAD
+=======
+# CXXFLAG    += -fp-model precise                         # disable optimizations that are not value-safe
+>>>>>>> gamer/master
 # OPENMPFLAG  = -fopenmp                                  # openmp flag
 # LIB         = -limf                                     # libraries and linker flags
 #
@@ -273,6 +277,11 @@ SIMU_OPTION += -DRANDOM_NUMBER=RNG_GNU_EXT
 # for debug only
 ifeq "$(filter -DGAMER_DEBUG, $(SIMU_OPTION))" "-DGAMER_DEBUG"
 #CXXFLAG    += -fstack-protector-all
+<<<<<<< HEAD
+=======
+#CXXFLAG    += -fsanitize=undefined -fsanitize=address
+#LIB        += -fsanitize=undefined -fsanitize=address
+>>>>>>> gamer/master
 endif
 
 # suppress warning when OpenMP is disabled
@@ -512,7 +521,12 @@ ifeq "$(filter -DMHD, $(SIMU_OPTION))" "-DMHD"
 CPU_FILE    += MHD_GetCellCenteredBInPatch.cpp  MHD_InterpolateBField.cpp  MHD_AllocateElectricArray.cpp \
                MHD_Aux_Check_InterfaceB.cpp  MHD_FixUp_Electric.cpp  MHD_Aux_Check_DivergenceB.cpp \
                MHD_BoundaryCondition_Outflow.cpp  MHD_BoundaryCondition_Reflecting.cpp  MHD_BoundaryCondition_User.cpp \
+<<<<<<< HEAD
                MHD_BoundaryCondition_Diode.cpp  MHD_CopyPatchInterfaceBField.cpp MHD_Init_BField_ByFile.cpp
+=======
+               MHD_BoundaryCondition_Diode.cpp  MHD_CopyPatchInterfaceBField.cpp  MHD_Init_BField_ByFile.cpp \
+               MHD_SameInterfaceB.cpp
+>>>>>>> gamer/master
 
 CPU_FILE    += CPU_Shared_ConstrainedTransport.cpp  CPU_Shared_RiemannSolver_HLLD.cpp
 

@@ -3,7 +3,11 @@
 #ifdef LOAD_BALANCE
 
 
+<<<<<<< HEAD
 const real BufSizeFactor = 1.2;  // Send/RecvBufSize = int(NSend/NRecv*BufSizeFactor) --> must be >= 1.0
+=======
+const real BufSizeFactor = 1.05;    // Send/RecvBufSize = int(NSend/NRecv*BufSizeFactor) --> must be >= 1.0
+>>>>>>> gamer/master
 
 // MPI buffers are shared by some particle routines
 static real *MPI_SendBuf_Shared = NULL;
@@ -1796,9 +1800,16 @@ void LB_GetBufferData( const int lv, const int FluSg, const int MagSg, const int
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  LB_GetBufferData_MemAllocate_Send
+<<<<<<< HEAD
 // Description :  Allocate the MPI send buffer used by LG_GetBufferData (and Par_LB_SendParticleData)
 //
 // Note        :  1. Call LB_GetBufferData_MemFree to free memory
+=======
+// Description :  Allocate the MPI send buffer used by LG_GetBufferData(), Par_LB_CollectParticle2OneLevel(),
+//                Par_LB_ExchangeParticleBetweenPatch() and Par_LB_CollectParticleFromRealPatch()
+//
+// Note        :  1. Call LB_GetBufferData_MemFree() to free memory
+>>>>>>> gamer/master
 //                2. This function is used by some particle routines as well
 //                3. We reallocate send/recv buffers only when the current buffer size is not large enough
 //                   --> It greatly improves MPI performance
@@ -1815,7 +1826,17 @@ real *LB_GetBufferData_MemAllocate_Send( const int NSend )
       if ( MPI_SendBuf_Shared != NULL )   delete [] MPI_SendBuf_Shared;
 
 //    allocate BufSizeFactor more memory to sustain longer
+<<<<<<< HEAD
       SendBufSize        = int(NSend*BufSizeFactor);
+=======
+      SendBufSize = int(NSend*BufSizeFactor);
+
+//    check integer overflow
+      if ( SendBufSize < 0 )
+         Aux_Error( ERROR_INFO, "NSend %d, BufSizeFactor %13.7e, SendBufSize %d < 0 !!\n",
+                    NSend, BufSizeFactor, SendBufSize );
+
+>>>>>>> gamer/master
       MPI_SendBuf_Shared = new real [SendBufSize];
    }
 
@@ -1827,7 +1848,11 @@ real *LB_GetBufferData_MemAllocate_Send( const int NSend )
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  LB_GetBufferData_MemAllocate_Recv
+<<<<<<< HEAD
 // Description :  Allocate the MPI recv buffer used by LG_GetBufferData (and Par_LB_SendParticleData)
+=======
+// Description :  Allocate the MPI recv buffer used by LG_GetBufferData() and Par_LB_SendParticleData()
+>>>>>>> gamer/master
 //
 // Note        :  1. Call LB_GetBufferData_MemFree to free memory
 //                2. This function is used by some particle routines as well
@@ -1846,7 +1871,17 @@ real *LB_GetBufferData_MemAllocate_Recv( const int NRecv )
       if ( MPI_RecvBuf_Shared != NULL )   delete [] MPI_RecvBuf_Shared;
 
 //    allocate BufSizeFactor more memory to sustain longer
+<<<<<<< HEAD
       RecvBufSize        = int(NRecv*BufSizeFactor);
+=======
+      RecvBufSize = int(NRecv*BufSizeFactor);
+
+//    check integer overflow
+      if ( RecvBufSize < 0 )
+         Aux_Error( ERROR_INFO, "NRecv %d, BufSizeFactor %13.7e, RecvBufSize %d < 0 !!\n",
+                    NRecv, BufSizeFactor, RecvBufSize );
+
+>>>>>>> gamer/master
       MPI_RecvBuf_Shared = new real [RecvBufSize];
    }
 

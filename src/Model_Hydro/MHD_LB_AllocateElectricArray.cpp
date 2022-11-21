@@ -25,6 +25,13 @@ void MHD_LB_AllocateElectricArray( const int FaLv )
       Aux_Message( stderr, "WARNING : why invoking %s when amr->WithElectric is off ??\n", __FUNCTION__ );
 
 
+<<<<<<< HEAD
+=======
+// nothing to do on the top level
+   if ( FaLv == TOP_LEVEL )   return;
+
+
+>>>>>>> gamer/master
    const int SonLv      = FaLv + 1;
    const int FaNReal    = amr->NPatchComma[FaLv][1];
    const int MemUnit    = 1 + FaNReal/MPI_NRank;      // set arbitrarily
@@ -97,11 +104,19 @@ void MHD_LB_AllocateElectricArray( const int FaLv )
                      {
 //                      determine the target rank and LB_Idx
 #                       if ( LOAD_BALANCE == HILBERT )
+<<<<<<< HEAD
                         const int SibSonLBIdx = 8*amr->patch[0][FaLv][SibPID]->LB_Idx;  // faster
 #                       else
                         const int SibSonLBIdx = LB_Corner2Index( SonLv, amr->patch[0][FaLv][SibPID]->corner, CHECK_OFF );
 #                       endif
                         const int TRank       = SON_OFFSET_LB - SibSonPID;
+=======
+                        const long SibSonLBIdx = 8*amr->patch[0][FaLv][SibPID]->LB_Idx;   // faster
+#                       else
+                        const long SibSonLBIdx = LB_Corner2Index( SonLv, amr->patch[0][FaLv][SibPID]->corner, CHECK_OFF );
+#                       endif
+                        const int  TRank       = SON_OFFSET_LB - SibSonPID;
+>>>>>>> gamer/master
 
 //                      allocate enough memory
                         if ( LB_RecvE_NList[TRank] >= MemSize[TRank] )
@@ -175,11 +190,19 @@ void MHD_LB_AllocateElectricArray( const int FaLv )
                {
 //                determine the target rank and LB_Idx
 #                 if ( LOAD_BALANCE == HILBERT )
+<<<<<<< HEAD
                   const int SibSonLBIdx = 8*amr->patch[0][FaLv][ MPISibPID ]->LB_Idx;
 #                 else
                   const int SibSonLBIdx = LB_Corner2Index( SonLv, amr->patch[0][FaLv][ MPISibPID ]->corner, CHECK_OFF );
 #                 endif
                   const int TRank       = SON_OFFSET_LB - MPISibSonPID;
+=======
+                  const long SibSonLBIdx = 8*amr->patch[0][FaLv][ MPISibPID ]->LB_Idx;
+#                 else
+                  const long SibSonLBIdx = LB_Corner2Index( SonLv, amr->patch[0][FaLv][ MPISibPID ]->corner, CHECK_OFF );
+#                 endif
+                  const int  TRank       = SON_OFFSET_LB - MPISibSonPID;
+>>>>>>> gamer/master
 
 //                allocate enough memory
                   if ( LB_RecvE_NList[TRank] >= MemSize[TRank] )

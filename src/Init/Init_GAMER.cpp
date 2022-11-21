@@ -232,6 +232,16 @@ void Init_GAMER( int *argc, char ***argv )
    }
 
 
+<<<<<<< HEAD
+=======
+// ensure B field consistency on the shared interfaces between sibling patches
+#  if ( MODEL == HYDRO  &&  defined MHD )
+   if ( OPT__SAME_INTERFACE_B )
+   for (int lv=0; lv<NLEVEL; lv++)  MHD_SameInterfaceB( lv );
+#  endif
+
+
+>>>>>>> gamer/master
 // user-defined initialization
    if ( Init_User_Ptr != NULL )  Init_User_Ptr();
 
@@ -304,4 +314,8 @@ void Init_GAMER( int *argc, char ***argv )
 
 #  endif // #ifdef PARTICLE
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> gamer/master
 } // FUNCTION : Init_GAMER

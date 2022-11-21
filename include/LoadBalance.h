@@ -402,6 +402,11 @@ struct LB_t
             RecvG_PCr1D_IdxTable [lv][r] = NULL;
 #           endif
          } // for (int r=0; r<MPI_NRank; r++)
+<<<<<<< HEAD
+=======
+
+         CutPoint[lv][MPI_NRank] = -1;
+>>>>>>> gamer/master
       } // for (int lv=0; lv<NLEVEL; lv++)
 
    } // METHOD : LB_t

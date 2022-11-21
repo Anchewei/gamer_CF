@@ -25,6 +25,13 @@ void LB_AllocateFluxArray( const int FaLv )
       Aux_Message( stderr, "WARNING : why invoking %s when amr->WithFlux is off ??\n", __FUNCTION__ );
 
 
+<<<<<<< HEAD
+=======
+// nothing to do on the top level
+   if ( FaLv == TOP_LEVEL )   return;
+
+
+>>>>>>> gamer/master
    const int SonLv   = FaLv + 1;
    const int FaNReal = amr->NPatchComma[FaLv][1];
    const int MemUnit = 1 + FaNReal/MPI_NRank;         // set arbitrarily
