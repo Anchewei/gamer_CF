@@ -367,15 +367,15 @@ void Par_Init_ByFunction( const long NPar_ThisRank, const long NPar_AllRank,
                           real *ParVelX, real *ParVelY, real *ParVelZ, real *ParTime,
                           real *ParType, real *AllAttribute[PAR_NATT_TOTAL] )
 {
-   const real Useless = -1.0;
-   #  ifdef STAR_FORMATION
-      for (int p=0; p<NPar_ThisRank; p++)    
-      {
-         ParTime[p] = Time[0];
-         ParType[p] = PTYPE_STAR;
-         AllAttribute[Idx_ParCreTime  ][p] = Useless;
-      }
-   #  endif
+   // const real Useless = -1.0;
+   // #  ifdef STAR_FORMATION
+   //    for (int p=0; p<NPar_ThisRank; p++)    
+   //    {
+   //       ParTime[p] = Time[0];
+   //       ParType[p] = PTYPE_STAR;
+   //       AllAttribute[Idx_ParCreTime  ][p] = Useless;
+   //    }
+   // #  endif
 }  // FUNCTION : Par_Init_ByFunction
 
 
