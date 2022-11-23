@@ -442,7 +442,7 @@ void Init_TestProb_Hydro_CF()
    Poi_UserWorkBeforePoisson_Ptr     = NULL; // option: none;                    example: SelfGravity/Poi_UserWorkBeforePoisson.cpp
 #  endif
 #  ifdef PARTICLE
-   Par_Init_ByFunction_Ptr           = Par_Init_ByFunction; // option: PAR_INIT=1;              example: Particle/Par_Init_ByFunction.cpp
+   Par_Init_ByFunction_Ptr           = NULL; // option: PAR_INIT=1;              example: Particle/Par_Init_ByFunction.cpp
    Par_Init_Attribute_User_Ptr       = NULL; // set PAR_NATT_USER;               example: TestProblem/Hydro/AGORA_IsolatedGalaxy/Init_TestProb_Hydro_AGORA_IsolatedGalaxy.cpp --> AddNewParticleAttribute()
 #  endif
 #  if ( EOS == EOS_USER )
