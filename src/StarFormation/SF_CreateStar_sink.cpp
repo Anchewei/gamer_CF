@@ -187,13 +187,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       1. Proximity Check + Density Threshold
 //       ===========================================================================================================
          GasDens = fluid[DENS];
-         real GasDensThresCopy = GasDensThres;
          bool InsideAccRadius = false;
+         bool NotPassDen      = false;
 
          for (int p=0; p<NParTot; p++)
          {
             real PCPX, PCPY, PCPZ; // particle-cell relative position
-            real PCVX, PCVY, PCVZ; // particle-cell relative velocity
             real D2Par; // particle-cell distance
 
             PCPX = x - ParPos[0][p];
@@ -207,27 +206,33 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                break;
             }
 
+            real PCVX, PCVY, PCVZ; // particle-cell relative velocity
+            real NPCPX, NPCPY, NPCPZ; // normalized particle-cell relative position
+
             PCVX = VelX - ParVel[0][p];
             PCVY = VelY - ParVel[1][p];
             PCVZ = VelZ - ParVel[2][p];
 
-            real NPCPX, NPCPY, NPCPZ; // normalized particle-cell relative position
             NPCPX = PCPX/D2Par;
             NPCPY = PCPY/D2Par;
             NPCPZ = PCPZ/D2Par;
 
             GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCPX*PCVX + NPCPY*PCVY + NPCPZ*PCVZ)/D2Par); // Clarke et al. 2017, eqn (5)
-            GasDensThresCopy = MAX(GasDensThresCopy, GasDensFreeFall);
+            if ( GasDens < GasDensFreeFall )
+            {
+               NotPassDen = true;
+               break;
+            }
          } // NParTot
 
          if ( InsideAccRadius )               continue;
-         if ( GasDens < GasDensThresCopy )    continue;
+         if ( NotPassDen )                    continue;
          
 
 
          
 
-      } // i, j, k
+      } // pi, pj, pk
 
    }
 
