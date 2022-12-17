@@ -174,9 +174,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       for (int pj=NGhost; pj<PS2 + NGhost; j++)
       for (int pi=NGhost; pi<PS2 + NGhost; i++) // loop inside the patch group
       {
-         x = Corner_Array_F[0] + pi*NGhost;
-         y = Corner_Array_F[1] + pj*NGhost;
-         z = Corner_Array_F[2] + pk*NGhost;
+         x = Corner_Array_F[0] + pi*dh + dh*NGhost;
+         y = Corner_Array_F[1] + pj*dh + dh*NGhost;
+         z = Corner_Array_F[2] + pk*dh + dh*NGhost;
 
          const int t = IDX321( pi, pj, pk, FLU_NXT, FLU_NXT );
          for (int v=0; v<FLU_NIN; v++)    fluid[v] = Flu_Array_F_In[v][t];
@@ -193,29 +193,30 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int p=0; p<NParTot; p++)
          {
             real PCPX, PCPY, PCPZ; // particle-cell relative position
+            real PCVX, PCVY, PCVZ; // particle-cell relative velocity
             real D2Par; // particle-cell distance
+
+            PCPX = x - ParPos[0][p];
+            PCPY = y - ParPos[1][p];
+            PCPZ = z - ParPos[2][p];
+
             D2Par = SQRT(SQR(PCPX)+SQR(PCPX)+SQR(PCPX));
             if ( D2Par < AccRadius )
             {
                InsideAccRadius = true;
                break;
             }
-            
-            real PCVX, PCVY, PCVZ; // particle-cell relative velocity
-            PCVX = ParVel[0][p] - VelX;
-            PCVY = ParVel[1][p] - VelY;
-            PCVZ = ParVel[2][p] - VelZ;
 
-            PCPX = Parx - ParPos[0][p];
-            PCPY = Pary - ParPos[1][p];
-            PCPZ = Parz - ParPos[2][p];
+            PCVX = VelX - ParVel[0][p];
+            PCVY = VelY - ParVel[1][p];
+            PCVZ = VelZ - ParVel[2][p];
 
             real NPCPX, NPCPY, NPCPZ; // normalized particle-cell relative position
             NPCPX = PCPX/D2Par;
             NPCPY = PCPY/D2Par;
             NPCPZ = PCPZ/D2Par;
 
-            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCPX*PCVX + NPCPY*PCVY + NPCPZ*PCVZ)); // Clarke et al. 2017, eqn (5)
+            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCPX*PCVX + NPCPY*PCVY + NPCPZ*PCVZ)/D2Par); // Clarke et al. 2017, eqn (5)
             GasDensThresCopy = MAX(GasDensThresCopy, GasDensFreeFall);
          } // NParTot
 
