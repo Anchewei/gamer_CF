@@ -100,7 +100,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    double x0, y0, z0, x, y, z, VelX, VelY, VelZ;
    real   GasDens, GasDensFreeFall, _GasDens, GasMass, _Time_FreeFall, StarMFrac, StarMass, GasMFracLeft;
-   real   (*fluid)[PS1][PS1][PS1]      = NULL; // fluid pointer, PS1: PATCH_SIZE
+   // real   (*fluid)[PS1][PS1][PS1]      = NULL; // fluid pointer, PS1: PATCH_SIZE
 #  ifdef STORE_POT_GHOST
    real   (*pot_ext)[GRA_NXT][GRA_NXT] = NULL;
 #  endif
@@ -228,9 +228,29 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
          
+//       2. Converging Flow Check
+//       ===========================================================================================================
+         real VelNeighbor[6]; // record the neighboring cell velocity [x+, x-, y+, y+, z+, z-]
+         for (int NeighborID=0; NeighborID<6; NeighborID++)
+         {  
+            real dfluid[FLU_NIN]; // store the fluid in the adjacent cell
+            if   (NeighborID == 0) int dt = IDX321(  1,  0,  0, FLU_NXT, FLU_NXT );
+            elif (NeighborID == 1) int dt = IDX321( -1,  0,  0, FLU_NXT, FLU_NXT );
+            elif (NeighborID == 2) int dt = IDX321(  0,  1,  0, FLU_NXT, FLU_NXT );
+            elif (NeighborID == 3) int dt = IDX321(  0, -1,  0, FLU_NXT, FLU_NXT );
+            elif (NeighborID == 4) int dt = IDX321(  0,  0,  1, FLU_NXT, FLU_NXT );
+            elif (NeighborID == 5) int dt = IDX321(  0,  0, -1, FLU_NXT, FLU_NXT );
 
+            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][t + dt];
 
-         
+            if   ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = fluid[MOMX]/fluid[DENS];
+            elif ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = fluid[MOMY]/fluid[DENS];
+            elif ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = fluid[MOMZ]/fluid[DENS];
+         }
+
+         real DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
+         if (DivV > 0)                       continue;
+
 
       } // pi, pj, pk
 
