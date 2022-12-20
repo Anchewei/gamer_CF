@@ -178,7 +178,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          y = Corner_Array_F[1] + pj*dh + dh*NGhost;
          z = Corner_Array_F[2] + pk*dh + dh*NGhost;
 
-         const int t = IDX321( pi, pj, pk, FLU_NXT, FLU_NXT );
+         const int t = IDX321( pi, pj, pk, Size_Flu, Size_Flu );
          for (int v=0; v<FLU_NIN; v++)    fluid[v] = Flu_Array_F_In[v][t];
          VelX = fluid[MOMX]/fluid[DENS];
          VelY = fluid[MOMY]/fluid[DENS];
@@ -234,18 +234,18 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int NeighborID=0; NeighborID<6; NeighborID++)
          {  
             real dfluid[FLU_NIN]; // store the fluid in the adjacent cell
-            if   (NeighborID == 0) int dt = IDX321(  1,  0,  0, FLU_NXT, FLU_NXT );
-            elif (NeighborID == 1) int dt = IDX321( -1,  0,  0, FLU_NXT, FLU_NXT );
-            elif (NeighborID == 2) int dt = IDX321(  0,  1,  0, FLU_NXT, FLU_NXT );
-            elif (NeighborID == 3) int dt = IDX321(  0, -1,  0, FLU_NXT, FLU_NXT );
-            elif (NeighborID == 4) int dt = IDX321(  0,  0,  1, FLU_NXT, FLU_NXT );
-            elif (NeighborID == 5) int dt = IDX321(  0,  0, -1, FLU_NXT, FLU_NXT );
+            if   (NeighborID == 0) int dt = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+            elif (NeighborID == 1) int dt = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+            elif (NeighborID == 2) int dt = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+            elif (NeighborID == 3) int dt = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+            elif (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+            elif (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
             for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][t + dt];
 
-            if   ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = fluid[MOMX]/fluid[DENS];
-            elif ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = fluid[MOMY]/fluid[DENS];
-            elif ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = fluid[MOMZ]/fluid[DENS];
+            if   ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
+            elif ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
+            elif ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
          }
 
          real DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
