@@ -170,6 +170,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
 #     endif // #ifdef UNSPLIT_GRAVITY
 
+      NNewPar = 0;
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
@@ -192,32 +193,32 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          for (int p=0; p<NParTot; p++)
          {
-            real PCPX, PCPY, PCPZ; // particle-cell relative position
+            real PCP[3]; // particle-cell relative position
             real D2Par; // particle-cell distance
 
-            PCPX = x - ParPos[0][p];
-            PCPY = y - ParPos[1][p];
-            PCPZ = z - ParPos[2][p];
+            PCP[0] = x - ParPos[0][p];
+            PCP[1] = y - ParPos[1][p];
+            PCP[2] = z - ParPos[2][p];
 
-            D2Par = SQRT(SQR(PCPX)+SQR(PCPX)+SQR(PCPX));
+            D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
             if ( D2Par < AccRadius )
             {
                InsideAccRadius = true;
                break;
             }
 
-            real PCVX, PCVY, PCVZ; // particle-cell relative velocity
-            real NPCPX, NPCPY, NPCPZ; // normalized particle-cell relative position
+            real PCV[3]; // particle-cell relative velocity
+            real NPCP[3]; // normalized particle-cell relative position
 
-            PCVX = VelX - ParVel[0][p];
-            PCVY = VelY - ParVel[1][p];
-            PCVZ = VelZ - ParVel[2][p];
+            PCV[0] = VelX - ParVel[0][p];
+            PCV[1] = VelY - ParVel[1][p];
+            PCV[2] = VelZ - ParVel[2][p];
 
-            NPCPX = PCPX/D2Par;
-            NPCPY = PCPY/D2Par;
-            NPCPZ = PCPZ/D2Par;
+            NPCP[0] = PCP[0]/D2Par;
+            NPCP[1] = PCP[1]/D2Par;
+            NPCP[2] = PCP[2]/D2Par;
 
-            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCPX*PCVX + NPCPY*PCVY + NPCPZ*PCVZ)/D2Par); // Clarke et al. 2017, eqn (5)
+            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
             if ( GasDens < GasDensFreeFall )
             {
                NotPassDen = true;
