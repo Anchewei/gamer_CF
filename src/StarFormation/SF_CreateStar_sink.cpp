@@ -170,9 +170,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
 #     endif // #ifdef UNSPLIT_GRAVITY
 
-      for (int pk=NGhost; pk<PS2 + NGhost; k++)
-      for (int pj=NGhost; pj<PS2 + NGhost; j++)
-      for (int pi=NGhost; pi<PS2 + NGhost; i++) // loop inside the patch group
+      for (int pk=NGhost; pk<PS2 + NGhost; pk++)
+      for (int pj=NGhost; pj<PS2 + NGhost; pj++)
+      for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
       {
          x = Corner_Array_F[0] + pi*dh + dh*NGhost;
          y = Corner_Array_F[1] + pj*dh + dh*NGhost;
@@ -249,12 +249,89 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          }
 
          real DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
-         if (DivV > 0)                       continue;
+         if ( DivV > 0 )                       continue;
 
+//       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
+//       ===========================================================================================================
+         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
+         for (int vk=0; vk<Size_Flu; vk++)
+         for (int vj=0; vj<Size_Flu; vj++)
+         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+         {  
+            real vfluid[FLU_NIN]; // store the fluid in the control volumne
+            real vx = Corner_Array_F[0] + vi*dh + dh*NGhost;
+            real vy = Corner_Array_F[1] + vj*dh + dh*NGhost;
+            real vz = Corner_Array_F[2] + vk*dh + dh*NGhost;
 
+            real D2CC = SQRT(SQR(vx - x)+SQR(vy - cy)+SQR(yz - cz)); // distance to the center cell
+            if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][t];
+            MVel[0] += vfluid[MOMX]*dv;
+            MVel[1] += vfluid[MOMY]*dv;
+            MVel[2] += vfluid[MOMZ]*dv;
+            Mtot += vfluid[DENS]*dv;
+         } // vi, vj, vk
+
+         MWvel[0] = MVel[0]/Mtot;
+         MWvel[1] = MVel[1]/Mtot;
+         MWvel[2] = MVel[2]/Mtot; // COM velocity
+
+         real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
+         real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
+         bool NotMiniEg      = false;
+         for (int vk=0; vk<Size_Flu; vk++)
+         for (int vj=0; vj<Size_Flu; vj++)
+         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+         {
+            real vfluid[FLU_NIN]; // store the fluid in the control volumne
+            real vx = Corner_Array_F[0] + vi*dh + dh*NGhost;
+            real vy = Corner_Array_F[1] + vj*dh + dh*NGhost;
+            real vz = Corner_Array_F[2] + vk*dh + dh*NGhost;
+
+            real D2CC = SQRT(SQR(vx - x)+SQR(vy - cy)+SQR(yz - cz)); // distance to the center cell
+            if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][t];
+
+//          3.1 Gravitational Potential Minimum Check
+            real vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
+            if ( vEg < CCEg )
+            {
+               NotMiniEg = true;
+               break;
+            }
+
+//          3.2 Storing vEg, vEth, vEmag, vEkin
+            const bool CheckMinPres_No = false;
+            real Pres, Cs2, vEmag=NULL_REAL;
+            Egtot += vEg;
+
+#           ifdef MHD
+            vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
+                                                Mag_Array_F_In[MAGY],
+                                                Mag_Array_F_In[MAGZ],
+                                                Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
+            Emagtot += vEmag;
+#           endif
+
+            Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
+                                   vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
+                                   EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
+            Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
+            Ethtot += 0.5*vfluid[DENS]*Cs2;
+
+            Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
+         } // vi, vj, vk
+
+         if ( NotMiniEg )                                   continue;
+         if ( FABS(Egtot) < 2*Ethtot)                       continue;
+         if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
       } // pi, pj, pk
 
-   }
+   } // PID0
 
 
 
@@ -299,33 +376,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       for (int j=0; j<PS1; j++)
       for (int i=0; i<PS1; i++)
       {
-
-//       1. Density Threshold
-//       ===========================================================================================================
-         GasDens = fluid[DENS][k][j][i];
-         GasMass = GasDens*dv;
-
-         if ( GasDens < GasDensThres )    continue;
-
-//       2. Refinement Check
-//       ===========================================================================================================
-//       already written in SF_CreateStar.cpp (SF_CREATE_STAR_MIN_LEVEL)
-
-//       3. Converging Flow Check
-//       ===========================================================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
 //       1. check the star formation criteria
 //       ===========================================================================================================
          GasDens = fluid[DENS][k][j][i];
