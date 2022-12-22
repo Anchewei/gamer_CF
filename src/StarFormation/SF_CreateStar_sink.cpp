@@ -123,6 +123,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  pragma omp for schedule( static )
    for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
    {
+//    skip non-leaf patches
+      if ( amr->patch[0][lv][PID0]->son != -1 )  continue;
+
       real (*Flu_Array_F_In)[CUBE(Size_Flu)] = new real [FLU_NIN][CUBE(Size_Flu)];
       real (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)] = new real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
       real (*Pot_Array_USG_F) = new real [CUBE(Size_Pot)];
@@ -188,6 +191,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       1. Proximity Check + Density Threshold
 //       ===========================================================================================================
          GasDens = fluid[DENS];
+         if ( GasDens < GasDensThres )    continue;
+
          bool InsideAccRadius = false;
          bool NotPassDen      = false;
 
@@ -295,7 +300,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][t];
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
 //          3.1 Gravitational Potential Minimum Check
             real vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
@@ -330,6 +335,60 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( NotMiniEg )                                   continue;
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
+
+//       4. store the information of new star particles
+//       --> we will not create these new particles until looping over all cells in a patch in order to reduce
+//           the OpenMP synchronization overhead
+//       ===========================================================================================================
+#        ifdef GAMER_DEBUG
+         if ( NNewPar >= MaxNewParPerPatch )
+            Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewParPerPatch (%d) !!\n", NNewPar, MaxNewParPerPatch );
+#        endif
+
+         NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
+         NewParAtt[NNewPar][PAR_POSX] = x;
+         NewParAtt[NNewPar][PAR_POSY] = y;
+         NewParAtt[NNewPar][PAR_POSZ] = z;
+         NewParAtt[NNewPar][PAR_VELX] = VelX;
+         NewParAtt[NNewPar][PAR_VELY] = VelY;
+         NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+         NewParAtt[NNewPar][PAR_TIME] = TimeNew;
+         NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
+
+//       particle acceleration
+#        ifdef STORE_PAR_ACC
+         real GasAcc[3] = { (real)0.0, (real)0.0, (real)0.0 };
+
+//       external acceleration
+         if ( OPT__EXT_ACC )  CPUExtAcc_Ptr( GasAcc, x, y, z, TimeNew, ExtAcc_AuxArray );
+
+//       self-gravity and external potential
+         if ( OPT__SELF_GRAVITY  ||  OPT__EXT_POT )
+         {
+            real PotNeighbor[6]; // record the neighboring cell potential [x+, x-, y+, y+, z+, z-]
+            for (int NeighborID=0; NeighborID<6; NeighborID++)
+            {  
+               if   (NeighborID == 0) int dt = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+               elif (NeighborID == 1) int dt = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+               elif (NeighborID == 2) int dt = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+               elif (NeighborID == 3) int dt = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+               elif (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+               elif (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+
+               PotNeighbor[NeighborID] = Pot_Array_USG_F[t + dt];
+            }
+            GasAcc[0] += PotNeighbor[0] - PotNeighbor[1];
+            GasAcc[1] += PotNeighbor[2] - PotNeighbor[3];
+            GasAcc[2] += PotNeighbor[4] - PotNeighbor[5];
+         }
+
+         NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
+         NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
+         NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
+#        endif // ifdef STORE_PAR_ACC
+
+         NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
+
       } // pi, pj, pk
 
    } // PID0
