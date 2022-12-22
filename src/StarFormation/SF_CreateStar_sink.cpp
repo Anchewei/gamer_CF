@@ -53,12 +53,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  endif
 
 #  ifdef GAMER_DEBUG
-   if ( UseMetal  &&  Idx_ParMetalFrac == Idx_Undefined )
-      Aux_Error( ERROR_INFO, "Idx_ParMetalFrac is undefined for \"UseMetal\" !!\n" );
-
-   if ( UseMetal  &&  Idx_Metal == Idx_Undefined )
-      Aux_Error( ERROR_INFO, "Idx_Metal is undefined for \"UseMetal\" !!\n" );
-
    if ( Idx_ParCreTime == Idx_Undefined )
       Aux_Error( ERROR_INFO, "Idx_ParCreTime is undefined !!\n" );
 #  endif // #ifdef GAMER_DEBUG
@@ -70,8 +64,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // constant parameters
    const double dh             = amr->dh[lv];
    
-   const double AccRadius      = AccCellNum*dh;  /////////////////////////////////
-   const int    NGhost         = AccCellNum;
+   const double AccRadius      = AccCellNum*dh;
+   const int    NGhost         = AccCellNum; // the number of ghost cell at each side
    const int    Size_Flu       = PS2 + 2*NGhost; // final cube size
    const int    Size_Flu_P1    = Size_Flu + 1; // for face-centered B field
    const int    Size_Pot       = Size_Flu; // for potential
@@ -105,9 +99,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*pot_ext)[GRA_NXT][GRA_NXT] = NULL;
 #  endif
 
-   const int MaxNewParPerPatch = CUBE(PS1);
-   real   (*NewParAtt)[PAR_NATT_TOTAL] = new real [MaxNewParPerPatch][PAR_NATT_TOTAL];
-   long    *NewParID                   = new long [MaxNewParPerPatch];
+   // const int MaxNewParPerPatch = CUBE(PS1);
+   // real   (*NewParAtt)[PAR_NATT_TOTAL] = new real [MaxNewParPerPatch][PAR_NATT_TOTAL];
+   // long    *NewParID                   = new long [MaxNewParPerPatch];
+
+   const int MaxNewParPerPG = CUBE(PS2);
+   real   (*NewParAtt)[PAR_NATT_TOTAL] = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
+   long    *NewParID                   = new long [MaxNewParPerPG];
 
    int NNewPar;
 
@@ -265,15 +263,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
          {  
             real vfluid[FLU_NIN]; // store the fluid in the control volumne
-            real vx = Corner_Array_F[0] + vi*dh + dh*NGhost;
-            real vy = Corner_Array_F[1] + vj*dh + dh*NGhost;
-            real vz = Corner_Array_F[2] + vk*dh + dh*NGhost;
+            real vx = Corner_Array_F[0] + vi*dh;
+            real vy = Corner_Array_F[1] + vj*dh;
+            real vz = Corner_Array_F[2] + vk*dh;
 
-            real D2CC = SQRT(SQR(vx - x)+SQR(vy - cy)+SQR(yz - cz)); // distance to the center cell
+            real D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(yz - z)); // distance to the center cell
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][t];
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
             MVel[0] += vfluid[MOMX]*dv;
             MVel[1] += vfluid[MOMY]*dv;
             MVel[2] += vfluid[MOMZ]*dv;
@@ -292,11 +290,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
          {
             real vfluid[FLU_NIN]; // store the fluid in the control volumne
-            real vx = Corner_Array_F[0] + vi*dh + dh*NGhost;
-            real vy = Corner_Array_F[1] + vj*dh + dh*NGhost;
-            real vz = Corner_Array_F[2] + vk*dh + dh*NGhost;
+            real vx = Corner_Array_F[0] + vi*dh;
+            real vy = Corner_Array_F[1] + vj*dh;
+            real vz = Corner_Array_F[2] + vk*dh;
 
-            real D2CC = SQRT(SQR(vx - x)+SQR(vy - cy)+SQR(yz - cz)); // distance to the center cell
+            real D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(yz - z)); // distance to the center cell
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
@@ -310,7 +308,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                break;
             }
 
-//          3.2 Storing vEg, vEth, vEmag, vEkin
+//          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
             const bool CheckMinPres_No = false;
             real Pres, Cs2, vEmag=NULL_REAL;
             Egtot += vEg;
@@ -341,8 +339,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //           the OpenMP synchronization overhead
 //       ===========================================================================================================
 #        ifdef GAMER_DEBUG
-         if ( NNewPar >= MaxNewParPerPatch )
-            Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewParPerPatch (%d) !!\n", NNewPar, MaxNewParPerPatch );
+         if ( NNewPar >= MaxNewParPerPG )
+            Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewParPerPG (%d) !!\n", NNewPar, MaxNewParPerPG );
 #        endif
 
          NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
@@ -389,9 +387,43 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
 
+//       5. remove the gas that has been converted to stars
+//       ===========================================================================================================
+         GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+         int PGi = pi - NGhost;
+         int PGj = pj - NGhost;
+         int PGk = pk - NGhost; // the cell id inside patch group
+         
+         // determine the current patch where the sink is
+         if ((PGi < PS1) && (PGj < PS1) && (PGk < PS1))       int LocalID = 0;
+         elif ((PGi >= PS1) && (PGj < PS1) && (PGk < PS1))    int LocalID = 1;
+         elif ((PGi < PS1) && (PGj >= PS1) && (PGk < PS1))    int LocalID = 2;
+         elif ((PGi < PS1) && (PGj < PS1) && (PGk >= PS1))    int LocalID = 3;
+         elif ((PGi >= PS1) && (PGj >= PS1) && (PGk < PS1))   int LocalID = 4;
+         elif ((PGi < PS1) && (PGj >= PS1) && (PGk >= PS1))   int LocalID = 5;
+         elif ((PGi >= PS1) && (PGj < PS1) && (PGk >= PS1))   int LocalID = 6;
+         elif ((PGi >= PS1) && (PGj >= PS1) && (PGk >= PS1))  int LocalID = 7;
+
+         const int Disp_i = TABLE_02( LocalID, 'x', 0, PS1 );
+         const int Disp_j = TABLE_02( LocalID, 'y', 0, PS1 );
+         const int Disp_k = TABLE_02( LocalID, 'z', 0, PS1 );
+         const int PID = PID0 + LocalID;
+
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
+
       } // pi, pj, pk
 
    } // PID0
+
+
+
+
+
+
+
+
+
 
 
 
