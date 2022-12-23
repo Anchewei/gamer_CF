@@ -110,7 +110,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
    {
 //    skip non-leaf patches
-      if ( amr->patch[0][lv][PID0]->son != -1 )  continue;
+      for (int PID=PID0; PID<PID0+8; PID++)
+      if ( amr->patch[0][lv][PID]->son != -1 )  continue;
 
       real (*Flu_Array_F_In)[CUBE(Size_Flu)]   = new real [FLU_NIN][CUBE(Size_Flu)];
       real (*Mag_Array_F_In)                   = new real [Size_Flu_P1*SQR(Size_Flu)];
