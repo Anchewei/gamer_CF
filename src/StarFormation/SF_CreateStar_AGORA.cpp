@@ -288,7 +288,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             real vy = Corner_Array_F[1] + vj*dh;
             real vz = Corner_Array_F[2] + vk*dh;
 
-            real D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(yz - z)); // distance to the center cell
+            real D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
@@ -429,30 +429,52 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 //       6-2. add particles to the patch
          const real *PType = amr->Par->Type;
-#        ifdef DEBUG_PARTICLE
-//       do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
-//       may change after calling amr->Par->AddOneParticle()
-         const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-         char Comment[100];
-         sprintf( Comment, "%s", __FUNCTION__ );
-         
-         for (int p=0; p<NNewPar; p++) // since the particles can be in different PID, we add them one by one
-         amr->patch[0][lv][NewParPID[p]]->AddParticle( 1, *NewParID[p], &amr->Par->NPar_Lv[lv],
-                                                       PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
 
-#        else
-         for (int p=0; p<NNewPar; p++) // since the particles can be in different PID, we add them one by one
-         amr->patch[0][lv][NewParPID[p]]->AddParticle( 1, *NewParID[p], &amr->Par->NPar_Lv[lv], PType );
-#        endif
+         int ParInPatch;
+         for (int PID=PID0; PID<PID0+8; PID++)
+         {
+            long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+            ParInPatch = 0;
+            for (int p=0; p<NNewPar; p++)
+            {
+               if (NewParPID[p] == PID) 
+               {
+                  ParIDInPatch[ParInPatch] = NewParID[p];
+                  ParInPatch ++;
+               } // if (NewParPID[p] == PID) 
+            } // for (int p=0; p<NNewPar; p++)
+
+            if ( ParInPatch == 0 )                        continue;
+
+#           ifdef DEBUG_PARTICLE
+//          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+//          may change after calling amr->Par->AddOneParticle()
+            const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+            char Comment[100];
+            sprintf( Comment, "%s", __FUNCTION__ );
+            
+            amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+
+#           else
+            for (int p=0; p<NNewPar; p++) // since the particles can be in different PID, we add them one by one
+            amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+#           endif
+
+            delete [] ParIDInPatch;
+
+         } // for (int PID=PID0; PID<PID0+8; PID++)
       } // pragma omp critical
 
+      delete [] Flu_Array_F_In;
+      delete [] Mag_Array_F_In;
+      delete [] Pot_Array_USG_F
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
 
 // free memory
    delete [] NewParAtt;
    delete [] NewParID;
-
    } // end of OpenMP parallel region
 
 // get the total number of active particles in all MPI ranks
