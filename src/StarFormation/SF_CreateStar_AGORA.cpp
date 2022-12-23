@@ -57,9 +57,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       Aux_Error( ERROR_INFO, "Idx_ParCreTime is undefined !!\n" );
 #  endif // #ifdef GAMER_DEBUG
 
-// checking the value of accretion radius
-   if (AccCellNum > PS1)
-      Aux_Error( ERROR_INFO, "AccCellNum should be smaller than PATCH_SIZE !!" );
 
 // constant parameters
    const double dh             = amr->dh[lv];
@@ -78,6 +75,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // const real   GraConst       = ( OPT__GRA_P5_GRADIENT ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh);
    const real   GraConst       = ( false                ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh); // P5 is NOT supported yet
 
+
+// checking the value of accretion radius
+   if (AccCellNum > PS1)
+      Aux_Error( ERROR_INFO, "AccCellNum should be smaller than PATCH_SIZE !!" );
 
 // start of OpenMP parallel region
 #  pragma omp parallel
@@ -111,9 +112,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //    skip non-leaf patches
       if ( amr->patch[0][lv][PID0]->son != -1 )  continue;
 
-      real (*Flu_Array_F_In)[CUBE(Size_Flu)] = new real [FLU_NIN][CUBE(Size_Flu)];
-      real (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)] = new real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
-      real (*Pot_Array_USG_F) = new real [CUBE(Size_Pot)];
+      real Flu_Array_F_In[CUBE(Size_Flu)] = new real [FLU_NIN][CUBE(Size_Flu)];
+      real Mag_Array_F_In[Size_Flu_P1*SQR(Size_Flu)] = new real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
+      real Pot_Array_USG_F = new real [CUBE(Size_Pot)];
       real fluid[FLU_NIN];
       real Corner_Array_F[3]; // the corner of the ghost zone
 
