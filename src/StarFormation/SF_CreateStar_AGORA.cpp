@@ -112,9 +112,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //    skip non-leaf patches
       if ( amr->patch[0][lv][PID0]->son != -1 )  continue;
 
-      real (*Flu_Array_F_In)[FLU_NIN][CUBE(Size_Flu)]   = NULL;
-      real (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)] = NULL;
-      real (*Pot_Array_USG_F)[CUBE(Size_Pot)]           = NULL;
+      real (*Flu_Array_F_In)[FLU_NIN][CUBE(Size_Flu)]   = new real [1][FLU_NIN][CUBE(Size_Flu)];
+      real (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)] = new real [1][Size_Flu_P1*SQR(Size_Flu)];
+      real (*Pot_Array_USG_F)[CUBE(Size_Pot)]           = new real [1][CUBE(Size_Pot)]  ;
       real fluid[FLU_NIN];
       real Corner_Array_F[3]; // the corner of the ghost zone
 
@@ -174,7 +174,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          z = Corner_Array_F[2] + pk*dh + dh*NGhost;
 
          const int t = IDX321( pi, pj, pk, Size_Flu, Size_Flu );
-         for (int v=0; v<FLU_NIN; v++)    fluid[v] = Flu_Array_F_In[v][t];
+         for (int v=0; v<FLU_NIN; v++)    fluid[v] = Flu_Array_F_In[0][v][t];
          VelX = fluid[MOMX]/fluid[DENS];
          VelY = fluid[MOMY]/fluid[DENS];
          VelZ = fluid[MOMZ]/fluid[DENS];
@@ -239,7 +239,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
             int Neighbort = t + dt;
-            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
+            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[0][v][Neighbort];
 
             if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
             else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
@@ -265,7 +265,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[0][v][vt];
             MVel[0] += vfluid[MOMX]*dv;
             MVel[1] += vfluid[MOMY]*dv;
             MVel[2] += vfluid[MOMZ]*dv;
@@ -276,7 +276,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-         real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
+         real CCEg = GasDens*Pot_Array_USG_F[0][t]; // Eg for the centered cell
          real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
          bool NotMiniEg      = false;
          for (int vk=0; vk<Size_Flu; vk++)
@@ -292,10 +292,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[0][v][vt];
 
 //          3.1 Gravitational Potential Minimum Check
-            real vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
+            real vEg = vfluid[DENS]*Pot_Array_USG_F[0][vt]; // Eg for the current cell
             if ( vEg < CCEg )
             {
                NotMiniEg = true;
@@ -308,9 +308,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Egtot += vEg;
 
 #           ifdef MHD
-            vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
-                                                Mag_Array_F_In[MAGY],
-                                                Mag_Array_F_In[MAGZ],
+            vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[0][MAGX],
+                                                Mag_Array_F_In[0][MAGY],
+                                                Mag_Array_F_In[0][MAGZ],
                                                 Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
             Emagtot += vEmag;
 #           endif
@@ -368,7 +368,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                else if (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
                int Neighbort = t + dt;
-               PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
+               PotNeighbor[NeighborID] = Pot_Array_USG_F[0][Neighbort];
             }
             GasAcc[0] += PotNeighbor[0] - PotNeighbor[1];
             GasAcc[1] += PotNeighbor[2] - PotNeighbor[3];
