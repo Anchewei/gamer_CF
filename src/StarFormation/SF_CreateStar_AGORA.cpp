@@ -140,11 +140,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       const real   MinDens             = ( OPT__OPTIMIZE_AGGRESSIVE ) ? MinDens_No : MIN_DENS;
 
 #     ifdef MHD
-      real *Mag_Array = Mag_Array_F_In[0][0];
+      real *Mag_Array = Mag_Array_F_In[0];
 #     else
       real *Mag_Array = NULL;
 #     endif
-      Prepare_PatchData( lv, TimeNew, Flu_Array_F_In[0][0], Mag_Array,
+      Prepare_PatchData( lv, TimeNew, Flu_Array_F_In[0], Mag_Array,
                         NGhost, NPG, &PID0, _TOTAL, _MAG,
                         OPT__FLU_INT_SCHEME, OPT__MAG_INT_SCHEME, UNIT_PATCHGROUP, NSIDE_26, IntPhase_No,
                         OPT__BC_FLU, BC_POT_NONE, MinDens,    MinPres_No, MinTemp_No, MinEntr_No, DE_Consistency );
@@ -152,7 +152,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #     ifdef UNSPLIT_GRAVITY
 //    prepare the potential array
       if ( OPT__SELF_GRAVITY  ||  OPT__EXT_POT )
-      Prepare_PatchData( lv, TimeNew, Pot_Array_USG_F[0], NULL,
+      Prepare_PatchData( lv, TimeNew, Pot_Array_USG_F, NULL,
                         NGhost, NPG, &PID0, _POTE, _NONE,
                         OPT__GRA_INT_SCHEME, INT_NONE, UNIT_PATCHGROUP, NSIDE_26, IntPhase_No,
                         OPT__BC_FLU, OPT__BC_POT, MinDens_No, MinPres_No, MinTemp_No, MinEntr_No, DE_Consistency_No );
