@@ -112,9 +112,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //    skip non-leaf patches
       if ( amr->patch[0][lv][PID0]->son != -1 )  continue;
 
-      real (*Flu_Array_F_In)[FLU_NIN][CUBE(Size_Flu)] = {NULL, NULL};
-      real Mag_Array_F_In[Size_Flu_P1*SQR(Size_Flu)] = real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
-      real Pot_Array_USG_F = real [CUBE(Size_Pot)];
+      real (*Flu_Array_F_In)[FLU_NIN][CUBE(Size_Flu)];
+      real (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)];
+      real (*Pot_Array_USG_F)[CUBE(Size_Pot)];
       real fluid[FLU_NIN];
       real Corner_Array_F[3]; // the corner of the ghost zone
 
