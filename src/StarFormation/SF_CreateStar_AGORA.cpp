@@ -115,7 +115,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       real (*Flu_Array_F_In)[FLU_NIN][CUBE(Size_Flu)];
       real (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)];
       real (*Pot_Array_USG_F)[CUBE(Size_Pot)];
-      real fluid[FLU_NIN];
+      real (*fluid)[FLU_NIN];
       real Corner_Array_F[3]; // the corner of the ghost zone
 
 //    load the existing particles ID (the number)
@@ -238,7 +238,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
             else if (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
-            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][t + dt];
+            int Neighbort = t + dt;
+            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
 
             if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
             else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
@@ -255,12 +256,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int vj=0; vj<Size_Flu; vj++)
          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
          {  
-            real vfluid[FLU_NIN]; // store the fluid in the control volumne
+            real (*vfluid)[FLU_NIN]; // store the fluid in the control volumne
             real vx = Corner_Array_F[0] + vi*dh;
             real vy = Corner_Array_F[1] + vj*dh;
             real vz = Corner_Array_F[2] + vk*dh;
 
-            real D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(yz - z)); // distance to the center cell
+            real D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
@@ -282,7 +283,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int vj=0; vj<Size_Flu; vj++)
          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
          {
-            real vfluid[FLU_NIN]; // store the fluid in the control volumne
+            real (*vfluid)[FLU_NIN]; // store the fluid in the control volumne
             real vx = Corner_Array_F[0] + vi*dh;
             real vy = Corner_Array_F[1] + vj*dh;
             real vz = Corner_Array_F[2] + vk*dh;
@@ -366,7 +367,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                else if (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
                else if (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
-               PotNeighbor[NeighborID] = Pot_Array_USG_F[t + dt];
+               int Neighbort = t + dt;
+               PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
             }
             GasAcc[0] += PotNeighbor[0] - PotNeighbor[1];
             GasAcc[1] += PotNeighbor[2] - PotNeighbor[3];
@@ -388,14 +390,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          int PGk = pk - NGhost; // the cell id inside patch group
          
          // determine the current patch where the sink is
-         if      ((PGi < PS1) && (PGj < PS1) && (PGk < PS1))     int LocalID = 0;
-         else if ((PGi >= PS1) && (PGj < PS1) && (PGk < PS1))    int LocalID = 1;
-         else if ((PGi < PS1) && (PGj >= PS1) && (PGk < PS1))    int LocalID = 2;
-         else if ((PGi < PS1) && (PGj < PS1) && (PGk >= PS1))    int LocalID = 3;
-         else if ((PGi >= PS1) && (PGj >= PS1) && (PGk < PS1))   int LocalID = 4;
-         else if ((PGi < PS1) && (PGj >= PS1) && (PGk >= PS1))   int LocalID = 5;
-         else if ((PGi >= PS1) && (PGj < PS1) && (PGk >= PS1))   int LocalID = 6;
-         else if ((PGi >= PS1) && (PGj >= PS1) && (PGk >= PS1))  int LocalID = 7;
+         int LocalID = 0;
+         if      ((PGi < PS1) && (PGj < PS1) && (PGk < PS1))     LocalID = 0;
+         else if ((PGi >= PS1) && (PGj < PS1) && (PGk < PS1))    LocalID = 1;
+         else if ((PGi < PS1) && (PGj >= PS1) && (PGk < PS1))    LocalID = 2;
+         else if ((PGi < PS1) && (PGj < PS1) && (PGk >= PS1))    LocalID = 3;
+         else if ((PGi >= PS1) && (PGj >= PS1) && (PGk < PS1))   LocalID = 4;
+         else if ((PGi < PS1) && (PGj >= PS1) && (PGk >= PS1))   LocalID = 5;
+         else if ((PGi >= PS1) && (PGj < PS1) && (PGk >= PS1))   LocalID = 6;
+         else if ((PGi >= PS1) && (PGj >= PS1) && (PGk >= PS1))  LocalID = 7;
 
          const int Disp_i = TABLE_02( LocalID, 'x', 0, PS1 );
          const int Disp_j = TABLE_02( LocalID, 'y', 0, PS1 );
@@ -434,12 +437,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          sprintf( Comment, "%s", __FUNCTION__ );
          
          for (int p=0; p<NNewPar; p++) // since the particles can be in different PID, we add them one by one
-         amr->patch[0][lv][NewParPID[p]]->AddParticle( 1, NewParID[p], &amr->Par->NPar_Lv[lv],
+         amr->patch[0][lv][NewParPID[p]]->AddParticle( 1, *NewParID[p], &amr->Par->NPar_Lv[lv],
                                                        PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
 
 #        else
          for (int p=0; p<NNewPar; p++) // since the particles can be in different PID, we add them one by one
-         amr->patch[0][lv][NewParPID[p]]->AddParticle( 1, NewParID[p], &amr->Par->NPar_Lv[lv], PType );
+         amr->patch[0][lv][NewParPID[p]]->AddParticle( 1, *NewParID[p], &amr->Par->NPar_Lv[lv], PType );
 #        endif
       } // pragma omp critical
 
