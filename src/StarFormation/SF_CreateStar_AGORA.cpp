@@ -112,9 +112,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //    skip non-leaf patches
       if ( amr->patch[0][lv][PID0]->son != -1 )  continue;
 
-      real Flu_Array_F_In[CUBE(Size_Flu)] = new real [FLU_NIN][CUBE(Size_Flu)];
-      real Mag_Array_F_In[Size_Flu_P1*SQR(Size_Flu)] = new real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
-      real Pot_Array_USG_F = new real [CUBE(Size_Pot)];
+      real Flu_Array_F_In[CUBE(Size_Flu)] = real [FLU_NIN][CUBE(Size_Flu)];
+      real Mag_Array_F_In[Size_Flu_P1*SQR(Size_Flu)] = real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
+      real Pot_Array_USG_F = real [CUBE(Size_Pot)];
       real fluid[FLU_NIN];
       real Corner_Array_F[3]; // the corner of the ghost zone
 
@@ -231,18 +231,18 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int NeighborID=0; NeighborID<6; NeighborID++)
          {  
             real dfluid[FLU_NIN]; // store the fluid in the adjacent cell
-            if   (NeighborID == 0) int dt = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-            elif (NeighborID == 1) int dt = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-            elif (NeighborID == 2) int dt = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-            elif (NeighborID == 3) int dt = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-            elif (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-            elif (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+            if      (NeighborID == 0) int dt = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 1) int dt = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 2) int dt = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 3) int dt = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+            else if (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
             for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][t + dt];
 
-            if   ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
-            elif ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
-            elif ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
+            if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
+            else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
+            else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
          }
 
          real DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
@@ -359,12 +359,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             real PotNeighbor[6]; // record the neighboring cell potential [x+, x-, y+, y+, z+, z-]
             for (int NeighborID=0; NeighborID<6; NeighborID++)
             {  
-               if   (NeighborID == 0) int dt = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-               elif (NeighborID == 1) int dt = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-               elif (NeighborID == 2) int dt = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-               elif (NeighborID == 3) int dt = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-               elif (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-               elif (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+               if      (NeighborID == 0) int dt = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 1) int dt = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 2) int dt = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 3) int dt = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 4) int dt = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+               else if (NeighborID == 5) int dt = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
                PotNeighbor[NeighborID] = Pot_Array_USG_F[t + dt];
             }
@@ -388,14 +388,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          int PGk = pk - NGhost; // the cell id inside patch group
          
          // determine the current patch where the sink is
-         if ((PGi < PS1) && (PGj < PS1) && (PGk < PS1))       int LocalID = 0;
-         elif ((PGi >= PS1) && (PGj < PS1) && (PGk < PS1))    int LocalID = 1;
-         elif ((PGi < PS1) && (PGj >= PS1) && (PGk < PS1))    int LocalID = 2;
-         elif ((PGi < PS1) && (PGj < PS1) && (PGk >= PS1))    int LocalID = 3;
-         elif ((PGi >= PS1) && (PGj >= PS1) && (PGk < PS1))   int LocalID = 4;
-         elif ((PGi < PS1) && (PGj >= PS1) && (PGk >= PS1))   int LocalID = 5;
-         elif ((PGi >= PS1) && (PGj < PS1) && (PGk >= PS1))   int LocalID = 6;
-         elif ((PGi >= PS1) && (PGj >= PS1) && (PGk >= PS1))  int LocalID = 7;
+         if      ((PGi < PS1) && (PGj < PS1) && (PGk < PS1))     int LocalID = 0;
+         else if ((PGi >= PS1) && (PGj < PS1) && (PGk < PS1))    int LocalID = 1;
+         else if ((PGi < PS1) && (PGj >= PS1) && (PGk < PS1))    int LocalID = 2;
+         else if ((PGi < PS1) && (PGj < PS1) && (PGk >= PS1))    int LocalID = 3;
+         else if ((PGi >= PS1) && (PGj >= PS1) && (PGk < PS1))   int LocalID = 4;
+         else if ((PGi < PS1) && (PGj >= PS1) && (PGk >= PS1))   int LocalID = 5;
+         else if ((PGi >= PS1) && (PGj < PS1) && (PGk >= PS1))   int LocalID = 6;
+         else if ((PGi >= PS1) && (PGj >= PS1) && (PGk >= PS1))  int LocalID = 7;
 
          const int Disp_i = TABLE_02( LocalID, 'x', 0, PS1 );
          const int Disp_j = TABLE_02( LocalID, 'y', 0, PS1 );
