@@ -15,7 +15,7 @@
 // Return      :  The local PID relative to PID0
 //-------------------------------------------------------------------------------------------------------
 
-int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int PS1, int NGhost)
+int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhost)
 {
    PGi = pi - NGhost;
    PGj = pj - NGhost;
@@ -205,7 +205,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
       {  
          int PGi = 0, PGj = 0, PGk = 0;
-         LocalID = FindLocalPID(pi, pj, pk, PGi, PGj, PGk, PS1, NGhost);
+         LocalID = FindLocalPID(pi, pj, pk, PGi, PGj, PGk, NGhost);
 
          const int Disp_i = TABLE_02( LocalID, 'x', 0, PS1 ); // the cell index within PID
          const int Disp_j = TABLE_02( LocalID, 'y', 0, PS1 );
