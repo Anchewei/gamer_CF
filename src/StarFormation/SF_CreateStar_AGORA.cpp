@@ -144,7 +144,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*Mag_Array_F_In)                   = new real [Size_Flu_P1*SQR(Size_Flu)];
    real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
 
-   int NNewPar, LocalID, delta_t, PGi, PGj, PGk;
+   int NNewPar, LocalID, delta_t;
 
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
@@ -203,8 +203,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
-      {
-         LocalID = FindLocalPID(pi, pj, pk, PS1, NGhost);
+      {  
+         int PGi = 0, PGj = 0, PGk = 0;
+         LocalID = FindLocalPID(pi, pj, pk, PGi, PGj, PGk, PS1, NGhost);
 
          const int Disp_i = TABLE_02( LocalID, 'x', 0, PS1 ); // the cell index within PID
          const int Disp_j = TABLE_02( LocalID, 'y', 0, PS1 );
