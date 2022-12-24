@@ -407,6 +407,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             GasAcc[2] += PotNeighbor[4] - PotNeighbor[5];
          }
 
+#        ifdef MY_DEBUG
+         if ( (GasAcc[0] == 0.0) || (GasAcc[1] == 0.0) || (GasAcc[2] == 0.0))
+            Aux_Error( ERROR_INFO, "GasAcc[0] = %13.7e, GasAcc[1] = %13.7e, GasAcc[2] = %13.7e, one of them is 0",  GasAcc[0], GasAcc[1], GasAcc[2]);
+#        endif
+
          NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
          NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
          NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
