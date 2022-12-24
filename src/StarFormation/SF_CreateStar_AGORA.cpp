@@ -401,6 +401,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
                const int Neighbort = t + delta_t;
                PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
+#              ifdef MY_DEBUG
+               if ( Pot_Array_USG_F[Neighbort] == 0.0)
+                  Aux_Error( ERROR_INFO, "Pot_Array_USG_F = %13.7e at Neighbort = ",  Pot_Array_USG_F[Neighbort], Neighbort);
+#              endif
             }
             GasAcc[0] += PotNeighbor[0] - PotNeighbor[1];
             GasAcc[1] += PotNeighbor[2] - PotNeighbor[3];
