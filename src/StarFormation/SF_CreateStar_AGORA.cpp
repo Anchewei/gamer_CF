@@ -144,7 +144,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*Mag_Array_F_In)                   = new real [Size_Flu_P1*SQR(Size_Flu)];
    real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
 
-   int NNewPar, LocalID, delta_t;
+   int NNewPar, LocalID, delta_t, PGi, PGj, PGk;
 
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
@@ -204,7 +204,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
       {  
-         int PGi = 0, PGj = 0, PGk = 0;
          LocalID = FindLocalPID(pi, pj, pk, PGi, PGj, PGk, NGhost);
 
          const int Disp_i = TABLE_02( LocalID, 'x', 0, PS1 ); // the cell index within PID
@@ -269,12 +268,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       ===========================================================================================================
          for (int NeighborID=0; NeighborID<6; NeighborID++)
          {  
-            if      (NeighborID == 0) int delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 1) int delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 2) int delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 3) int delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 4) int delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-            else if (NeighborID == 5) int delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+            if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+            else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
             const int Neighbort = t + delta_t;
             for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
@@ -392,12 +391,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          {
             for (int NeighborID=0; NeighborID<6; NeighborID++)
             {  
-               if      (NeighborID == 0) int delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 1) int delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 2) int delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 3) int delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 4) int delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-               else if (NeighborID == 5) int delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+               if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+               else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+               else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
                const int Neighbort = t + delta_t;
                PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
@@ -406,9 +405,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   Aux_Error( ERROR_INFO, "Pot_Array_USG_F = %13.7e at Neighbort = ",  Pot_Array_USG_F[Neighbort], Neighbort);
 #              endif
             }
-            GasAcc[0] += PotNeighbor[0] - PotNeighbor[1];
-            GasAcc[1] += PotNeighbor[2] - PotNeighbor[3];
-            GasAcc[2] += PotNeighbor[4] - PotNeighbor[5];
+            GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
+            GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
+            GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
          }
 
 #        ifdef MY_DEBUG
