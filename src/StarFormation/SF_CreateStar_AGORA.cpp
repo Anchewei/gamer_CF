@@ -15,11 +15,11 @@
 // Return      :  The local PID relative to PID0
 //-------------------------------------------------------------------------------------------------------
 
-int FindLocalPID(int i, int j, int k, int PS1, int NGhost)
+int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int PS1, int NGhost)
 {
-   int PGi = pi - NGhost;
-   int PGj = pj - NGhost;
-   int PGk = pk - NGhost; // the cell id inside patch group
+   PGi = pi - NGhost;
+   PGj = pj - NGhost;
+   PGk = pk - NGhost; // the cell id inside patch group
    
    // determine the current patch where the current cell is
    int CellPID;
@@ -144,7 +144,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*Mag_Array_F_In)                   = new real [Size_Flu_P1*SQR(Size_Flu)];
    real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
 
-   int NNewPar, LocalID, delta_t;
+   int NNewPar, LocalID, delta_t, PGi, PGj, PGk;
 
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
