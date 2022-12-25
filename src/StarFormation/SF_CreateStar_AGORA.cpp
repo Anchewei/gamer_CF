@@ -386,6 +386,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 #        ifdef MY_DEBUG
          fprintf( File, "%13.7e  %13.7e  %13.7e", x, y, z);
+         fprintf( File, "\n" );
 #        endif
 
 //       particle acceleration
@@ -488,6 +489,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
+   fprintf( File, "\n" );
    fclose( File );
 #  endif
 
