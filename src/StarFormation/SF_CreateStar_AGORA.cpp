@@ -266,99 +266,99 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          
 //       2. Converging Flow Check
 //       ===========================================================================================================
-         for (int NeighborID=0; NeighborID<6; NeighborID++)
-         {  
-            if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-            else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+         // for (int NeighborID=0; NeighborID<6; NeighborID++)
+         // {  
+         //    if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+         //    else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+         //    else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+         //    else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+         //    else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+         //    else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
-            const int Neighbort = t + delta_t;
-            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
+         //    const int Neighbort = t + delta_t;
+         //    for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
 
-            if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
-            else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
-            else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
-         }
+         //    if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
+         //    else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
+         //    else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
+         // }
 
-         DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
-         if ( DivV > 0 )                       continue;
+         // DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
+         // if ( DivV > 0 )                       continue;
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
-         for (int vk=0; vk<Size_Flu; vk++)
-         for (int vj=0; vj<Size_Flu; vj++)
-         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-         {  
-            vx = Corner_Array_F[0] + vi*dh;
-            vy = Corner_Array_F[1] + vj*dh;
-            vz = Corner_Array_F[2] + vk*dh;
+//          for (int vk=0; vk<Size_Flu; vk++)
+//          for (int vj=0; vj<Size_Flu; vj++)
+//          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+//          {  
+//             vx = Corner_Array_F[0] + vi*dh;
+//             vy = Corner_Array_F[1] + vj*dh;
+//             vz = Corner_Array_F[2] + vk*dh;
 
-            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+//             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+//             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
-            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
-            MVel[0] += vfluid[MOMX]*dv;
-            MVel[1] += vfluid[MOMY]*dv;
-            MVel[2] += vfluid[MOMZ]*dv;
-            Mtot += vfluid[DENS]*dv;
-         } // vi, vj, vk
+//             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+//             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+//             MVel[0] += vfluid[MOMX]*dv;
+//             MVel[1] += vfluid[MOMY]*dv;
+//             MVel[2] += vfluid[MOMZ]*dv;
+//             Mtot += vfluid[DENS]*dv;
+//          } // vi, vj, vk
 
-         MWvel[0] = MVel[0]/Mtot;
-         MWvel[1] = MVel[1]/Mtot;
-         MWvel[2] = MVel[2]/Mtot; // COM velocity
+//          MWvel[0] = MVel[0]/Mtot;
+//          MWvel[1] = MVel[1]/Mtot;
+//          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-         bool NotMiniEg      = false;
-         for (int vk=0; vk<Size_Flu; vk++)
-         for (int vj=0; vj<Size_Flu; vj++)
-         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-         {
-            vx = Corner_Array_F[0] + vi*dh;
-            vy = Corner_Array_F[1] + vj*dh;
-            vz = Corner_Array_F[2] + vk*dh;
+//          bool NotMiniEg      = false;
+//          for (int vk=0; vk<Size_Flu; vk++)
+//          for (int vj=0; vj<Size_Flu; vj++)
+//          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+//          {
+//             vx = Corner_Array_F[0] + vi*dh;
+//             vy = Corner_Array_F[1] + vj*dh;
+//             vz = Corner_Array_F[2] + vk*dh;
 
-            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+//             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+//             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
-            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+//             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+//             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-//          3.1 Gravitational Potential Minimum Check
-            real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
-            vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
-            if ( vEg < CCEg )
-            {
-               NotMiniEg = true;
-               break;
-            }
+// //          3.1 Gravitational Potential Minimum Check
+//             real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
+//             vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
+//             if ( vEg < CCEg )
+//             {
+//                NotMiniEg = true;
+//                break;
+//             }
 
-//          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
-            const bool CheckMinPres_No = false;
-            Egtot += vEg;
+// //          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
+//             const bool CheckMinPres_No = false;
+//             Egtot += vEg;
 
-#           ifdef MHD
-            vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
-                                                Mag_Array_F_In[MAGY],
-                                                Mag_Array_F_In[MAGZ],
-                                                Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
-            Emagtot += vEmag;
-#           endif
+// #           ifdef MHD
+//             vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
+//                                                 Mag_Array_F_In[MAGY],
+//                                                 Mag_Array_F_In[MAGZ],
+//                                                 Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
+//             Emagtot += vEmag;
+// #           endif
 
-            Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
-                                   vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
-                                   EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
-            Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
-            Ethtot += 0.5*vfluid[DENS]*Cs2;
+//             Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
+//                                    vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
+//                                    EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
+//             Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
+//             Ethtot += 0.5*vfluid[DENS]*Cs2;
 
-            Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
-         } // vi, vj, vk
+//             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
+//          } // vi, vj, vk
 
-         if ( NotMiniEg )                                   continue;
-         if ( FABS(Egtot) < 2*Ethtot)                       continue;
-         if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
+//          if ( NotMiniEg )                                   continue;
+//          if ( FABS(Egtot) < 2*Ethtot)                       continue;
+//          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
@@ -400,10 +400,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
                const int Neighbort = t + delta_t;
                PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
-#              ifdef MY_DEBUG
-               if ( Pot_Array_USG_F[Neighbort] == 0.0)
-                  Aux_Error( ERROR_INFO, "Pot_Array_USG_F = %13.7e at Neighbort = ",  Pot_Array_USG_F[Neighbort], Neighbort);
-#              endif
             }
             GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
             GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
