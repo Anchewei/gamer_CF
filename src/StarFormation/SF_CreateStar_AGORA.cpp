@@ -487,7 +487,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
 #  ifdef MY_DEBUG
-   printf( File, "Step finished");
+   fprintf( File, "Step finished");
    fclose( File );
 #  endif
 
