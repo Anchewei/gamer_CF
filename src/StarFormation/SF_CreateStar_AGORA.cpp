@@ -70,6 +70,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                           const bool DetRandom, const bool UseMetal)
 {
 
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__Par_pos";
+   FILE *File = fopen( FileName, "a" );
+#  endif
+
 // check
 #  if ( defined STORE_PAR_ACC  &&  !defined STORE_POT_GHOST )
 #     error : STAR_FORMATION + STORE_PAR_ACC must work with STORE_POT_GHOST !!
@@ -379,6 +384,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e  %13.7e  %13.7e", x, y, z);
+#        endif
+
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
          real GasAcc[3] = { (real)0.0, (real)0.0, (real)0.0 };
@@ -405,11 +414,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
             GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
          }
-
-#        ifdef MY_DEBUG
-         if ( (GasAcc[0] == 0.0) || (GasAcc[1] == 0.0) || (GasAcc[2] == 0.0))
-            Aux_Error( ERROR_INFO, "GasAcc[0] = %13.7e, GasAcc[1] = %13.7e, GasAcc[2] = %13.7e, one of them is 0",  GasAcc[0], GasAcc[1], GasAcc[2]);
-#        endif
 
          NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
          NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
@@ -481,6 +485,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // for (int PID=PID0; PID<PID0+8; PID++)
       } // pragma omp critical
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
+
+#  ifdef MY_DEBUG
+   printf( File, "Step finished");
+   fclose( File );
+#  endif
 
 
 // free memory
