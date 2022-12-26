@@ -235,7 +235,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          bool InsideAccRadius = false;
          bool NotPassDen      = false;
 
-         for (int p=0; p<NParTot; p++)
+         for (int p=0; p<NParTot; p++) // for the existing particles
          {
             PCP[0] = x - ParPos[0][p];
             PCP[1] = y - ParPos[1][p];
@@ -251,6 +251,38 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             PCV[0] = VelX - ParVel[0][p];
             PCV[1] = VelY - ParVel[1][p];
             PCV[2] = VelZ - ParVel[2][p];
+
+            NPCP[0] = PCP[0]/D2Par;
+            NPCP[1] = PCP[1]/D2Par;
+            NPCP[2] = PCP[2]/D2Par;
+
+            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+            if ( GasDens < GasDensFreeFall )
+            {
+               NotPassDen = true;
+               break;
+            }
+         } // NParTot
+
+         if ( InsideAccRadius )               continue;
+         if ( NotPassDen )                    continue;
+
+         for (int p=0; p<NNewPar; p++) // for the not yet registered particles
+         {
+            PCP[0] = x - NewParAtt[p][PAR_POSX];
+            PCP[1] = y - NewParAtt[p][PAR_POSY];
+            PCP[2] = z - NewParAtt[p][PAR_POSZ];
+
+            D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+            if ( D2Par < AccRadius )
+            {
+               InsideAccRadius = true;
+               break;
+            }
+
+            PCV[0] = VelX - NewParAtt[p][PAR_VELX];
+            PCV[1] = VelY - NewParAtt[p][PAR_VELY];
+            PCV[2] = VelZ - NewParAtt[p][PAR_VELZ];
 
             NPCP[0] = PCP[0]/D2Par;
             NPCP[1] = PCP[1]/D2Par;
