@@ -262,6 +262,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                NotPassDen = true;
                break;
             }
+#           ifdef MY_DEBUG
+            fprintf( File, "e %13.7e", D2Par);
+            fprintf( File, "\n" );
+#           endif
          } // NParTot
 
          if ( InsideAccRadius )               continue;
@@ -294,6 +298,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                NotPassDen = true;
                break;
             }
+#           ifdef MY_DEBUG
+            fprintf( File, "n %13.7e", D2Par);
+            fprintf( File, "\n" );
+#           endif
          } // NParTot
 
          if ( InsideAccRadius )               continue;
@@ -413,11 +421,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
-
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e  %13.7e  %13.7e", x, y, z);
-         fprintf( File, "\n" );
-#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
