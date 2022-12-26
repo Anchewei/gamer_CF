@@ -198,10 +198,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                         OPT__BC_FLU, OPT__BC_POT, MinDens_No, MinPres_No, MinTemp_No, MinEntr_No, DE_Consistency_No );
 
 //    prepare the corner array
-     if ( OPT__EXT_ACC )
-      {
-         for (int d=0; d<3; d++)    Corner_Array_F[d] = amr->patch[0][lv][PID0]->EdgeL[d] + 0.5*dh - dh*NGhost;
-      }
+      for (int d=0; d<3; d++)    Corner_Array_F[d] = amr->patch[0][lv][PID0]->EdgeL[d] + 0.5*dh - dh*NGhost;
+
 #     endif // #ifdef UNSPLIT_GRAVITY
 
       NNewPar = 0;
