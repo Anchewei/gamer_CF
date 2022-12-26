@@ -71,7 +71,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 {
 
 #  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_pos";
+   const char  FileName[] = "Record__Par_debug";
    FILE *File = fopen( FileName, "a" );
 #  endif
 
@@ -128,7 +128,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  endif
 
    real x, y, z, VelX, VelY, VelZ, vx, vy, vz;
-   real GasDens, GasDensFreeFall, GasMFracLeft, DivV;
+   real GasDens, GasDensFreeFall, GasMFracLeft;
    real fluid[FLU_NIN], dfluid[FLU_NIN], vfluid[FLU_NIN];
    real Corner_Array_F[3]; // the corner of the ghost zone
    real PCP[3], D2Par, PCV[3]; // particle-cell relative position, distance, relative velocity
@@ -262,10 +262,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                NotPassDen = true;
                break;
             }
-#           ifdef MY_DEBUG
-            fprintf( File, "e %13.7e", D2Par);
-            fprintf( File, "\n" );
-#           endif
          } // NParTot
 
          if ( InsideAccRadius )               continue;
@@ -298,10 +294,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                NotPassDen = true;
                break;
             }
-#           ifdef MY_DEBUG
-            fprintf( File, "n %13.7e", D2Par);
-            fprintf( File, "\n" );
-#           endif
          } // NParTot
 
          if ( InsideAccRadius )               continue;
@@ -309,25 +301,32 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          
 //       2. Converging Flow Check
 //       ===========================================================================================================
-         // for (int NeighborID=0; NeighborID<6; NeighborID++)
-         // {  
-         //    if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-         //    else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-         //    else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-         //    else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-         //    else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-         //    else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+         for (int NeighborID=0; NeighborID<6; NeighborID++)
+         {  
+            if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+            else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+            else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
-         //    const int Neighbort = t + delta_t;
-         //    for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
+            const int Neighbort = t + delta_t;
+            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
 
-         //    if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
-         //    else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
-         //    else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
-         // }
+            if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
+            else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
+            else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
+         }
 
-         // DivV = (VelNeighbor[0] + VelNeighbor[2] + VelNeighbor[4] - VelNeighbor[1] - VelNeighbor[3] - VelNeighbor[5]);
-         // if ( DivV > 0 )                       continue;
+         if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
+         if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
+         if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
+
+#        ifdef MY_DEBUG
+         fprintf( File, "%d %d %d", ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
+                 ( (VelNeighbor[4] - VelNeighbor[5]) < 0 ) );
+         fprintf( File, "\n" );
+#        endif
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
