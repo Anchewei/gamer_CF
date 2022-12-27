@@ -330,52 +330,52 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
-//          for (int vk=0; vk<Size_Flu; vk++)
-//          for (int vj=0; vj<Size_Flu; vj++)
-//          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-//          {  
-//             vx = Corner_Array_F[0] + vi*dh;
-//             vy = Corner_Array_F[1] + vj*dh;
-//             vz = Corner_Array_F[2] + vk*dh;
+         // for (int vk=0; vk<Size_Flu; vk++)
+         // for (int vj=0; vj<Size_Flu; vj++)
+         // for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+         // {  
+         //    vx = Corner_Array_F[0] + vi*dh;
+         //    vy = Corner_Array_F[1] + vj*dh;
+         //    vz = Corner_Array_F[2] + vk*dh;
 
-//             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-//             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+         //    D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+         //    if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
-//             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-//             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
-//             MVel[0] += vfluid[MOMX]*dv;
-//             MVel[1] += vfluid[MOMY]*dv;
-//             MVel[2] += vfluid[MOMZ]*dv;
-//             Mtot += vfluid[DENS]*dv;
-//          } // vi, vj, vk
+         //    const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+         //    for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+         //    MVel[0] += vfluid[MOMX]*dv;
+         //    MVel[1] += vfluid[MOMY]*dv;
+         //    MVel[2] += vfluid[MOMZ]*dv;
+         //    Mtot += vfluid[DENS]*dv;
+         // } // vi, vj, vk
 
 //          MWvel[0] = MVel[0]/Mtot;
 //          MWvel[1] = MVel[1]/Mtot;
 //          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-//          bool NotMiniEg      = false;
-//          for (int vk=0; vk<Size_Flu; vk++)
-//          for (int vj=0; vj<Size_Flu; vj++)
-//          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-//          {
-//             vx = Corner_Array_F[0] + vi*dh;
-//             vy = Corner_Array_F[1] + vj*dh;
-//             vz = Corner_Array_F[2] + vk*dh;
+         bool NotMiniEg      = false;
+         const real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
+         for (int vk=0; vk<Size_Flu; vk++)
+         for (int vj=0; vj<Size_Flu; vj++)
+         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+         {
+            vx = Corner_Array_F[0] + vi*dh;
+            vy = Corner_Array_F[1] + vj*dh;
+            vz = Corner_Array_F[2] + vk*dh;
 
-//             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-//             if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
 
-//             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-//             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-// //          3.1 Gravitational Potential Minimum Check
-//             real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
-//             vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
-//             if ( vEg < CCEg )
-//             {
-//                NotMiniEg = true;
-//                break;
-//             }
+//          3.1 Gravitational Potential Minimum Check
+            vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
+            if ( vEg < CCEg )
+            {
+               NotMiniEg = true;
+               break;
+            }
 
 // //          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
 //             const bool CheckMinPres_No = false;
@@ -396,9 +396,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //             Ethtot += 0.5*vfluid[DENS]*Cs2;
 
 //             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
-//          } // vi, vj, vk
+         } // vi, vj, vk
 
-//          if ( NotMiniEg )                                   continue;
+         if ( NotMiniEg )                                   continue;
 //          if ( FABS(Egtot) < 2*Ethtot)                       continue;
 //          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
