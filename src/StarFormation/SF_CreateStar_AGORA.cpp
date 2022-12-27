@@ -446,10 +446,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
          NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
          NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e %13.7e %13.7e %13.7e",  x, y, z, GasAcc[0], GasAcc[1], GasAcc[2]);
-         fprintf( File, "\n" );
-#        endif
+         
 #        endif // ifdef STORE_PAR_ACC
 
          NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
@@ -460,7 +457,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParPID[NNewPar] = PID;
 
          for (int v=0; v<NCOMP_TOTAL; v++)
-         amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
+         {
+#           ifdef MY_DEBUG
+            fprintf( File, "%13.7e",  amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i]);
+#           endif
+            amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
+#           ifdef MY_DEBUG
+            fprintf( File, "%13.7e",  amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i]);
+            fprintf( File, "\n" );
+#           endif
+         }
+         
 
          NNewPar ++;
       } // pi, pj, pk
