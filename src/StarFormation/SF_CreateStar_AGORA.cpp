@@ -215,9 +215,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       skip non-leaf patches
          if ( amr->patch[0][lv][PID]->son != -1 )  continue;
 
-         x = Corner_Array_F[0] + pi*dh + dh*NGhost;
-         y = Corner_Array_F[1] + pj*dh + dh*NGhost;
-         z = Corner_Array_F[2] + pk*dh + dh*NGhost;
+         x = Corner_Array_F[0] + pi*dh;
+         y = Corner_Array_F[1] + pj*dh;
+         z = Corner_Array_F[2] + pk*dh;
 
          const int t = IDX321( pi, pj, pk, Size_Flu, Size_Flu );
          for (int v=0; v<FLU_NIN; v++)    fluid[v] = Flu_Array_F_In[v][t];
@@ -332,7 +332,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             vz = Corner_Array_F[2] + vk*dh;
 
             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+            if ( D2CC > AccRadius )                 
+            continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
@@ -393,10 +394,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // vi, vj, vk
 #        ifdef MY_DEBUG
          fprintf( File, "%d %d %d", (NotMiniEg), ( FABS(Egtot) < 2*Ethtot), (( Egtot + Ethtot + Ekintot + Emagtot ) < 0));
-         fprintf( File, "\n" );
+         fprintf( File, "\n" );/
 #        endif
          if ( NotMiniEg )                                   continue;
-         if ( FABS(Egtot) < 2*Ethtot)                       continue;
+         if ( FABS(Egtot) < 2*Ethtot)                       continue;/
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
 //       4. store the information of new star particles
