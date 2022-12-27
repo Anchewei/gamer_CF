@@ -135,8 +135,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real D2CC; // distance to the center cell
    real NPCP[3]; // normalized particle-cell relative position
    real VelNeighbor[6]; // record the neighboring cell velocity [x+, x-, y+, y+, z+, z-]
-   real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
-   real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
    real vEg, Pres, Cs2, vEmag=NULL_REAL;
    real PotNeighbor[6]; // record the neighboring cell potential [x+, x-, y+, y+, z+, z-]
 
@@ -203,6 +201,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #     endif // #ifdef UNSPLIT_GRAVITY
 
       NNewPar = 0;
+      real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
+      real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
@@ -321,11 +321,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
          if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
          if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
-#        ifdef MY_DEBUG
-         fprintf( File, "%d %d %d", ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
-                 ( (VelNeighbor[4] - VelNeighbor[5]) < 0 ) );
-         fprintf( File, "\n" );
-#        endif
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
@@ -376,9 +371,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                break;
             }
 
-// //          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
-//             const bool CheckMinPres_No = false;
-//             Egtot += vEg;
+//          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
+            const bool CheckMinPres_No = false;
+            Egtot += vEg;
 
 // #           ifdef MHD
 //             vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
@@ -388,20 +383,20 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //             Emagtot += vEmag;
 // #           endif
 
-//             Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
-//                                    vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
-//                                    EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
-//             Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
-//             Ethtot += 0.5*vfluid[DENS]*Cs2;
+            Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
+                                   vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
+                                   EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
+            Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
+            Ethtot += 0.5*vfluid[DENS]*Cs2;
 
 //             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 #        ifdef MY_DEBUG
-         fprintf( File, "%d", (NotMiniEg));
+         fprintf( File, "%d %d", (NotMiniEg), (FABS(Egtot) < 2*Ethtot));
          fprintf( File, "\n" );
 #        endif
          if ( NotMiniEg )                                   continue;
-//          if ( FABS(Egtot) < 2*Ethtot)                       continue;
+         if ( FABS(Egtot) < 2*Ethtot)                       continue;
 //          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
 //       4. store the information of new star particles
