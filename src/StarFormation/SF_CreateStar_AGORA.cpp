@@ -322,11 +322,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
          if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
 
-#        ifdef MY_DEBUG
-         fprintf( File, "%d %d %d", ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
-                 ( (VelNeighbor[4] - VelNeighbor[5]) < 0 ) );
-         fprintf( File, "\n" );
-#        endif
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
@@ -397,7 +392,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 //             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
-
+#        ifdef MY_DEBUG
+         fprintf( File, "%d", (NotMiniEg));
+         fprintf( File, "\n" );
+#        endif
          if ( NotMiniEg )                                   continue;
 //          if ( FABS(Egtot) < 2*Ethtot)                       continue;
 //          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
