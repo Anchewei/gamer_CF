@@ -321,7 +321,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
          if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
          if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
-
+#        ifdef MY_DEBUG
+         fprintf( File, "%d %d %d", ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
+                 ( (VelNeighbor[4] - VelNeighbor[5]) < 0 ) );
+         fprintf( File, "\n" );
+#        endif
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
