@@ -394,7 +394,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // vi, vj, vk
 #        ifdef MY_DEBUG
          fprintf( File, "%d %d %d", (NotMiniEg), ( FABS(Egtot) < 2*Ethtot), (( Egtot + Ethtot + Ekintot + Emagtot ) < 0));
-         fprintf( File, "\n" );/
+         fprintf( File, "\n" );
 #        endif
          if ( NotMiniEg )                                   continue;
          if ( FABS(Egtot) < 2*Ethtot)                       continue;/
