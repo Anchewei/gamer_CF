@@ -392,10 +392,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
-#        ifdef MY_DEBUG
-         fprintf( File, "%d %d %d", (NotMiniEg), ( FABS(Egtot) < 2*Ethtot), (( Egtot + Ethtot + Ekintot + Emagtot ) < 0));
-         fprintf( File, "\n" );
-#        endif
+
          if ( NotMiniEg )                                   continue;
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
@@ -418,6 +415,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
+
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e %13.7e %13.7e",  VelX, VelY, VelZ);
+         fprintf( File, "\n" );
+#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
