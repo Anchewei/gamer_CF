@@ -201,8 +201,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #     endif // #ifdef UNSPLIT_GRAVITY
 
       NNewPar = 0;
-      real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
-      real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
@@ -348,6 +346,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
          bool NotMiniEg      = false;
+         real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
+         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
          const real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
          for (int vk=0; vk<Size_Flu; vk++)
          for (int vj=0; vj<Size_Flu; vj++)
