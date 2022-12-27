@@ -417,7 +417,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
 #        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e",  VelX, VelY, VelZ);
+         fprintf( File, "%13.7e %13.7e %13.7e %13.7e %13.7e %13.7e",  x, y, z, VelX, VelY, VelZ);
          fprintf( File, "\n" );
 #        endif
 
