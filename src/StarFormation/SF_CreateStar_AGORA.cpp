@@ -322,32 +322,32 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
-         // for (int vk=0; vk<Size_Flu; vk++)
-         // for (int vj=0; vj<Size_Flu; vj++)
-         // for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-         // {  
-         //    vx = Corner_Array_F[0] + vi*dh;
-         //    vy = Corner_Array_F[1] + vj*dh;
-         //    vz = Corner_Array_F[2] + vk*dh;
+         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
+         for (int vk=0; vk<Size_Flu; vk++)
+         for (int vj=0; vj<Size_Flu; vj++)
+         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+         {  
+            vx = Corner_Array_F[0] + vi*dh;
+            vy = Corner_Array_F[1] + vj*dh;
+            vz = Corner_Array_F[2] + vk*dh;
 
-         //    D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-         //    if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
+            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+            if ( D2CC > AccRadius )                        continue; // check whether it is inside the control volume
 
-         //    const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-         //    for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
-         //    MVel[0] += vfluid[MOMX]*dv;
-         //    MVel[1] += vfluid[MOMY]*dv;
-         //    MVel[2] += vfluid[MOMZ]*dv;
-         //    Mtot += vfluid[DENS]*dv;
-         // } // vi, vj, vk
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+            MVel[0] += vfluid[MOMX]*dv;
+            MVel[1] += vfluid[MOMY]*dv;
+            MVel[2] += vfluid[MOMZ]*dv;
+            Mtot += vfluid[DENS]*dv;
+         } // vi, vj, vk
 
-//          MWvel[0] = MVel[0]/Mtot;
-//          MWvel[1] = MVel[1]/Mtot;
-//          MWvel[2] = MVel[2]/Mtot; // COM velocity
+         MWvel[0] = MVel[0]/Mtot;
+         MWvel[1] = MVel[1]/Mtot;
+         MWvel[2] = MVel[2]/Mtot; // COM velocity
 
          bool NotMiniEg      = false;
          real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
-         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
          const real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
          for (int vk=0; vk<Size_Flu; vk++)
          for (int vj=0; vj<Size_Flu; vj++)
@@ -375,13 +375,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             const bool CheckMinPres_No = false;
             Egtot += vEg;
 
-// #           ifdef MHD
-//             vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
-//                                                 Mag_Array_F_In[MAGY],
-//                                                 Mag_Array_F_In[MAGZ],
-//                                                 Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
-//             Emagtot += vEmag;
-// #           endif
+#           ifdef MHD
+            vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
+                                                Mag_Array_F_In[MAGY],
+                                                Mag_Array_F_In[MAGZ],
+                                                Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
+            Emagtot += vEmag;
+#           endif
 
             Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
                                    vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
@@ -389,15 +389,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
             Ethtot += 0.5*vfluid[DENS]*Cs2;
 
-//             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
+            Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 #        ifdef MY_DEBUG
-         fprintf( File, "%d %13.7e %13.7e", (NotMiniEg), FABS(Egtot), 2*Ethtot);
+         fprintf( File, "%d %d %d", (NotMiniEg), ( FABS(Egtot) < 2*Ethtot), (( Egtot + Ethtot + Ekintot + Emagtot ) < 0));
          fprintf( File, "\n" );
 #        endif
          if ( NotMiniEg )                                   continue;
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
-//          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
+         if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
