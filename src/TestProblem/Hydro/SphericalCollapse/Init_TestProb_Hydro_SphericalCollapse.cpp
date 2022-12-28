@@ -39,6 +39,9 @@ static double     Vrms_Scale;                     // used to rescale velocity
 static int        Total_Vrms_Count;
 
 static double     Cs;                             // sound spped
+
+static char       CF_Tur_Table[MAX_STRING];
+static double     CF_Mach;
 // =======================================================================================
 
 
@@ -313,7 +316,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    const double r = sqrt( SQR(x-SphCol_Center[0]) + SQR(y-SphCol_Center[1]) + SQR(z-SphCol_Center[2]) );
 
-   Dens = SphCol_Dens_Bg
+   Dens = SphCol_Dens_Bg;
    if ( r <= SphCol_Radius )  Dens *= ( 1.0 + SphCol_Dens_Delta );
    MomX = Dens * VelX;
    MomY = Dens * VelY;
