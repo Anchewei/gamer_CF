@@ -240,40 +240,40 @@ void SetParameter()
 // Parameter   :
 // Return      :
 //-------------------------------------------------------------------------------------------------------
-// void Load_Turbulence()
-// {
-//    const bool RowMajor_No  = false;           // load data into the column major
-//    const bool AllocMem_Yes = true;            // allocate memory for ISM_Velocity_Perturbation
-//    const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
-//    const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+void Load_Turbulence_SC()
+{
+   const bool RowMajor_No  = false;           // load data into the column major
+   const bool AllocMem_Yes = true;            // allocate memory for ISM_Velocity_Perturbation
+   const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
+   const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
 
-//    tur_table_NBin = Aux_LoadTable( tur_table, CF_Tur_Table, tur_table_Ncol, CF_TargetCols, RowMajor_No, AllocMem_Yes );
+   tur_table_NBin = Aux_LoadTable( tur_table, CF_Tur_Table, tur_table_Ncol, CF_TargetCols, RowMajor_No, AllocMem_Yes );
 
-//    Table_X     = tur_table + CF_ColIdx_X * tur_table_NBin;
-//    Table_Y     = tur_table + CF_ColIdx_Y * tur_table_NBin;
-//    Table_Z     = tur_table + CF_ColIdx_Z * tur_table_NBin;
-//    Table_VelX  = tur_table + CF_ColIdx_VelX * tur_table_NBin;
-//    Table_VelY  = tur_table + CF_ColIdx_VelY * tur_table_NBin;
-//    Table_VelZ  = tur_table + CF_ColIdx_VelZ * tur_table_NBin;
+   Table_X     = tur_table + CF_ColIdx_X * tur_table_NBin;
+   Table_Y     = tur_table + CF_ColIdx_Y * tur_table_NBin;
+   Table_Z     = tur_table + CF_ColIdx_Z * tur_table_NBin;
+   Table_VelX  = tur_table + CF_ColIdx_VelX * tur_table_NBin;
+   Table_VelY  = tur_table + CF_ColIdx_VelY * tur_table_NBin;
+   Table_VelZ  = tur_table + CF_ColIdx_VelZ * tur_table_NBin;
 
-//    for ( int i = 0; i < tur_table_NBin; i++ )
-//    {
-//       Total_VelX += Table_VelX[i];
-//       Total_VelY += Table_VelY[i];
-//       Total_VelZ += Table_VelZ[i];
+   for ( int i = 0; i < tur_table_NBin; i++ )
+   {
+      Total_VelX += Table_VelX[i];
+      Total_VelY += Table_VelY[i];
+      Total_VelZ += Table_VelZ[i];
 
-//       Total_VelX_SQR += SQR(Table_VelX[i]);
-//       Total_VelY_SQR += SQR(Table_VelY[i]);
-//       Total_VelZ_SQR += SQR(Table_VelZ[i]);
+      Total_VelX_SQR += SQR(Table_VelX[i]);
+      Total_VelY_SQR += SQR(Table_VelY[i]);
+      Total_VelZ_SQR += SQR(Table_VelZ[i]);
 
-//       Total_Vrms_Count ++;
-//    }
+      Total_Vrms_Count ++;
+   }
 
-//    // Vrms = SQRT( ( Vx^2 + Vy^2 + Vz^2 ) / N + ( Vx + Vy + Vz / N) ^ 2 )
-//    Vrms = SQRT( (Total_VelX_SQR + Total_VelY_SQR + Total_VelZ_SQR) / Total_Vrms_Count - 
-//                 SQR( (Total_VelX + Total_VelY + Total_VelZ) / Total_Vrms_Count ) );
-//    Vrms_Scale = CF_Mach * Cs / Vrms;
-// } // Function : Load_Turbulence
+   // Vrms = SQRT( ( Vx^2 + Vy^2 + Vz^2 ) / N + ( Vx + Vy + Vz / N) ^ 2 )
+   Vrms = SQRT( (Total_VelX_SQR + Total_VelY_SQR + Total_VelZ_SQR) / Total_Vrms_Count - 
+                SQR( (Total_VelX + Total_VelY + Total_VelZ) / Total_Vrms_Count ) );
+   Vrms_Scale = CF_Mach * Cs / Vrms;
+} // Function : Load_Turbulence
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SetGridIC
@@ -372,7 +372,7 @@ void Init_TestProb_Hydro_SphericalCollapse()
 #  if ( MODEL == HYDRO )
 // set the problem-specific runtime parameters
    SetParameter();
-   if ( OPT__INIT != INIT_BY_RESTART ) Load_Turbulence();
+   if ( OPT__INIT != INIT_BY_RESTART ) Load_Turbulence_SC();
 
 
 // set the function pointers of various problem-specific routines
