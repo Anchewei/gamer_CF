@@ -68,13 +68,13 @@ void Validate()
    Aux_Error( ERROR_INFO, "GRAVITY must be enabled !!\n" );
 #  endif
 
-#  ifndef COMOVING
-   Aux_Error( ERROR_INFO, "COMOVING must be enabled !!\n" );
-#  endif
+// #  ifndef COMOVING
+//    Aux_Error( ERROR_INFO, "COMOVING must be enabled !!\n" );
+// #  endif
 
-#  ifdef PARTICLE
-   Aux_Error( ERROR_INFO, "PARTICLE must be disabled !!\n" );
-#  endif
+// #  ifdef PARTICLE
+//    Aux_Error( ERROR_INFO, "PARTICLE must be disabled !!\n" );
+// #  endif
 
 #  ifdef GRAVITY
    if ( !OPT__SELF_GRAVITY )
@@ -331,6 +331,16 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 } // FUNCTION : SetGridIC
 #endif // #if ( MODEL == HYDRO )
 
+#  ifdef PARTICLE
+void Par_Init_ByFunction_SC( const long NPar_ThisRank, const long NPar_AllRank,
+                          real *ParMass, real *ParPosX, real *ParPosY, real *ParPosZ,
+                          real *ParVelX, real *ParVelY, real *ParVelZ, real *ParTime,
+                          real *ParType, real *AllAttribute[PAR_NATT_TOTAL] )
+{
+   // we only use star particles, so keep here empty.
+}  // FUNCTION : Par_Init_ByFunction
+#  endif
+
 
 
 //-------------------------------------------------------------------------------------------------------
@@ -361,6 +371,10 @@ void Init_TestProb_Hydro_SphericalCollapse()
 // set the function pointers of various problem-specific routines
    Init_Function_User_Ptr = SetGridIC;
 #  endif // #if ( MODEL == HYDRO )
+#  ifdef PARTICLE
+   Par_Init_ByFunction_Ptr           = Par_Init_ByFunction_SC; // option: PAR_INIT=1;              example: Particle/Par_Init_ByFunction.cpp
+   Par_Init_Attribute_User_Ptr       = NULL; // set PAR_NATT_USER;               example: TestProblem/Hydro/AGORA_IsolatedGalaxy/Init_TestProb_Hydro_AGORA_IsolatedGalaxy.cpp --> AddNewParticleAttribute()
+#  endif
 
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ... done\n", __FUNCTION__ );
