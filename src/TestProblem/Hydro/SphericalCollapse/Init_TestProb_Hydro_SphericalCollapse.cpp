@@ -10,6 +10,35 @@ static double SphCol_Dens_Delta;    // top-hat mass density --> total density = 
 static double SphCol_Engy_Bg;       // background energy density
 static double SphCol_Radius;        // top-hat radius
 static double SphCol_Center[3];     // top-hat center
+
+static double     *tur_table = NULL;              // used to store turbulence (1D)
+static int        tur_table_NBin;                 // number of row in turbulence table obtained by Aux_LoadTable
+static int        tur_table_Ncol;                 // number of column in turbulence table (set by user)
+static int        *CF_TargetCols = new int [6];    // Index of columns read from the turbulence table 
+static int        CF_ColIdx_X;                    // Column index of x coordinate in the turbulence table
+static int        CF_ColIdx_Y;                    // Column index of y coordinate in the turbulence table 
+static int        CF_ColIdx_Z;                    // Column index of z coordinate in the turbulence table 
+static int        CF_ColIdx_VelX;                 // Column index of x direction velocity in the turbulence table 
+static int        CF_ColIdx_VelY;                 // Column index of y direction velocity in the turbulence table 
+static int        CF_ColIdx_VelZ;                 // Column index of z direction velocity in the turbulence table 
+static double     *Table_X;                       // used to store the readed data
+static double     *Table_Y;
+static double     *Table_Z;
+static double     *Table_VelX;
+static double     *Table_VelY;
+static double     *Table_VelZ;
+static int        size;                           // turbulence cell number
+static double     Total_VelX;                     // used to calculate Vrms
+static double     Total_VelY;
+static double     Total_VelZ;
+static double     Total_VelX_SQR;
+static double     Total_VelY_SQR;
+static double     Total_VelZ_SQR;
+static double     Vrms;
+static double     Vrms_Scale;                     // used to rescale velocity
+static int        Total_Vrms_Count;
+
+static double     Cs;                             // sound spped
 // =======================================================================================
 
 
@@ -123,6 +152,8 @@ void SetParameter()
    ReadPara->Add( "SphCol_Center_X",   &SphCol_Center[0],      -1.0,          NoMin_double,     NoMax_double      );
    ReadPara->Add( "SphCol_Center_Y",   &SphCol_Center[1],      -1.0,          NoMin_double,     NoMax_double      );
    ReadPara->Add( "SphCol_Center_Z",   &SphCol_Center[2],      -1.0,          NoMin_double,     NoMax_double      );
+   ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
+   ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
 
    ReadPara->Read( FileName );
 
@@ -134,7 +165,31 @@ void SetParameter()
 
 
 // (2) set the problem-specific derived parameters
+   tur_table_Ncol = 6;
+   CF_TargetCols[0] =  0;
+   CF_TargetCols[1] =  1;
+   CF_TargetCols[2] =  2;
+   CF_TargetCols[3] =  3;
+   CF_TargetCols[4] =  4;
+   CF_TargetCols[5] =  5;
+   CF_ColIdx_X      =  0;
+   CF_ColIdx_Y      =  1;
+   CF_ColIdx_Z      =  2;
+   CF_ColIdx_VelX   =  3;
+   CF_ColIdx_VelY   =  4;
+   CF_ColIdx_VelZ   =  5;
+   Total_VelX = 0.0;
+   Total_VelY = 0.0;
+   Total_VelZ = 0.0;
+   Total_VelX_SQR = 0.0;
+   Total_VelY_SQR = 0.0;
+   Total_VelZ_SQR = 0.0;
+   Vrms = 0.0;
+   Vrms_Scale = 0.0;
+   Total_Vrms_Count = 0;
+   size = 129;
 
+   Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -172,7 +227,47 @@ void SetParameter()
 
 } // FUNCTION : SetParameter
 
+//-------------------------------------------------------------------------------------------------------
+// Function    :  Load_Turbulence
+// Description : load turbulence and calculate Vrms_Scale
+// Note        :
+// Parameter   :
+// Return      :
+//-------------------------------------------------------------------------------------------------------
+void Load_Turbulence()
+{
+   const bool RowMajor_No  = false;           // load data into the column major
+   const bool AllocMem_Yes = true;            // allocate memory for ISM_Velocity_Perturbation
+   const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
+   const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
 
+   tur_table_NBin = Aux_LoadTable( tur_table, CF_Tur_Table, tur_table_Ncol, CF_TargetCols, RowMajor_No, AllocMem_Yes );
+
+   Table_X     = tur_table + CF_ColIdx_X * tur_table_NBin;
+   Table_Y     = tur_table + CF_ColIdx_Y * tur_table_NBin;
+   Table_Z     = tur_table + CF_ColIdx_Z * tur_table_NBin;
+   Table_VelX  = tur_table + CF_ColIdx_VelX * tur_table_NBin;
+   Table_VelY  = tur_table + CF_ColIdx_VelY * tur_table_NBin;
+   Table_VelZ  = tur_table + CF_ColIdx_VelZ * tur_table_NBin;
+
+   for ( int i = 0; i < tur_table_NBin; i++ )
+   {
+      Total_VelX += Table_VelX[i];
+      Total_VelY += Table_VelY[i];
+      Total_VelZ += Table_VelZ[i];
+
+      Total_VelX_SQR += SQR(Table_VelX[i]);
+      Total_VelY_SQR += SQR(Table_VelY[i]);
+      Total_VelZ_SQR += SQR(Table_VelZ[i]);
+
+      Total_Vrms_Count ++;
+   }
+
+   // Vrms = SQRT( ( Vx^2 + Vy^2 + Vz^2 ) / N + ( Vx + Vy + Vz / N) ^ 2 )
+   Vrms = SQRT( (Total_VelX_SQR + Total_VelY_SQR + Total_VelZ_SQR) / Total_Vrms_Count - 
+                SQR( (Total_VelX + Total_VelY + Total_VelZ) / Total_Vrms_Count ) );
+   Vrms_Scale = CF_Mach * Cs / Vrms;
+} // Function : Load_Turbulence
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SetGridIC
@@ -197,15 +292,41 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
                 const int lv, double AuxArray[] )
 {
 
+   const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
+   const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+
+   double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
+   double VelX, VelY, VelZ, dir;
+
+   int i = (int) ( ( x / BoxSize[0] ) * size );    // turbulence box index (cude)
+   int j = (int) ( ( y / BoxSize[0] ) * size );
+   int k = (int) ( ( z / BoxSize[0] ) * size );
+   int mk = FMOD(k, size);                          // modify the k index to repeat the cude in z direction
+   int index = i * SQR(size) + j * size + mk;
+   if ( i < 0 || i > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  i = %d", i  );
+   if ( j < 0 || j > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  j = %d", j  );
+   if ( mk < 0 || mk > size ) Aux_Error( ERROR_INFO, "index is out of bound\n, mk = %d", mk );
+   if ( index < 0 || index > tur_table_NBin ) Aux_Error( ERROR_INFO, "index is out of bound\n, index = %d", index );
+   VelX = Vrms_Scale * ( Table_VelX[ index ] - Total_VelX / Total_Vrms_Count );
+   VelY = Vrms_Scale * ( Table_VelY[ index ] - Total_VelY / Total_Vrms_Count );
+   VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
+
    const double r = sqrt( SQR(x-SphCol_Center[0]) + SQR(y-SphCol_Center[1]) + SQR(z-SphCol_Center[2]) );
 
-   fluid[DENS] = SphCol_Dens_Bg;
-   fluid[MOMX] = 0.0;
-   fluid[MOMY] = 0.0;
-   fluid[MOMZ] = 0.0;
-   fluid[ENGY] = SphCol_Engy_Bg;
+   Dens = SphCol_Dens_Bg
+   if ( r <= SphCol_Radius )  Dens *= ( 1.0 + SphCol_Dens_Delta );
+   MomX = Dens * VelX;
+   MomY = Dens * VelY;
+   MomZ = Dens * VelZ;
+   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
+                                    EoS_AuxArray_Int, h_EoS_Table );
+   Etot = Hydro_ConEint2Etot( Dens, MomX, MomY, MomZ, Eint, 0.0 );     // do NOT include magnetic energy here
 
-   if ( r <= SphCol_Radius )  fluid[DENS] *= ( 1.0 + SphCol_Dens_Delta );
+   fluid[DENS] = Dens;
+   fluid[MOMX] = Dens * VelX;
+   fluid[MOMY] = Dens * VelY;
+   fluid[MOMZ] = Dens * VelZ;
+   fluid[ENGY] = SphCol_Engy_Bg+Etot;
 
 } // FUNCTION : SetGridIC
 #endif // #if ( MODEL == HYDRO )
