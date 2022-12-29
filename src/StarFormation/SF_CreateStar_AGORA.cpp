@@ -149,6 +149,18 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    int NNewPar, LocalID, delta_t, PGi, PGj, PGk;
 
+//    load the existing particles ID (their number)
+   const int   NParTot   = amr->Par->NPar_Active_AllRank;
+   const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+   const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
+#  ifdef MY_DEBUG
+   if (NParTot > 0)
+   {
+      fprintf( File, "%13.7e %13.7e",  PosX[0], VelX[0]);
+      fprintf( File, "\n" );
+   }
+#  endif
+
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
 // --> bitwise reproducibility will still break when running with different numbers of OpenMP threads and/or MPI ranks
@@ -156,11 +168,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  pragma omp for schedule( static )
    for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
    {
-//    load the existing particles ID (their number)
-      const int   NParTot   = amr->Par->NPar_Active_AllRank;
-      const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-      const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
-
 #     if ( MODEL != HYDRO )
       const double MIN_DENS            = -1.0;  // set to an arbitrarily negative value to disable it
 #     endif
@@ -415,10 +422,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e %13.7e %13.7e %13.7e",  x, y, z, VelX, VelY, VelZ);
-         fprintf( File, "\n" );
-#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
