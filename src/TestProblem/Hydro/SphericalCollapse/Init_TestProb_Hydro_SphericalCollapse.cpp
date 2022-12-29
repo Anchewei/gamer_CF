@@ -41,6 +41,7 @@ static int        Total_Vrms_Count;
 static double     Cs;                             // sound spped
 
 static char       CF_Tur_Table[MAX_STRING];
+static double     CF_vflow;
 static double     CF_Mach;
 // =======================================================================================
 
@@ -157,6 +158,7 @@ void SetParameter()
    ReadPara->Add( "SphCol_Center_Z",   &SphCol_Center[2],      -1.0,          NoMin_double,     NoMax_double      );
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
    ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
 
    ReadPara->Read( FileName );
 
@@ -225,6 +227,7 @@ void SetParameter()
       Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
+      Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -315,7 +318,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    if ( index < 0 || index > tur_table_NBin ) Aux_Error( ERROR_INFO, "index is out of bound\n, index = %d", index );
    VelX = Vrms_Scale * ( Table_VelX[ index ] - Total_VelX / Total_Vrms_Count );
    VelY = Vrms_Scale * ( Table_VelY[ index ] - Total_VelY / Total_Vrms_Count );
-   VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
+   VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count ) + CF_vflow*Const_km/UNIT_V;
 
    const double r = sqrt( SQR(x-SphCol_Center[0]) + SQR(y-SphCol_Center[1]) + SQR(z-SphCol_Center[2]) );
 
