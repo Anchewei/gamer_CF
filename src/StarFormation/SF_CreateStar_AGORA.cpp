@@ -415,11 +415,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e %13.7e %13.7e %13.7e",  VelX, VelY, VelZ, 
-                  fluid[MOMX]/fluid[DENS], fluid[MOMY]/fluid[DENS], fluid[MOMZ]/fluid[DENS]);
-         fprintf( File, "\n" );
-#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
@@ -451,6 +446,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
          NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
          NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e %13.7e %13.7e",  GasAcc[0], GasAcc[1], GasAcc[2]);
+         fprintf( File, "\n" );
+#        endif
 
 #        endif // ifdef STORE_PAR_ACC
 
