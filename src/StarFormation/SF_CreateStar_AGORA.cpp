@@ -156,7 +156,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  ifdef MY_DEBUG
    if (NParTot > 0)
    {
-      fprintf( File, "%13.7e %13.7e",  PosX[0], VelX[0]);
+      fprintf( File, "%13.7e %13.7e",  ParPos[0], ParVel[0]);
       fprintf( File, "\n" );
    }
 #  endif
