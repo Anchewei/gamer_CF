@@ -153,13 +153,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const int   NParTot   = amr->Par->NPar_Active_AllRank;
    const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
    const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
-#  ifdef MY_DEBUG
-   if (NParTot > 0)
-   {
-      fprintf( File, "%13.7e %13.7e",  ParPos[0][0], ParVel[0][0]);
-      fprintf( File, "\n" );
-   }
-#  endif
 
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
@@ -422,6 +415,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e %13.7e %13.7e",  x, y, z);
+         fprintf( File, "\n" );
+#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
