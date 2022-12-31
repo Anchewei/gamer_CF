@@ -17,7 +17,7 @@
 
 int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhost)
 {
-   PGi = pi - NGhost;
+   PGi = pi - NGhost;[]
    PGj = pj - NGhost;
    PGk = pk - NGhost; // the cell id inside patch group
    
@@ -34,7 +34,66 @@ int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhos
    return CellPID;
 }
 
+void ReadParAttInPID(int PID, real *ParAtt_Local, int &NPar)
+{
+   // real *ParAtt_Local[PAR_NATT_TOTAL];
+   int   NParMax   = -1;
+   long  *ParList = NULL;
+   // int    NPar;
+   bool   UseParAttCopy;
 
+
+   for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_Local[v] = NULL;
+
+   NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar      );
+   NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar_Copy );
+
+   if ( NParMax > 0 )
+   {
+      for (int v=0; v<PAR_NATT_TOTAL; v++)
+         if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_Local[v] = new real [NParMax];
+   }
+
+   NPar          = amr->patch[0][lv][PID]->NPar_Copy;
+#  ifdef LOAD_BALANCE
+   ParList       = NULL;
+   UseParAttCopy = true;
+#  else
+   ParList       = amr->patch[0][lv][PID]->ParList_Copy;
+   UseParAttCopy = false;
+#  endif
+
+#  ifdef LOAD_BALANCE
+   if ( UseParAttCopy ) {
+      for (int v=0; v<PAR_NATT_TOTAL; v++) {
+         if ( ParAttBitIdx_In & BIDX(v) ) {
+
+#           ifdef DEBUG_PARTICLE
+            if ( NPar > 0  &&  amr->patch[0][lv][PID]->ParAtt_Copy[v] == NULL )
+               Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NPar (%d) > 0 (lv %d, PID %d, v %d) !!\n",
+                           NPar, lv, PID, v );
+#           endif
+
+            for (int p=0; p<NPar; p++)
+               ParAtt_Local[v][p] = amr->patch[0][lv][PID]->ParAtt_Copy[v][p];
+   }}}
+
+   else
+#  endif // #ifdef LOAD_BALANCE
+   {
+#     ifdef DEBUG_PARTICLE
+      if ( NPar > 0  &&  ParList == NULL )
+         Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
+                     NPar, lv, PID );
+#     endif
+
+      for (int v=0; v<PAR_NATT_TOTAL; v++) {
+         if ( ParAttBitIdx_In & BIDX(v) )
+            for (int p=0; p<NPar; p++)
+               ParAtt_Local[v][p] = amr->Par->Attribute[v][ ParList[p] ];
+      }
+   } // if ( UseParAttCopy ) ... else ...
+}
 
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SF_CreateStar_Sink
@@ -150,9 +209,31 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    int NNewPar, LocalID, delta_t, PGi, PGj, PGk;
 
 //    load the existing particles ID (their number)
-   const int   NParTot   = amr->Par->NPar_Active_AllRank;
-   const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-   const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
+   // const int   NParTot   = amr->Par->NPar_Active_AllRank;
+   // const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+   // const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
+// #  ifdef MY_DEBUG
+//    if (NParTot > 0)
+//    {
+//       fprintf( File, "%13.7e %13.7e",  ParPos[0][0], ParVel[0][0]);
+//       fprintf( File, "\n" );
+//    }
+// #  endif
+
+// ##############################
+   const bool TimingSendPar_Yes = true;
+   const bool JustCountNPar_No  = false;
+   const bool PredictPos_No     = false;
+   const bool SibBufPatch_Yes   = true;
+   const bool FaSibBufPatch_No  = false;
+   const long ParAttBitIdx_In   = _PAR_TOTAL;
+   Par_CollectParticle2OneLevel( lv, ParAttBitIdx_In, PredictPos_No, TimeNew, SibBufPatch_Yes, FaSibBufPatch_No,
+                                 JustCountNPar_No, TimingSendPar_Yes );
+// ##############################
+
+
+
+
 
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
@@ -233,34 +314,77 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          bool InsideAccRadius = false;
          bool NotPassDen      = false;
 
-         for (int p=0; p<NParTot; p++) // for the existing particles
+// ##############################
+         for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
          {
-            PCP[0] = x - ParPos[0][p];
-            PCP[1] = y - ParPos[1][p];
-            PCP[2] = z - ParPos[2][p];
+            real *ParAtt_APID = new real [PAR_NATT_TOTAL];
+            int    NParAPID;
+            ReadParAttInPID(APID, ParAtt_APID, NParAPID);
 
-            D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-            if ( D2Par < AccRadius )
+            for (int p=0; p<NParAPID; p++) // loop over all particle in APID
             {
-               InsideAccRadius = true;
-               break;
-            }
+               PCP[0] = x - ParAtt_APID[PAR_POSX][p];
+               PCP[1] = y - ParAtt_APID[PAR_POSY][p];
+               PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
+               D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+               if ( D2Par < AccRadius )
+               {
+                  InsideAccRadius = true;
+                  break;
+               }
 
-            PCV[0] = VelX - ParVel[0][p];
-            PCV[1] = VelY - ParVel[1][p];
-            PCV[2] = VelZ - ParVel[2][p];
+               PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
+               PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
+               PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
 
-            NPCP[0] = PCP[0]/D2Par;
-            NPCP[1] = PCP[1]/D2Par;
-            NPCP[2] = PCP[2]/D2Par;
+               NPCP[0] = PCP[0]/D2Par;
+               NPCP[1] = PCP[1]/D2Par;
+               NPCP[2] = PCP[2]/D2Par;
 
-            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-            if ( GasDens < GasDensFreeFall )
-            {
-               NotPassDen = true;
-               break;
-            }
-         } // NParTot
+               GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+               if ( GasDens < GasDensFreeFall )
+               {
+                  NotPassDen = true;
+                  break;
+               }
+
+            } // for (int p=0; p<NParAPID; p++) 
+            delete [] ParAtt_APID;
+
+            if ( InsideAccRadius )           break;
+            if ( NotPassDen )                break;
+         } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
+// ##############################
+
+         // for (int p=0; p<NParTot; p++) // for the existing particles
+         // {
+            // PCP[0] = x - ParPos[0][p];
+            // PCP[1] = y - ParPos[1][p];
+            // PCP[2] = z - ParPos[2][p];
+
+
+            // D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+            // if ( D2Par < AccRadius )
+            // {
+            //    InsideAccRadius = true;
+            //    break;
+            // }
+
+            // PCV[0] = VelX - ParVel[0][p];
+            // PCV[1] = VelY - ParVel[1][p];
+            // PCV[2] = VelZ - ParVel[2][p];
+
+            // NPCP[0] = PCP[0]/D2Par;
+            // NPCP[1] = PCP[1]/D2Par;
+            // NPCP[2] = PCP[2]/D2Par;
+
+            // GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+            // if ( GasDens < GasDensFreeFall )
+            // {
+            //    NotPassDen = true;
+            //    break;
+            // }
+         // } // NParTot
 
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
@@ -415,10 +539,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e",  x, y, z);
-         fprintf( File, "\n" );
-#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
