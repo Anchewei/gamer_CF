@@ -36,11 +36,10 @@ int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhos
 
 real *ReadParAttInPID( const int lv, const int PID, int &NPar, const long ParAttBitIdx_In)
 {
-   // real *ParAtt_Local[PAR_NATT_TOTAL];
-   static real ParAtt_Local[PAR_NATT_TOTAL];
+   real *ParAtt_Local[PAR_NATT_TOTAL];
    int   NParMax   = -1;
    long  *ParList = NULL;
-   // int    NPar;
+   int    NPar;
    bool   UseParAttCopy;
 
 
@@ -320,9 +319,64 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // ##############################
          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
          {
-            real   *ParAtt_APID;
+            real  *ParAtt_APID[PAR_NATT_TOTAL];
+            int    NParMax   = -1;
+            long  *ParList = NULL;
             int    NParAPID;
-            ReadParAttInPID(lv, APID, NParAPID, ParAttBitIdx_In);
+            bool   UseParAttCopy;
+
+
+            for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
+
+            NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar      );
+            NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar_Copy );
+
+            if ( NParMax > 0 )
+            {
+               for (int v=0; v<PAR_NATT_TOTAL; v++)
+                  if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
+            }
+
+            NParAPID          = amr->patch[0][lv][PID]->NPar_Copy;
+#           ifdef LOAD_BALANCE
+            ParList       = NULL;
+            UseParAttCopy = true;
+#           else
+            ParList       = amr->patch[0][lv][PID]->ParList_Copy;
+            UseParAttCopy = false;
+#           endif
+
+#           ifdef LOAD_BALANCE
+            if ( UseParAttCopy ) {
+               for (int v=0; v<PAR_NATT_TOTAL; v++) {
+                  if ( ParAttBitIdx_In & BIDX(v) ) {
+
+#                 ifdef DEBUG_PARTICLE
+                  if ( NParAPID > 0  &&  amr->patch[0][lv][PID]->ParAtt_Copy[v] == NULL )
+                     Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, PID %d, v %d) !!\n",
+                                 NParAPID, lv, PID, v );
+#                 endif
+
+                  for (int p=0; p<NParAPID; p++)
+                     ParAtt_APID[v][p] = amr->patch[0][lv][PID]->ParAtt_Copy[v][p];
+            }}}
+
+            else
+#           endif // #ifdef LOAD_BALANCE
+            {
+#              ifdef DEBUG_PARTICLE
+               if ( NParAPID > 0  &&  ParList == NULL )
+                  Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
+                              NParAPID, lv, PID );
+#              endif
+
+               for (int v=0; v<PAR_NATT_TOTAL; v++) {
+                  if ( ParAttBitIdx_In & BIDX(v) )
+                     for (int p=0; p<NParAPID; p++)
+                        ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
+               }
+            } // if ( UseParAttCopy ) ... else ...
+
 
             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
             {
