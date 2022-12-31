@@ -34,69 +34,6 @@ int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhos
    return CellPID;
 }
 
-real *ReadParAttInPID( const int lv, const int PID, int &NPar, const long ParAttBitIdx_In)
-{
-   real *ParAtt_Local[PAR_NATT_TOTAL];
-   int   NParMax   = -1;
-   long  *ParList = NULL;
-   int    NPar;
-   bool   UseParAttCopy;
-
-
-   for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_Local[v] = NULL;
-
-   NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar      );
-   NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar_Copy );
-
-   if ( NParMax > 0 )
-   {
-      for (int v=0; v<PAR_NATT_TOTAL; v++)
-         if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_Local[v] = new real [NParMax];
-   }
-
-   NPar          = amr->patch[0][lv][PID]->NPar_Copy;
-#  ifdef LOAD_BALANCE
-   ParList       = NULL;
-   UseParAttCopy = true;
-#  else
-   ParList       = amr->patch[0][lv][PID]->ParList_Copy;
-   UseParAttCopy = false;
-#  endif
-
-#  ifdef LOAD_BALANCE
-   if ( UseParAttCopy ) {
-      for (int v=0; v<PAR_NATT_TOTAL; v++) {
-         if ( ParAttBitIdx_In & BIDX(v) ) {
-
-#           ifdef DEBUG_PARTICLE
-            if ( NPar > 0  &&  amr->patch[0][lv][PID]->ParAtt_Copy[v] == NULL )
-               Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NPar (%d) > 0 (lv %d, PID %d, v %d) !!\n",
-                           NPar, lv, PID, v );
-#           endif
-
-            for (int p=0; p<NPar; p++)
-               ParAtt_Local[v][p] = amr->patch[0][lv][PID]->ParAtt_Copy[v][p];
-   }}}
-
-   else
-#  endif // #ifdef LOAD_BALANCE
-   {
-#     ifdef DEBUG_PARTICLE
-      if ( NPar > 0  &&  ParList == NULL )
-         Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
-                     NPar, lv, PID );
-#     endif
-
-      for (int v=0; v<PAR_NATT_TOTAL; v++) {
-         if ( ParAttBitIdx_In & BIDX(v) )
-            for (int p=0; p<NPar; p++)
-               ParAtt_Local[v][p] = amr->Par->Attribute[v][ ParList[p] ];
-      }
-   } // if ( UseParAttCopy ) ... else ...
-
-   return ParAtt_Local
-}
-
 //-------------------------------------------------------------------------------------------------------
 // Function    :  SF_CreateStar_Sink
 // Description :  Create new star particles stochastically using the presription suggested by the AGORA project
