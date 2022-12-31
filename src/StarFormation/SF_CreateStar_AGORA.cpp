@@ -338,8 +338,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             } // for (int p=0; p<NParAPID; p++) 
 
 #           ifdef MY_DEBUG
-            fprintf( File, "%13.7e %13.7e",  D2Par, GasDensFreeFall);
-            fprintf( File, "\n" );
+            if ( D2Par!=0.0 )
+            {
+               fprintf( File, "%13.7e %13.7e",  D2Par, GasDensFreeFall);
+               fprintf( File, "\n" );
+            }
 #           endif
 
             if ( InsideAccRadius )           break;
@@ -377,8 +380,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //             // }
 //          // } // NParTot
 
-//          if ( InsideAccRadius )               continue;
-//          if ( NotPassDen )                    continue;
+         if ( InsideAccRadius )               continue;
+         if ( NotPassDen )                    continue;
 
 //          for (int p=0; p<NNewPar; p++) // for the not yet registered particles
 //          {
@@ -409,8 +412,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //             }
 //          } // NParTot
 
-         if ( InsideAccRadius )               continue;
-         if ( NotPassDen )                    continue;
+         // if ( InsideAccRadius )               continue;
+         // if ( NotPassDen )                    continue;
          
 // //       2. Converging Flow Check
 // //       ===========================================================================================================
