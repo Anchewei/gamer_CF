@@ -253,267 +253,266 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          bool InsideAccRadius = false;
          bool NotPassDen      = false;
 
-// ##############################
-         for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
-         {
-            real  *ParAtt_APID[PAR_NATT_TOTAL];
-            int    NParMax   = -1;
-            long  *ParList = NULL;
-            int    NParAPID;
-            bool   UseParAttCopy;
+// // ##############################
+//          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
+//          {
+//             real  *ParAtt_APID[PAR_NATT_TOTAL];
+//             int    NParMax   = -1;
+//             long  *ParList = NULL;
+//             int    NParAPID;
+//             bool   UseParAttCopy;
 
 
-            for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
+//             for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
 
-            NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar      );
-            NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar_Copy );
+//             NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar      );
+//             NParMax = MAX( NParMax, amr->patch[0][lv][PID]->NPar_Copy );
 
-            if ( NParMax > 0 )
-            {
-               for (int v=0; v<PAR_NATT_TOTAL; v++)
-                  if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
-            }
+//             if ( NParMax > 0 )
+//             {
+//                for (int v=0; v<PAR_NATT_TOTAL; v++)
+//                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
+//             }
 
-            NParAPID          = amr->patch[0][lv][PID]->NPar_Copy;
-#           ifdef LOAD_BALANCE
-            ParList       = NULL;
-            UseParAttCopy = true;
-#           else
-            ParList       = amr->patch[0][lv][PID]->ParList_Copy;
-            UseParAttCopy = false;
-#           endif
+//             NParAPID          = amr->patch[0][lv][PID]->NPar_Copy;
+// #           ifdef LOAD_BALANCE
+//             ParList       = NULL;
+//             UseParAttCopy = true;
+// #           else
+//             ParList       = amr->patch[0][lv][PID]->ParList_Copy;
+//             UseParAttCopy = false;
+// #           endif
 
-#           ifdef LOAD_BALANCE
-            if ( UseParAttCopy ) {
-               for (int v=0; v<PAR_NATT_TOTAL; v++) {
-                  if ( ParAttBitIdx_In & BIDX(v) ) {
+// #           ifdef LOAD_BALANCE
+//             if ( UseParAttCopy ) {
+//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
+//                   if ( ParAttBitIdx_In & BIDX(v) ) {
 
-#                 ifdef DEBUG_PARTICLE
-                  if ( NParAPID > 0  &&  amr->patch[0][lv][PID]->ParAtt_Copy[v] == NULL )
-                     Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, PID %d, v %d) !!\n",
-                                 NParAPID, lv, PID, v );
-#                 endif
+// #                 ifdef DEBUG_PARTICLE
+//                   if ( NParAPID > 0  &&  amr->patch[0][lv][PID]->ParAtt_Copy[v] == NULL )
+//                      Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, PID %d, v %d) !!\n",
+//                                  NParAPID, lv, PID, v );
+// #                 endif
 
-                  for (int p=0; p<NParAPID; p++)
-                     ParAtt_APID[v][p] = amr->patch[0][lv][PID]->ParAtt_Copy[v][p];
-            }}}
+//                   for (int p=0; p<NParAPID; p++)
+//                      ParAtt_APID[v][p] = amr->patch[0][lv][PID]->ParAtt_Copy[v][p];
+//             }}}
 
-            else
-#           endif // #ifdef LOAD_BALANCE
-            {
-#              ifdef DEBUG_PARTICLE
-               if ( NParAPID > 0  &&  ParList == NULL )
-                  Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
-                              NParAPID, lv, PID );
-#              endif
+//             else
+// #           endif // #ifdef LOAD_BALANCE
+//             {
+// #              ifdef DEBUG_PARTICLE
+//                if ( NParAPID > 0  &&  ParList == NULL )
+//                   Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, PID %d) !!\n",
+//                               NParAPID, lv, PID );
+// #              endif
 
-               for (int v=0; v<PAR_NATT_TOTAL; v++) {
-                  if ( ParAttBitIdx_In & BIDX(v) )
-                     for (int p=0; p<NParAPID; p++)
-                        ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
-               }
-            } // if ( UseParAttCopy ) ... else ...
-
-
-            for (int p=0; p<NParAPID; p++) // loop over all particle in APID
-            {
-               PCP[0] = x - ParAtt_APID[PAR_POSX][p];
-               PCP[1] = y - ParAtt_APID[PAR_POSY][p];
-               PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
-               D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-               if ( D2Par < AccRadius )
-               {
-                  InsideAccRadius = true;
-                  break;
-               }
-
-               PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
-               PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
-               PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
-
-               NPCP[0] = PCP[0]/D2Par;
-               NPCP[1] = PCP[1]/D2Par;
-               NPCP[2] = PCP[2]/D2Par;
-
-               GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-               if ( GasDens < GasDensFreeFall )
-               {
-                  NotPassDen = true;
-                  break;
-               }
-
-            } // for (int p=0; p<NParAPID; p++) 
-            delete [] ParAtt_APID;
-
-            if ( InsideAccRadius )           break;
-            if ( NotPassDen )                break;
-         } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
-// ##############################
-
-         // for (int p=0; p<NParTot; p++) // for the existing particles
-         // {
-            // PCP[0] = x - ParPos[0][p];
-            // PCP[1] = y - ParPos[1][p];
-            // PCP[2] = z - ParPos[2][p];
+//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
+//                   if ( ParAttBitIdx_In & BIDX(v) )
+//                      for (int p=0; p<NParAPID; p++)
+//                         ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
+//                }
+//             } // if ( UseParAttCopy ) ... else ...
 
 
-            // D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-            // if ( D2Par < AccRadius )
-            // {
-            //    InsideAccRadius = true;
-            //    break;
-            // }
+//             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
+//             {
+//                PCP[0] = x - ParAtt_APID[PAR_POSX][p];
+//                PCP[1] = y - ParAtt_APID[PAR_POSY][p];
+//                PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
+//                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+//                if ( D2Par < AccRadius )
+//                {
+//                   InsideAccRadius = true;
+//                   break;
+//                }
 
-            // PCV[0] = VelX - ParVel[0][p];
-            // PCV[1] = VelY - ParVel[1][p];
-            // PCV[2] = VelZ - ParVel[2][p];
+//                PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
+//                PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
+//                PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
 
-            // NPCP[0] = PCP[0]/D2Par;
-            // NPCP[1] = PCP[1]/D2Par;
-            // NPCP[2] = PCP[2]/D2Par;
+//                NPCP[0] = PCP[0]/D2Par;
+//                NPCP[1] = PCP[1]/D2Par;
+//                NPCP[2] = PCP[2]/D2Par;
 
-            // GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-            // if ( GasDens < GasDensFreeFall )
-            // {
-            //    NotPassDen = true;
-            //    break;
-            // }
-         // } // NParTot
+//                GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+//                if ( GasDens < GasDensFreeFall )
+//                {
+//                   NotPassDen = true;
+//                   break;
+//                }
 
-         if ( InsideAccRadius )               continue;
-         if ( NotPassDen )                    continue;
+//             } // for (int p=0; p<NParAPID; p++) 
 
-         for (int p=0; p<NNewPar; p++) // for the not yet registered particles
-         {
-            PCP[0] = x - NewParAtt[p][PAR_POSX];
-            PCP[1] = y - NewParAtt[p][PAR_POSY];
-            PCP[2] = z - NewParAtt[p][PAR_POSZ];
+//             if ( InsideAccRadius )           break;
+//             if ( NotPassDen )                break;
+//          } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
+// // ##############################
 
-            D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-            if ( D2Par < AccRadius )
-            {
-               InsideAccRadius = true;
-               break;
-            }
+//          // for (int p=0; p<NParTot; p++) // for the existing particles
+//          // {
+//             // PCP[0] = x - ParPos[0][p];
+//             // PCP[1] = y - ParPos[1][p];
+//             // PCP[2] = z - ParPos[2][p];
 
-            PCV[0] = VelX - NewParAtt[p][PAR_VELX];
-            PCV[1] = VelY - NewParAtt[p][PAR_VELY];
-            PCV[2] = VelZ - NewParAtt[p][PAR_VELZ];
 
-            NPCP[0] = PCP[0]/D2Par;
-            NPCP[1] = PCP[1]/D2Par;
-            NPCP[2] = PCP[2]/D2Par;
+//             // D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+//             // if ( D2Par < AccRadius )
+//             // {
+//             //    InsideAccRadius = true;
+//             //    break;
+//             // }
 
-            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-            if ( GasDens < GasDensFreeFall )
-            {
-               NotPassDen = true;
-               break;
-            }
-         } // NParTot
+//             // PCV[0] = VelX - ParVel[0][p];
+//             // PCV[1] = VelY - ParVel[1][p];
+//             // PCV[2] = VelZ - ParVel[2][p];
 
-         if ( InsideAccRadius )               continue;
-         if ( NotPassDen )                    continue;
+//             // NPCP[0] = PCP[0]/D2Par;
+//             // NPCP[1] = PCP[1]/D2Par;
+//             // NPCP[2] = PCP[2]/D2Par;
+
+//             // GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+//             // if ( GasDens < GasDensFreeFall )
+//             // {
+//             //    NotPassDen = true;
+//             //    break;
+//             // }
+//          // } // NParTot
+
+//          if ( InsideAccRadius )               continue;
+//          if ( NotPassDen )                    continue;
+
+//          for (int p=0; p<NNewPar; p++) // for the not yet registered particles
+//          {
+//             PCP[0] = x - NewParAtt[p][PAR_POSX];
+//             PCP[1] = y - NewParAtt[p][PAR_POSY];
+//             PCP[2] = z - NewParAtt[p][PAR_POSZ];
+
+//             D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+//             if ( D2Par < AccRadius )
+//             {
+//                InsideAccRadius = true;
+//                break;
+//             }
+
+//             PCV[0] = VelX - NewParAtt[p][PAR_VELX];
+//             PCV[1] = VelY - NewParAtt[p][PAR_VELY];
+//             PCV[2] = VelZ - NewParAtt[p][PAR_VELZ];
+
+//             NPCP[0] = PCP[0]/D2Par;
+//             NPCP[1] = PCP[1]/D2Par;
+//             NPCP[2] = PCP[2]/D2Par;
+
+//             GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+//             if ( GasDens < GasDensFreeFall )
+//             {
+//                NotPassDen = true;
+//                break;
+//             }
+//          } // NParTot
+
+//          if ( InsideAccRadius )               continue;
+//          if ( NotPassDen )                    continue;
          
-//       2. Converging Flow Check
-//       ===========================================================================================================
-         for (int NeighborID=0; NeighborID<6; NeighborID++)
-         {  
-            if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-            else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-            else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+// //       2. Converging Flow Check
+// //       ===========================================================================================================
+//          for (int NeighborID=0; NeighborID<6; NeighborID++)
+//          {  
+//             if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+//             else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+//             else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+//             else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+//             else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+//             else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
-            const int Neighbort = t + delta_t;
-            for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
+//             const int Neighbort = t + delta_t;
+//             for (int v=0; v<FLU_NIN; v++)    dfluid[v] = Flu_Array_F_In[v][Neighbort];
 
-            if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
-            else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
-            else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
-         }
+//             if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
+//             else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
+//             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
+//          }
 
-         if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
-         if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
-         if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
+//          if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
+//          if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
+//          if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
 
-//       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
-//       ===========================================================================================================
-         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
-         for (int vk=0; vk<Size_Flu; vk++)
-         for (int vj=0; vj<Size_Flu; vj++)
-         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-         {  
-            vx = Corner_Array_F[0] + vi*dh;
-            vy = Corner_Array_F[1] + vj*dh;
-            vz = Corner_Array_F[2] + vk*dh;
+// //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
+// //       ===========================================================================================================
+//          real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
+//          for (int vk=0; vk<Size_Flu; vk++)
+//          for (int vj=0; vj<Size_Flu; vj++)
+//          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+//          {  
+//             vx = Corner_Array_F[0] + vi*dh;
+//             vy = Corner_Array_F[1] + vj*dh;
+//             vz = Corner_Array_F[2] + vk*dh;
 
-            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                 
-            continue; // check whether it is inside the control volume
+//             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+//             if ( D2CC > AccRadius )                 
+//             continue; // check whether it is inside the control volume
 
-            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
-            MVel[0] += vfluid[MOMX]*dv;
-            MVel[1] += vfluid[MOMY]*dv;
-            MVel[2] += vfluid[MOMZ]*dv;
-            Mtot += vfluid[DENS]*dv;
-         } // vi, vj, vk
+//             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+//             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+//             MVel[0] += vfluid[MOMX]*dv;
+//             MVel[1] += vfluid[MOMY]*dv;
+//             MVel[2] += vfluid[MOMZ]*dv;
+//             Mtot += vfluid[DENS]*dv;
+//          } // vi, vj, vk
 
-         MWvel[0] = MVel[0]/Mtot;
-         MWvel[1] = MVel[1]/Mtot;
-         MWvel[2] = MVel[2]/Mtot; // COM velocity
+//          MWvel[0] = MVel[0]/Mtot;
+//          MWvel[1] = MVel[1]/Mtot;
+//          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-         bool NotMiniEg      = false;
-         real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
-         const real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
-         for (int vk=0; vk<Size_Flu; vk++)
-         for (int vj=0; vj<Size_Flu; vj++)
-         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
-         {
-            vx = Corner_Array_F[0] + vi*dh;
-            vy = Corner_Array_F[1] + vj*dh;
-            vz = Corner_Array_F[2] + vk*dh;
+//          bool NotMiniEg      = false;
+//          real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
+//          const real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
+//          for (int vk=0; vk<Size_Flu; vk++)
+//          for (int vj=0; vj<Size_Flu; vj++)
+//          for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+//          {
+//             vx = Corner_Array_F[0] + vi*dh;
+//             vy = Corner_Array_F[1] + vj*dh;
+//             vz = Corner_Array_F[2] + vk*dh;
 
-            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
+//             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+//             if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
 
-            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+//             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+//             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-//          3.1 Gravitational Potential Minimum Check
-            vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
-            if ( vEg < CCEg )
-            {
-               NotMiniEg = true;
-               break;
-            }
+// //          3.1 Gravitational Potential Minimum Check
+//             vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
+//             if ( vEg < CCEg )
+//             {
+//                NotMiniEg = true;
+//                break;
+//             }
 
-//          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
-            const bool CheckMinPres_No = false;
-            Egtot += vEg;
+// //          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
+//             const bool CheckMinPres_No = false;
+//             Egtot += vEg;
 
-#           ifdef MHD
-            vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
-                                                Mag_Array_F_In[MAGY],
-                                                Mag_Array_F_In[MAGZ],
-                                                Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
-            Emagtot += vEmag;
-#           endif
+// #           ifdef MHD
+//             vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
+//                                                 Mag_Array_F_In[MAGY],
+//                                                 Mag_Array_F_In[MAGZ],
+//                                                 Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
+//             Emagtot += vEmag;
+// #           endif
 
-            Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
-                                   vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
-                                   EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
-            Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
-            Ethtot += 0.5*vfluid[DENS]*Cs2;
+//             Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
+//                                    vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
+//                                    EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
+//             Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
+//             Ethtot += 0.5*vfluid[DENS]*Cs2;
 
-            Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
-         } // vi, vj, vk
+//             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
+//          } // vi, vj, vk
 
-         if ( NotMiniEg )                                   continue;
-         if ( FABS(Egtot) < 2*Ethtot)                       continue;
-         if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
+//          if ( NotMiniEg )                                   continue;
+//          if ( FABS(Egtot) < 2*Ethtot)                       continue;
+//          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
