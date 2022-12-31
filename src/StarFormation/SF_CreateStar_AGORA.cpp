@@ -262,7 +262,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #              ifdef MY_DEBUG
                if ( NParMax > 1 )
                {
-                  fprintf( File, "%13.7e",  NParMax);
+                  fprintf( File, "%13.7e 1",  NParMax);
                   fprintf( File, "\n" );
                }
 #              endif
