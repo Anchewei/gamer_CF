@@ -260,8 +260,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                for (int v=0; v<PAR_NATT_TOTAL; v++)
                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
 #              ifdef MY_DEBUG
-               fprintf( File, "%13.7e",  NParMax);
-               fprintf( File, "\n" );
+               if ( NParMax > 1 )
+               {
+                  fprintf( File, "%13.7e",  NParMax);
+                  fprintf( File, "\n" );
+               }
 #              endif
             }
 
