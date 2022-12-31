@@ -152,7 +152,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    // const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
    // const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
 
-
+   const bool TimingSendPar_Yes = true;
+   const bool JustCountNPar_No  = false;
+   const bool PredictPos_No     = false;
+   const bool SibBufPatch_Yes   = true;
+   const bool FaSibBufPatch_No  = false;
+   const long ParAttBitIdx_In   = _PAR_TOTAL;
+   Par_CollectParticle2OneLevel( lv, ParAttBitIdx_In, PredictPos_No, TimeNew, SibBufPatch_Yes, FaSibBufPatch_No,
+                                 JustCountNPar_No, TimingSendPar_Yes );
 
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
@@ -236,15 +243,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // ##############################
          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
          {
-            const bool TimingSendPar_Yes = true;
-            const bool JustCountNPar_No  = false;
-            const bool PredictPos_No     = false;
-            const bool SibBufPatch_Yes   = true;
-            const bool FaSibBufPatch_No  = false;
-            const long ParAttBitIdx_In   = _PAR_TOTAL;
-            Par_CollectParticle2OneLevel( lv, ParAttBitIdx_In, PredictPos_No, TimeNew, SibBufPatch_Yes, FaSibBufPatch_No,
-                                          JustCountNPar_No, TimingSendPar_Yes );
-
             real  *ParAtt_APID[PAR_NATT_TOTAL];
             int    NParMax   = -1;
             long  *ParList = NULL;
@@ -339,8 +337,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( InsideAccRadius )           break;
             if ( NotPassDen )                break;
          } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
-         
-         Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
+
 // ##############################
 
 //          // for (int p=0; p<NParTot; p++) // for the existing particles
@@ -639,6 +636,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
+   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
    } // end of OpenMP parallel region
 
 // get the total number of active particles in all MPI ranks
