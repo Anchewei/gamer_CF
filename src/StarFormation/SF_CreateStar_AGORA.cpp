@@ -17,7 +17,7 @@
 
 int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhost)
 {
-   PGi = pi - NGhost;[]
+   PGi = pi - NGhost;
    PGj = pj - NGhost;
    PGk = pk - NGhost; // the cell id inside patch group
    
@@ -34,9 +34,10 @@ int FindLocalPID(int pi, int pj, int pk, int &PGi, int &PGj, int &PGk, int NGhos
    return CellPID;
 }
 
-void ReadParAttInPID(int PID, real *ParAtt_Local, int &NPar)
+real *ReadParAttInPID( const int lv, const int PID, int &NPar, const long ParAttBitIdx_In)
 {
    // real *ParAtt_Local[PAR_NATT_TOTAL];
+   static real ParAtt_Local[PAR_NATT_TOTAL];
    int   NParMax   = -1;
    long  *ParList = NULL;
    // int    NPar;
@@ -93,6 +94,8 @@ void ReadParAttInPID(int PID, real *ParAtt_Local, int &NPar)
                ParAtt_Local[v][p] = amr->Par->Attribute[v][ ParList[p] ];
       }
    } // if ( UseParAttCopy ) ... else ...
+
+   return ParAtt_Local
 }
 
 //-------------------------------------------------------------------------------------------------------
@@ -317,9 +320,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // ##############################
          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
          {
-            real *ParAtt_APID = new real [PAR_NATT_TOTAL];
+            real   *ParAtt_APID;
             int    NParAPID;
-            ReadParAttInPID(APID, ParAtt_APID, NParAPID);
+            ReadParAttInPID(lv, APID, NParAPID, ParAttBitIdx_In);
 
             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
             {
