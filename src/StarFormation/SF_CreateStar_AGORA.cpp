@@ -265,6 +265,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             {
                for (int v=0; v<PAR_NATT_TOTAL; v++)
                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
+#              ifdef MY_DEBUG
+               fprintf( File, "%13.7e",  NParMax);
+               fprintf( File, "\n" );
+#              endif
             }
 
             NParAPID          = amr->patch[0][lv][APID]->NPar_Copy;
@@ -306,14 +310,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                         ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
                }
             } // if ( UseParAttCopy ) ... else ...
-
-#           ifdef MY_DEBUG
-            if ( NParAPID>0.0 )
-            {
-               fprintf( File, "%13.7e",  NParAPID);
-               fprintf( File, "\n" );
-            }
-#           endif
 
             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
             {
