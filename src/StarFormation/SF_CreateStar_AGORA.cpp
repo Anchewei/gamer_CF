@@ -255,7 +255,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
 #           ifdef MY_DEBUG
-            fprintf( File, "%13.7e",  amr->patch[0][lv][APID]->NPar_Copy);
+            fprintf( File, "%d",  amr->patch[0][lv][APID]->NPar_Copy);
             fprintf( File, "\n" );
 #           endif
 
