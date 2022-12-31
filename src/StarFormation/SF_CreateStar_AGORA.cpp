@@ -308,7 +308,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             } // if ( UseParAttCopy ) ... else ...
 
 #           ifdef MY_DEBUG
-            if ( NParAPID!=0.0 )
+            if ( NParAPID>0.0 )
             {
                fprintf( File, "%13.7e",  NParAPID);
                fprintf( File, "\n" );
