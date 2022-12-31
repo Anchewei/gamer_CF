@@ -254,15 +254,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
-#           ifdef MY_DEBUG
-            fprintf( File, "%d",  amr->patch[0][lv][APID]->NPar_Copy);
-            fprintf( File, "\n" );
-#           endif
 
             if ( NParMax > 0 )
             {
                for (int v=0; v<PAR_NATT_TOTAL; v++)
                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
+#              ifdef MY_DEBUG
+               fprintf( File, "%d",  NParMax);
+               fprintf( File, "\n" );
+#              endif
             }
 
             NParAPID          = amr->patch[0][lv][APID]->NPar_Copy;
