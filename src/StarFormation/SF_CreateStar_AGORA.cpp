@@ -259,10 +259,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             {
                for (int v=0; v<PAR_NATT_TOTAL; v++)
                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
-#              ifdef MY_DEBUG
-               fprintf( File, "%d",  NParMax);
-               fprintf( File, "\n" );
-#              endif
             }
 
             NParAPID          = amr->patch[0][lv][APID]->NPar_Copy;
@@ -336,6 +332,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             if ( InsideAccRadius )           break;
             if ( NotPassDen )                break;
+            
+#           ifdef MY_DEBUG
+            if (NParAPID>0)
+            {
+               fprintf( File, "%13.7e",  D2Par);
+               fprintf( File, "\n" );
+            }
+#           endif
          } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
 
 // ##############################
