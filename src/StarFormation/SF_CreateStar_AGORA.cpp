@@ -261,8 +261,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
             }
 
-            NParAPID          = amr->patch[0][lv][PID]->NPar;
-            ParList       = amr->patch[0][lv][PID]->ParList;
+            NParAPID          = amr->patch[0][lv][APID]->NPar;
+            ParList       = amr->patch[0][lv][APID]->ParList;
             UseParAttCopy = false;
 
 #           ifdef DEBUG_PARTICLE
