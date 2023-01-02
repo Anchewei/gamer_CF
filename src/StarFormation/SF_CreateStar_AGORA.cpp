@@ -241,102 +241,102 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          bool NotPassDen      = false;
 
 // ##############################
-//          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
-//          {
-//             real  *ParAtt_APID[PAR_NATT_TOTAL];
-//             int    NParMax   = -1;
-//             long  *ParList = NULL;
-//             int    NParAPID;
-//             bool   UseParAttCopy;
+         for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
+         {
+            real  *ParAtt_APID[PAR_NATT_TOTAL];
+            int    NParMax   = -1;
+            long  *ParList = NULL;
+            int    NParAPID;
+            bool   UseParAttCopy;
 
 
-//             for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
+            for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
 
-//             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
-//             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
+            NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
+            NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
 
-//             if ( NParMax > 0 )
-//             {
-//                for (int v=0; v<PAR_NATT_TOTAL; v++)
-//                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
-// #              ifdef MY_DEBUG
-//                fprintf( File, "%d",  NParMax);
-//                fprintf( File, "\n" );
-// #              endif
-//             }
+            if ( NParMax > 0 )
+            {
+               for (int v=0; v<PAR_NATT_TOTAL; v++)
+                  if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
+#              ifdef MY_DEBUG
+               fprintf( File, "%d",  NParMax);
+               fprintf( File, "\n" );
+#              endif
+            }
 
-//             NParAPID          = amr->patch[0][lv][APID]->NPar_Copy;
-// #           ifdef LOAD_BALANCE
-//             ParList       = NULL;
-//             UseParAttCopy = true;
-// #           else
-//             ParList       = amr->patch[0][lv][APID]->ParList_Copy;
-//             UseParAttCopy = false;
-// #           endif
+            NParAPID          = amr->patch[0][lv][APID]->NPar_Copy;
+#           ifdef LOAD_BALANCE
+            ParList       = NULL;
+            UseParAttCopy = true;
+#           else
+            ParList       = amr->patch[0][lv][APID]->ParList_Copy;
+            UseParAttCopy = false;
+#           endif
 
-// #           ifdef LOAD_BALANCE
-//             if ( UseParAttCopy ) {
-//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
-//                   if ( ParAttBitIdx_In & BIDX(v) ) {
+#           ifdef LOAD_BALANCE
+            if ( UseParAttCopy ) {
+               for (int v=0; v<PAR_NATT_TOTAL; v++) {
+                  if ( ParAttBitIdx_In & BIDX(v) ) {
 
-// #                 ifdef DEBUG_PARTICLE
-//                   if ( NParAPID > 0  &&  amr->patch[0][lv][APID]->ParAtt_Copy[v] == NULL )
-//                      Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, APID %d, v %d) !!\n",
-//                                  NParAPID, lv, APID, v );
-// #                 endif
+#                 ifdef DEBUG_PARTICLE
+                  if ( NParAPID > 0  &&  amr->patch[0][lv][APID]->ParAtt_Copy[v] == NULL )
+                     Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, APID %d, v %d) !!\n",
+                                 NParAPID, lv, APID, v );
+#                 endif
 
-//                   for (int p=0; p<NParAPID; p++)
-//                      ParAtt_APID[v][p] = amr->patch[0][lv][APID]->ParAtt_Copy[v][p];
-//             }}}
+                  for (int p=0; p<NParAPID; p++)
+                     ParAtt_APID[v][p] = amr->patch[0][lv][APID]->ParAtt_Copy[v][p];
+            }}}
 
-//             else
-// #           endif // #ifdef LOAD_BALANCE
-//             {
-// #              ifdef DEBUG_PARTICLE
-//                if ( NParAPID > 0  &&  ParList == NULL )
-//                   Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, APID %d) !!\n",
-//                               NParAPID, lv, APID );
-// #              endif
+            else
+#           endif // #ifdef LOAD_BALANCE
+            {
+#              ifdef DEBUG_PARTICLE
+               if ( NParAPID > 0  &&  ParList == NULL )
+                  Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, APID %d) !!\n",
+                              NParAPID, lv, APID );
+#              endif
 
-//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
-//                   if ( ParAttBitIdx_In & BIDX(v) )
-//                      for (int p=0; p<NParAPID; p++)
-//                         ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
-//                }
-//             } // if ( UseParAttCopy ) ... else ...
+               for (int v=0; v<PAR_NATT_TOTAL; v++) {
+                  if ( ParAttBitIdx_In & BIDX(v) )
+                     for (int p=0; p<NParAPID; p++)
+                        ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
+               }
+            } // if ( UseParAttCopy ) ... else ...
 
-//             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
-//             {
-//                PCP[0] = x - ParAtt_APID[PAR_POSX][p];
-//                PCP[1] = y - ParAtt_APID[PAR_POSY][p];
-//                PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
-//                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-//                if ( D2Par < AccRadius )
-//                {
-//                   InsideAccRadius = true;
-//                   break;
-//                }
+            for (int p=0; p<NParAPID; p++) // loop over all particle in APID
+            {
+               PCP[0] = x - ParAtt_APID[PAR_POSX][p];
+               PCP[1] = y - ParAtt_APID[PAR_POSY][p];
+               PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
+               D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+               if ( D2Par < AccRadius )
+               {
+                  InsideAccRadius = true;
+                  break;
+               }
 
-//                PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
-//                PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
-//                PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
+               PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
+               PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
+               PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
 
-//                NPCP[0] = PCP[0]/D2Par;
-//                NPCP[1] = PCP[1]/D2Par;
-//                NPCP[2] = PCP[2]/D2Par;
+               NPCP[0] = PCP[0]/D2Par;
+               NPCP[1] = PCP[1]/D2Par;
+               NPCP[2] = PCP[2]/D2Par;
 
-//                GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-//                if ( GasDens < GasDensFreeFall )
-//                {
-//                   NotPassDen = true;
-//                   break;
-//                }
+               GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+               if ( GasDens < GasDensFreeFall )
+               {
+                  NotPassDen = true;
+                  break;
+               }
 
-//             } // for (int p=0; p<NParAPID; p++) 
+            } // for (int p=0; p<NParAPID; p++) 
 
-//             if ( InsideAccRadius )           break;
-//             if ( NotPassDen )                break;
-//          } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
+            if ( InsideAccRadius )           break;
+            if ( NotPassDen )                break;
+         } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
 
 // ##############################
 
