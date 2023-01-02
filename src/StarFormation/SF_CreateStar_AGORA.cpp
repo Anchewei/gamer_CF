@@ -271,13 +271,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                           lv, PID, amr->patch[0][lv][PID]->NPar_Copy );
 #           endif
 
-#           ifdef MY_DEBUG
-            if (NParAPID>0)
-            {
-               fprintf( File, "%d %d",  amr->patch[0][lv][APID]->NPar, amr->patch[0][lv][APID]->NPar_Copy);
-               fprintf( File, "\n" );
-            }
-#           endif
+// #           ifdef MY_DEBUG
+//             if (NParAPID>0)
+//             {
+//                fprintf( File, "%d %d",  amr->patch[0][lv][APID]->NPar, amr->patch[0][lv][APID]->NPar_Copy);
+//                fprintf( File, "\n" );
+//             }
+// #           endif
 
 #           ifdef LOAD_BALANCE
             if ( UseParAttCopy ) {
@@ -378,37 +378,37 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
 
-//          for (int p=0; p<NNewPar; p++) // for the not yet registered particles
-//          {
-//             PCP[0] = x - NewParAtt[p][PAR_POSX];
-//             PCP[1] = y - NewParAtt[p][PAR_POSY];
-//             PCP[2] = z - NewParAtt[p][PAR_POSZ];
+         for (int p=0; p<NNewPar; p++) // for the not yet registered particles
+         {
+            PCP[0] = x - NewParAtt[p][PAR_POSX];
+            PCP[1] = y - NewParAtt[p][PAR_POSY];
+            PCP[2] = z - NewParAtt[p][PAR_POSZ];
 
-//             D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-//             if ( D2Par < AccRadius )
-//             {
-//                InsideAccRadius = true;
-//                break;
-//             }
+            D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+            if ( D2Par < AccRadius )
+            {
+               InsideAccRadius = true;
+               break;
+            }
 
-//             PCV[0] = VelX - NewParAtt[p][PAR_VELX];
-//             PCV[1] = VelY - NewParAtt[p][PAR_VELY];
-//             PCV[2] = VelZ - NewParAtt[p][PAR_VELZ];
+            PCV[0] = VelX - NewParAtt[p][PAR_VELX];
+            PCV[1] = VelY - NewParAtt[p][PAR_VELY];
+            PCV[2] = VelZ - NewParAtt[p][PAR_VELZ];
 
-//             NPCP[0] = PCP[0]/D2Par;
-//             NPCP[1] = PCP[1]/D2Par;
-//             NPCP[2] = PCP[2]/D2Par;
+            NPCP[0] = PCP[0]/D2Par;
+            NPCP[1] = PCP[1]/D2Par;
+            NPCP[2] = PCP[2]/D2Par;
 
-//             GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-//             if ( GasDens < GasDensFreeFall )
-//             {
-//                NotPassDen = true;
-//                break;
-//             }
-//          } // NParTot
+            GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+            if ( GasDens < GasDensFreeFall )
+            {
+               NotPassDen = true;
+               break;
+            }
+         } // for (int p=0; p<NNewPar; p++)
 
-         // if ( InsideAccRadius )               continue;
-         // if ( NotPassDen )                    continue;
+         if ( InsideAccRadius )               continue;
+         if ( NotPassDen )                    continue;
          
 // //       2. Converging Flow Check
 // //       ===========================================================================================================
