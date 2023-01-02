@@ -261,7 +261,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
             }
 
-            NParAPID          = amr->patch[0][lv][APID]->NPar_Copy;
+            NParAPID          = amr->patch[0][lv][PID]->NPar;
+            ParList       = amr->patch[0][lv][PID]->ParList;
+            UseParAttCopy = false;
+
+#           ifdef DEBUG_PARTICLE
+            if ( amr->patch[0][lv][PID]->NPar_Copy != -1 )
+               Aux_Error( ERROR_INFO, "lv %d, PID %d, NPar_Copy = %d != -1 !!\n",
+                          lv, PID, amr->patch[0][lv][PID]->NPar_Copy );
+#           endif
 
 #           ifdef MY_DEBUG
             if (NParAPID>0)
@@ -269,14 +277,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                fprintf( File, "%d %d",  amr->patch[0][lv][APID]->NPar, amr->patch[0][lv][APID]->NPar_Copy);
                fprintf( File, "\n" );
             }
-#           endif
-
-#           ifdef LOAD_BALANCE
-            ParList       = NULL;
-            UseParAttCopy = true;
-#           else
-            ParList       = amr->patch[0][lv][APID]->ParList_Copy;
-            UseParAttCopy = false;
 #           endif
 
 #           ifdef LOAD_BALANCE
