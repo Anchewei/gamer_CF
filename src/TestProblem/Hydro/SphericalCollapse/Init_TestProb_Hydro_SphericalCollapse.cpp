@@ -250,6 +250,8 @@ void SetParameter()
       Aux_Message( stdout, "  ISM_Core_Mass         = %13.7e \n",       ISM_Core_Mass                        );
       Aux_Message( stdout, "  ISM_Delta_Dens        = %13.7e \n",       ISM_Delta_Dens                       );
       Aux_Message( stdout, "  ISM_Bg_Temp           = %13.7e \n",       ISM_Bg_Temp                          );
+      Aux_Message( stdout, "  Density               = %13.7e \n",       Rho0                                 );
+      Aux_Message( stdout, "  Radius                = %13.7e \n",       R0                                 );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
