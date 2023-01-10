@@ -212,7 +212,7 @@ void SetParameter()
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
    R0 = ISM_Alpha * 2 * Const_NewtonG * ISM_Core_Mass * MOLECULAR_WEIGHT * Const_amu / (5 * Const_kB * ISM_Bg_Temp) * UNIT_M / UNIT_L;
    Rho0 = 3.0 * ISM_Core_Mass / (4.0 * M_PI * CUBE(R0));
-   Omega0 = SQRT( ISM_Beta * 4.0 * M_PI * Rho0 );
+   Omega0 = SQRT( ISM_Beta * 4.0 * M_PI*Const_NewtonG* Rho0 );
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -251,7 +251,8 @@ void SetParameter()
       Aux_Message( stdout, "  ISM_Delta_Dens        = %13.7e \n",       ISM_Delta_Dens                       );
       Aux_Message( stdout, "  ISM_Bg_Temp           = %13.7e \n",       ISM_Bg_Temp                          );
       Aux_Message( stdout, "  Density               = %13.7e \n",       Rho0                                 );
-      Aux_Message( stdout, "  Radius                = %13.7e \n",       R0                                 );
+      Aux_Message( stdout, "  Radius                = %13.7e \n",       R0                                   );
+      Aux_Message( stdout, "  Angular velocity      = %13.7e \n",       Omega0                               );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
