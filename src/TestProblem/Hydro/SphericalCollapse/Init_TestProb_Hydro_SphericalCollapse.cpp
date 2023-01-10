@@ -208,7 +208,7 @@ void SetParameter()
    Total_Vrms_Count = 0;
    size = 129;
 
-   ISM_Core_Mass /= Const_Msun;
+   ISM_Core_Mass *= Const_Msun;
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
    R0 = ISM_Alpha * 2 * Const_NewtonG * ISM_Core_Mass * MOLECULAR_WEIGHT * Const_amu / (5 * Const_kB * ISM_Bg_Temp) * UNIT_M / UNIT_L;
    Rho0 = 3.0 * ISM_Core_Mass / (4.0 * M_PI * CUBE(R0));
