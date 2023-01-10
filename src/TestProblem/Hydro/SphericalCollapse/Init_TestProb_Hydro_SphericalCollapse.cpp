@@ -158,8 +158,12 @@ void SetParameter()
    ReadPara->Add( "SphCol_Center_Z",   &SphCol_Center[2],      -1.0,          NoMin_double,     NoMax_double      );
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
    ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
-
+   ReadPara->Add( "ISM_Alpha",         &ISM_Alpha,             0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Beta",          &ISM_Beta,              0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Core_Mass",     &ISM_Core_Mass,         0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Delta_Dens",    &ISM_Delta_Dens,         0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Bg_Temp",       &ISM_Bg_Temp,           0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Dens_Contrast", &ISM_Dens_Contrast,           0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -194,7 +198,11 @@ void SetParameter()
    Total_Vrms_Count = 0;
    size = 129;
 
+   ISM_Core_Mass /= Const_Msun;
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
+   R0 = ISM_Alpha * 2 * Const_NewtonG * ISM_Core_Mass * MOLECULAR_WEIGHT * Const_amu / (5 * Const_kB * ISM_Bg_Temp) * UNIT_M / UNIT_L;
+   Rho0 = 3.0 * ISM_Core_Mass / (4.0 * M_PI * CUBE(R0));
+   Omega0 = SQRT( ISM_Beta * 4.0 * M_PI * Rho0 );
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -227,7 +235,11 @@ void SetParameter()
       Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
-      Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
+      Aux_Message( stdout, "  ISM_Alpha             = %13.7e \n",       ISM_Alpha                            );
+      Aux_Message( stdout, "  ISM_Beta              = %13.7e\n",        ISM_Beta                             );
+      Aux_Message( stdout, "  ISM_Core_Mass         = %13.7e \n",       ISM_Core_Mass                        );
+      Aux_Message( stdout, "  ISM_Delta_Dens        = %13.7e \n",       ISM_Delta_Dens                       );
+      Aux_Message( stdout, "  ISM_Bg_Temp           = %13.7e \n",       ISM_Bg_Temp                          );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -300,42 +312,57 @@ void Load_Turbulence_SC()
 void SetGridIC( real fluid[], const double x, const double y, const double z, const double Time,
                 const int lv, double AuxArray[] )
 {
-
    const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
    const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+   const double dx = x - BoxCenter[0];
+   const double dy = y - BoxCenter[0];
+   const double dz = z - BoxCenter[0];
+   const double Rc = SQRT( SQR(dx) + SQR(dy) );
+   const double Rs = SQRT( SQR(dx) + SQR(dy) + SQR(dz) );
+   const double Mag_Rot_Angle_Rad = 0.0;
 
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
-   double VelX, VelY, VelZ, dir;
+   double VelX, VelY, VelZ;
 
-   int i = (int) ( ( x / BoxSize[0] ) * size );    // turbulence box index (cude)
-   int j = (int) ( ( y / BoxSize[0] ) * size );
-   int k = (int) ( ( z / BoxSize[0] ) * size );
-   int mk = FMOD(k, size);                          // modify the k index to repeat the cude in z direction
-   int index = i * SQR(size) + j * size + mk;
-   if ( i < 0 || i > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  i = %d", i  );
-   if ( j < 0 || j > size   ) Aux_Error( ERROR_INFO, "index is out of bound\n,  j = %d", j  );
-   if ( mk < 0 || mk > size ) Aux_Error( ERROR_INFO, "index is out of bound\n, mk = %d", mk );
-   if ( index < 0 || index > tur_table_NBin ) Aux_Error( ERROR_INFO, "index is out of bound\n, index = %d", index );
-   VelX = Vrms_Scale * ( Table_VelX[ index ] - Total_VelX / Total_Vrms_Count ) + CF_vflow*Const_km/UNIT_V;
-   VelY = Vrms_Scale * ( Table_VelY[ index ] - Total_VelY / Total_Vrms_Count );
-   VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
+   if ( CF_Mach != 0.0 )
+   {
+      int i = (int) ( ( x / BoxSize[0] ) * size );
+      int j = (int) ( ( y / BoxSize[0] ) * size );
+      int k = (int) ( ( z / BoxSize[0] ) * size );
+      int index = i * SQR(size) + j * size + k;
+      if ( i < 0 || i > size ) Aux_Error( ERROR_INFO, "index is out of bound\n, i = %d", i );
+      if ( j < 0 || j > size ) Aux_Error( ERROR_INFO, "index is out of bound\n, j = %d", j );
+      if ( k < 0 || k > size ) Aux_Error( ERROR_INFO, "index is out of bound\n, k = %d", k );
+      if ( index < 0 || index > tur_table_NBin ) Aux_Error( ERROR_INFO, "index is out of bound\n, index = %d", index );
+      VelX = Vrms_Scale * ( Table_VelX[ index ] - Total_VelX / Total_Vrms_Count );
+      VelY = Vrms_Scale * ( Table_VelY[ index ] - Total_VelY / Total_Vrms_Count );
+      VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
+   }
 
-   const double r = sqrt( SQR(x-SphCol_Center[0]) + SQR(y-SphCol_Center[1]) + SQR(z-SphCol_Center[2]) );
+   if ( Rs < R0 )
+   {
+      Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(dy / (COS(Mag_Rot_Angle_Rad) * dx - SIN(Mag_Rot_Angle_Rad) * dz))));
+      VelX += ( Omega0 * dy * COS(Mag_Rot_Angle_Rad) );
+      VelY += ( Omega0 * dx * (COS(Mag_Rot_Angle_Rad) - SIN(Mag_Rot_Angle_Rad)) );
+      VelZ += ( Omega0 * dy * SIN(Mag_Rot_Angle_Rad) );
+   }
+   else
+   {
+      Dens = Rho0 / ISM_Dens_Contrast;
+   }
 
-   Dens = SphCol_Dens_Bg;
-   if ( r <= SphCol_Radius )  Dens *= ( 1.0 + SphCol_Dens_Delta );
+   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
+                                    EoS_AuxArray_Int, h_EoS_Table );
    MomX = Dens * VelX;
    MomY = Dens * VelY;
    MomZ = Dens * VelZ;
-   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
-                                    EoS_AuxArray_Int, h_EoS_Table );
    Etot = Hydro_ConEint2Etot( Dens, MomX, MomY, MomZ, Eint, 0.0 );     // do NOT include magnetic energy here
 
    fluid[DENS] = Dens;
    fluid[MOMX] = MomX;
    fluid[MOMY] = MomY;
    fluid[MOMZ] = MomZ;
-   fluid[ENGY] = SphCol_Engy_Bg+Etot;
+   fluid[ENGY] = Etot;
 
 } // FUNCTION : SetGridIC
 #endif // #if ( MODEL == HYDRO )
