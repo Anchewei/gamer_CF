@@ -43,6 +43,12 @@ static double     Cs;                             // sound spped
 static char       CF_Tur_Table[MAX_STRING];
 static double     CF_vflow;
 static double     CF_Mach;
+static double     ISM_Alpha;
+static double     ISM_Beta;
+static double     ISM_Core_Mass;
+static double     ISM_Delta_Dens;
+static double     ISM_Bg_Temp;
+static double     ISM_Dens_Contrast;
 // =======================================================================================
 
 
@@ -161,9 +167,9 @@ void SetParameter()
    ReadPara->Add( "ISM_Alpha",         &ISM_Alpha,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Beta",          &ISM_Beta,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Core_Mass",     &ISM_Core_Mass,         0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Delta_Dens",    &ISM_Delta_Dens,         0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Delta_Dens",    &ISM_Delta_Dens,        0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Bg_Temp",       &ISM_Bg_Temp,           0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Dens_Contrast", &ISM_Dens_Contrast,           0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "ISM_Dens_Contrast", &ISM_Dens_Contrast,     0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
    delete ReadPara;
