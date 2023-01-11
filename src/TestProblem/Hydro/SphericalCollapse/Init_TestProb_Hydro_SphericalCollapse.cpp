@@ -165,10 +165,6 @@ void SetParameter()
 
    delete ReadPara;
 
-// set the default values
-   for (int d=0; d<3; d++)
-      if ( SphCol_Center[d] < 0.0 )    SphCol_Center[d] = 0.5*amr->BoxSize[d];
-
 
 // (2) set the problem-specific derived parameters
    tur_table_Ncol = 6;
