@@ -5,12 +5,6 @@
 
 // problem-specific global variables
 // =======================================================================================
-static double SphCol_Dens_Bg;       // background mass density
-static double SphCol_Dens_Delta;    // top-hat mass density --> total density = Dens_Bg*( 1 + Dens_Delta )
-static double SphCol_Engy_Bg;       // background energy density
-static double SphCol_Radius;        // top-hat radius
-static double SphCol_Center[3];     // top-hat center
-
 static double     *tur_table = NULL;              // used to store turbulence (1D)
 static int        tur_table_NBin;                 // number of row in turbulence table obtained by Aux_LoadTable
 static int        tur_table_Ncol;                 // number of column in turbulence table (set by user)
@@ -159,13 +153,6 @@ void SetParameter()
 // ********************************************************************************************************************************
 // ReadPara->Add( "KEY_IN_THE_FILE",   &VARIABLE,              DEFAULT,       MIN,              MAX               );
 // ********************************************************************************************************************************
-   ReadPara->Add( "SphCol_Dens_Bg",    &SphCol_Dens_Bg,        -1.0,          Eps_double,       NoMax_double      );
-   ReadPara->Add( "SphCol_Dens_Delta", &SphCol_Dens_Delta,     -1.0,          Eps_double,       NoMax_double      );
-   ReadPara->Add( "SphCol_Engy_Bg",    &SphCol_Engy_Bg,        -1.0,          Eps_double,       NoMax_double      );
-   ReadPara->Add( "SphCol_Radius",     &SphCol_Radius,         -1.0,          Eps_double,       NoMax_double      );
-   ReadPara->Add( "SphCol_Center_X",   &SphCol_Center[0],      -1.0,          NoMin_double,     NoMax_double      );
-   ReadPara->Add( "SphCol_Center_Y",   &SphCol_Center[1],      -1.0,          NoMin_double,     NoMax_double      );
-   ReadPara->Add( "SphCol_Center_Z",   &SphCol_Center[2],      -1.0,          NoMin_double,     NoMax_double      );
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
    ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Alpha",         &ISM_Alpha,             0.0,           0.0,              NoMax_double      );
@@ -235,13 +222,6 @@ void SetParameter()
    {
       Aux_Message( stdout, "=============================================================================\n" );
       Aux_Message( stdout, "  test problem ID           = %d\n",     TESTPROB_ID       );
-      Aux_Message( stdout, "  background mass density   = %13.7e\n", SphCol_Dens_Bg    );
-      Aux_Message( stdout, "  top-hat over-density      = %13.7e\n", SphCol_Dens_Delta );
-      Aux_Message( stdout, "  background energy density = %13.7e\n", SphCol_Engy_Bg    );
-      Aux_Message( stdout, "  top-hat radius            = %13.7e\n", SphCol_Radius     );
-      Aux_Message( stdout, "  top-hat center x          = %13.7e\n", SphCol_Center[0]  );
-      Aux_Message( stdout, "  ...            y          = %13.7e\n", SphCol_Center[1]  );
-      Aux_Message( stdout, "  ...            z          = %13.7e\n", SphCol_Center[2]  );
       Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
