@@ -161,6 +161,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    Par_CollectParticle2OneLevel( lv, ParAttBitIdx_In, PredictPos_No, TimeNew, SibBufPatch_Yes, FaSibBufPatch_No,
                                  JustCountNPar_No, TimingSendPar_Yes );
 
+// get the sibling index differences along different directions
+   int NSibPID_Delta[26], *SibPID_Delta[26];
+
+   TABLE_GetSibPID_Delta( NSibPID_Delta, SibPID_Delta );
+
 // loop over all real patch groups
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
 // --> bitwise reproducibility will still break when running with different numbers of OpenMP threads and/or MPI ranks
@@ -207,6 +212,36 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 #     endif // #ifdef UNSPLIT_GRAVITY
 
+
+//    prepare the sibling patches id for this patch group
+//    collect patch information
+      const int NNearbyPatchMax = 64;  // maximum number of neaby patches of a patch group (including 8 local patches)
+      int Nearby_PID_List[NNearbyPatchMax], NNearbyPatch, SibPID0_List[26];
+
+//    get nearby patches
+      NNearbyPatch = 0;
+
+//    local patches
+      for (int PID=PID0; PID<PID0+8; PID++)  Nearby_PID_List[ NNearbyPatch ++ ] = PID;
+
+//    sibling patches
+      TABLE_GetSibPID_Based( lv, PID0, SibPID0_List );
+
+//###OPTIMIZATION: skip sibling patches if the maximum feedback radius is zero
+      for (int s=0; s<26; s++)
+      {
+         const int SibPID0 = SibPID0_List[s];   // first target patch in the sibling patch group
+
+//       only consider leaf patches on FB_LEVEL (including both real and buffer patches)
+         if ( SibPID0 >= 0 )
+         for (int c=0; c<NSibPID_Delta[s]; c++)
+         {
+            const int SibPID = SibPID0 + SibPID_Delta[s][c];
+            Nearby_PID_List[ NNearbyPatch ++ ] = SibPID;
+         }
+      }
+
+
       NNewPar = 0;
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
@@ -241,43 +276,43 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          bool NotPassDen      = false;
 
 // ##############################
-         for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
+         real  *ParAtt_Local[PAR_NATT_TOTAL];
+         int    NParMax   = -1;
+
+         for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_Local[v] = NULL;
+
+         for (int t=0; t<NNearbyPatch; t++)
          {
-            real  *ParAtt_APID[PAR_NATT_TOTAL];
-            int    NParMax   = -1;
+            const int PPID = Nearby_PID_List[t]; // check the particle number for this patch (PPID)
+
+         // check both NPar and NPar_Copy (NPar_Copy may be -1, which is fine)
+            NParMax = MAX( NParMax, amr->patch[0][lv][PPID]->NPar      );
+            NParMax = MAX( NParMax, amr->patch[0][lv][PPID]->NPar_Copy );
+         }
+
+         if ( NParMax > 0 )
+         {
+            for (int v=0; v<PAR_NATT_TOTAL; v++)
+               if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_Local[v] = new real [NParMax];
+         }
+
+         // iterate over all nearby patches of the target patch group to apply feedback
+         for (int t=0; t<NNearbyPatch; t++)
+         {
+            const int PPID = Nearby_PID_List[t];
             long  *ParList = NULL;
-            int    NParAPID;
+            int    NPar;
             bool   UseParAttCopy;
 
-
-            for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
-
-            NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
-            NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
-
-            if ( NParMax > 0 )
-            {
-               for (int v=0; v<PAR_NATT_TOTAL; v++)
-                  if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
-            }
-
-            NParAPID          = amr->patch[0][lv][APID]->NPar;
-            ParList       = amr->patch[0][lv][APID]->ParList;
+            NPar          = amr->patch[0][lv][PPID]->NPar;
+            ParList       = amr->patch[0][lv][PPID]->ParList;
             UseParAttCopy = false;
 
 #           ifdef DEBUG_PARTICLE
-            if ( amr->patch[0][lv][PID]->NPar_Copy != -1 )
-               Aux_Error( ERROR_INFO, "lv %d, PID %d, NPar_Copy = %d != -1 !!\n",
-                          lv, PID, amr->patch[0][lv][PID]->NPar_Copy );
+            if ( amr->patch[0][lv][PPID]->NPar_Copy != -1 )
+               Aux_Error( ERROR_INFO, "lv %d, PPID %d, NPar_Copy = %d != -1 !!\n",
+                          lv, PPID, amr->patch[0][lv][PPID]->NPar_Copy );
 #           endif
-
-// #           ifdef MY_DEBUG
-//             if (NParAPID>0)
-//             {
-//                fprintf( File, "%d %d",  amr->patch[0][lv][APID]->NPar, amr->patch[0][lv][APID]->NPar_Copy);
-//                fprintf( File, "\n" );
-//             }
-// #           endif
 
 #           ifdef LOAD_BALANCE
             if ( UseParAttCopy ) {
@@ -285,36 +320,36 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   if ( ParAttBitIdx_In & BIDX(v) ) {
 
 #                 ifdef DEBUG_PARTICLE
-                  if ( NParAPID > 0  &&  amr->patch[0][lv][APID]->ParAtt_Copy[v] == NULL )
-                     Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, APID %d, v %d) !!\n",
-                                 NParAPID, lv, APID, v );
+                  if ( NPar > 0  &&  amr->patch[0][lv][PPID]->ParAtt_Copy[v] == NULL )
+                     Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NPar (%d) > 0 (lv %d, PPID %d, v %d) !!\n",
+                                 NPar, lv, PPID, v );
 #                 endif
 
-                  for (int p=0; p<NParAPID; p++)
-                     ParAtt_APID[v][p] = amr->patch[0][lv][APID]->ParAtt_Copy[v][p];
+                  for (int p=0; p<NPar; p++)
+                     ParAtt_Local[v][p] = amr->patch[0][lv][PPID]->ParAtt_Copy[v][p];
             }}}
 
             else
 #           endif // #ifdef LOAD_BALANCE
             {
 #              ifdef DEBUG_PARTICLE
-               if ( NParAPID > 0  &&  ParList == NULL )
-                  Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, APID %d) !!\n",
-                              NParAPID, lv, APID );
+               if ( NPar > 0  &&  ParList == NULL )
+                  Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, PPID %d) !!\n",
+                              NPar, lv, PPID );
 #              endif
 
                for (int v=0; v<PAR_NATT_TOTAL; v++) {
                   if ( ParAttBitIdx_In & BIDX(v) )
-                     for (int p=0; p<NParAPID; p++)
-                        ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
+                     for (int p=0; p<NPar; p++)
+                        ParAtt_Local[v][p] = amr->Par->Attribute[v][ ParList[p] ];
                }
             } // if ( UseParAttCopy ) ... else ...
 
-            for (int p=0; p<NParAPID; p++) // loop over all particle in APID
+            for (int p=0; p<NPar; p++) // loop over all nearby particles
             {
-               PCP[0] = x - ParAtt_APID[PAR_POSX][p];
-               PCP[1] = y - ParAtt_APID[PAR_POSY][p];
-               PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
+               PCP[0] = x - ParAtt_Local[PAR_POSX][p];
+               PCP[1] = y - ParAtt_Local[PAR_POSY][p];
+               PCP[2] = z - ParAtt_Local[PAR_POSZ][p];
                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
                if ( D2Par < AccRadius )
                {
@@ -341,7 +376,109 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             if ( InsideAccRadius )           break;
             if ( NotPassDen )                break;
-         } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
+         }
+// ##############################
+//          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
+//          {
+//             real  *ParAtt_APID[PAR_NATT_TOTAL];
+//             int    NParMax   = -1;
+//             long  *ParList = NULL;
+//             int    NParAPID;
+//             bool   UseParAttCopy;
+
+
+//             for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
+
+//             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
+//             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
+
+//             if ( NParMax > 0 )
+//             {
+//                for (int v=0; v<PAR_NATT_TOTAL; v++)
+//                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
+//             }
+
+//             NParAPID          = amr->patch[0][lv][APID]->NPar;
+//             ParList       = amr->patch[0][lv][APID]->ParList;
+//             UseParAttCopy = false;
+
+// #           ifdef DEBUG_PARTICLE
+//             if ( amr->patch[0][lv][PID]->NPar_Copy != -1 )
+//                Aux_Error( ERROR_INFO, "lv %d, PID %d, NPar_Copy = %d != -1 !!\n",
+//                           lv, PID, amr->patch[0][lv][PID]->NPar_Copy );
+// #           endif
+
+// // #           ifdef MY_DEBUG
+// //             if (NParAPID>0)
+// //             {
+// //                fprintf( File, "%d %d",  amr->patch[0][lv][APID]->NPar, amr->patch[0][lv][APID]->NPar_Copy);
+// //                fprintf( File, "\n" );
+// //             }
+// // #           endif
+
+// #           ifdef LOAD_BALANCE
+//             if ( UseParAttCopy ) {
+//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
+//                   if ( ParAttBitIdx_In & BIDX(v) ) {
+
+// #                 ifdef DEBUG_PARTICLE
+//                   if ( NParAPID > 0  &&  amr->patch[0][lv][APID]->ParAtt_Copy[v] == NULL )
+//                      Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, APID %d, v %d) !!\n",
+//                                  NParAPID, lv, APID, v );
+// #                 endif
+
+//                   for (int p=0; p<NParAPID; p++)
+//                      ParAtt_APID[v][p] = amr->patch[0][lv][APID]->ParAtt_Copy[v][p];
+//             }}}
+
+//             else
+// #           endif // #ifdef LOAD_BALANCE
+//             {
+// #              ifdef DEBUG_PARTICLE
+//                if ( NParAPID > 0  &&  ParList == NULL )
+//                   Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, APID %d) !!\n",
+//                               NParAPID, lv, APID );
+// #              endif
+
+//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
+//                   if ( ParAttBitIdx_In & BIDX(v) )
+//                      for (int p=0; p<NParAPID; p++)
+//                         ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
+//                }
+//             } // if ( UseParAttCopy ) ... else ...
+
+//             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
+//             {
+//                PCP[0] = x - ParAtt_APID[PAR_POSX][p];
+//                PCP[1] = y - ParAtt_APID[PAR_POSY][p];
+//                PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
+//                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+//                if ( D2Par < AccRadius )
+//                {
+//                   InsideAccRadius = true;
+//                   break;
+//                }
+
+//                PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
+//                PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
+//                PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
+
+//                NPCP[0] = PCP[0]/D2Par;
+//                NPCP[1] = PCP[1]/D2Par;
+//                NPCP[2] = PCP[2]/D2Par;
+
+//                GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
+//                if ( GasDens < GasDensFreeFall )
+//                {
+//                   NotPassDen = true;
+//                   break;
+//                }
+
+//             } // for (int p=0; p<NParAPID; p++) 
+
+//             if ( InsideAccRadius )           break;
+//             if ( NotPassDen )                break;
+//          } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
 
 // ##############################
 
@@ -377,38 +514,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
-
-         // for (int p=0; p<NNewPar; p++) // for the not yet registered particles
-         // {
-         //    PCP[0] = x - NewParAtt[p][PAR_POSX];
-         //    PCP[1] = y - NewParAtt[p][PAR_POSY];
-         //    PCP[2] = z - NewParAtt[p][PAR_POSZ];
-
-         //    D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-         //    if ( D2Par < AccRadius )
-         //    {
-         //       InsideAccRadius = true;
-         //       break;
-         //    }
-
-         //    PCV[0] = VelX - NewParAtt[p][PAR_VELX];
-         //    PCV[1] = VelY - NewParAtt[p][PAR_VELY];
-         //    PCV[2] = VelZ - NewParAtt[p][PAR_VELZ];
-
-         //    NPCP[0] = PCP[0]/D2Par;
-         //    NPCP[1] = PCP[1]/D2Par;
-         //    NPCP[2] = PCP[2]/D2Par;
-
-         //    GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-         //    if ( GasDens < GasDensFreeFall )
-         //    {
-         //       NotPassDen = true;
-         //       break;
-         //    }
-         // } // for (int p=0; p<NNewPar; p++)
-
-         // if ( InsideAccRadius )               continue;
-         // if ( NotPassDen )                    continue;
          
 //       2. Converging Flow Check
 //       ===========================================================================================================
