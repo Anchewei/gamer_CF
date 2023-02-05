@@ -357,9 +357,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   break;
                }
 
-               PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
-               PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
-               PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
+               PCV[0] = VelX - ParAtt_Local[PAR_VELX][p];
+               PCV[1] = VelY - ParAtt_Local[PAR_VELY][p];
+               PCV[2] = VelZ - ParAtt_Local[PAR_VELZ][p];
 
                NPCP[0] = PCP[0]/D2Par;
                NPCP[1] = PCP[1]/D2Par;
