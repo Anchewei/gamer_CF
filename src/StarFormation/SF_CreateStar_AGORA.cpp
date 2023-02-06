@@ -376,8 +376,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( InsideAccRadius )           break;
             if ( NotPassDen )                break;
          } // for (int t=0; t<NNearbyPatch; t++)
-         
-         for (int v=0; v<PAR_NATT_TOTAL; v++)   delete [] ParAtt_Local[v];
 
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
@@ -674,6 +672,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
+   for (int v=0; v<PAR_NATT_TOTAL; v++)   delete [] ParAtt_Local[v];
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
    } // end of OpenMP parallel region
 
