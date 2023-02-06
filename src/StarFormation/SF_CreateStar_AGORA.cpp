@@ -498,6 +498,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( Egijk < Eg000 )
             {
                NotMiniEg = true;
+#              ifdef MY_DEBUG
+               fprintf( File, "%13.7e %13.7e",  Egijk, Eg000);
+               fprintf( File, "\n" );
+#              endif
                break;
             }
 
@@ -505,10 +509,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // vii, vji, vki
 
          if ( NotMiniEg )                                   continue;
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e",  Egijk, Eg000);
-         fprintf( File, "\n" );
-#        endif
 
 //       ###########################
 
