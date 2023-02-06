@@ -448,7 +448,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-            Eg000 += -Const_NewtonG*vfluid[DENS]*dv/D2CC; // potential
+            Eg000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
             vvolume += dv; // total control (v) volume
          }  // vi, vj, vk
          Eg000 *= fluid[DENS]*dv/vvolume; // energy density
@@ -488,7 +488,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                const int vtj = IDX321( vij, vjj, vkj, Size_Flu, Size_Flu );
                for (int v=0; v<FLU_NIN; v++)    vjfluid[v] = Flu_Array_F_In[v][vtj];
 
-               Egijk += -Const_NewtonG*vjfluid[DENS]*dv/rij; // potential
+               Egijk += -NEWTON_G*vjfluid[DENS]*dv/rij; // potential
                vvolume += dv; // total control (v) volume
             } // vij, vjj, vkj
 
@@ -498,10 +498,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( Egijk < Eg000 )
             {
                NotMiniEg = true;
-#              ifdef MY_DEBUG
-               fprintf( File, "%13.7e %13.7e",  Egijk, Eg000);
-               fprintf( File, "\n" );
-#              endif
                break;
             }
 
@@ -509,6 +505,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // vii, vji, vki
 
          if ( NotMiniEg )                                   continue;
+
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e",  Egtot);
+         fprintf( File, "\n" );
+#        endif
 
 //       ###########################
 
