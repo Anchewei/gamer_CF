@@ -415,8 +415,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             vz = Corner_Array_F[2] + vk*dh;
 
             D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                 
-            continue; // check whether it is inside the control volume
+            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
 
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
@@ -451,7 +450,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Eg000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
             vvolume += dv; // total control (v) volume
          }  // vi, vj, vk
-         Eg000 *= fluid[DENS]*dv/vvolume; // energy density
+         Eg000 *= fluid[DENS]*dv; // energy density
 
          // Calculate for the surrounding cells and totoal potential density
          real Egtot = (real)0.0;
@@ -492,7 +491,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                vvolume += dv; // total control (v) volume
             } // vij, vjj, vkj
 
-            Egijk *= vifluid[DENS]*dv/vvolume; // energy density
+            Egijk *= vifluid[DENS]*dv; // energy density
 
 //          3.1 Gravitational Potential Minimum Check
             if ( Egijk < Eg000 )
@@ -531,16 +530,16 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                                                 Mag_Array_F_In[MAGY],
                                                 Mag_Array_F_In[MAGZ],
                                                 Size_Flu, Size_Flu, Size_Flu, vi, vj, vk );
-            Emagtot += vEmag;
+            Emagtot += vEmag*dv;
 #           endif
 
             Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
                                    vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
                                    EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
             Cs2  = EoS_DensPres2CSqr_CPUPtr( vfluid[DENS], Pres, vfluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
-            Ethtot += 0.5*vfluid[DENS]*Cs2;
+            Ethtot += 0.5*vfluid[DENS]*dv*Cs2;
 
-            Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
+            Ekintot += 0.5*vfluid[DENS]*dv*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 
 #        ifdef MY_DEBUG
