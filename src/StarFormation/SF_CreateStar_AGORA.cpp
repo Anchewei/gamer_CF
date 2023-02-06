@@ -303,15 +303,32 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             int    NPar;
             bool   UseParAttCopy;
 
-            NPar          = amr->patch[0][lv][PPID]->NPar;
-            ParList       = amr->patch[0][lv][PPID]->ParList;
-            UseParAttCopy = false;
+//          the check "son == -1" is actually useless for now since we fix LEVEL == MAX_LEVEL
+            if ( amr->patch[0][lv][PPID]->son == -1  &&  PPID < amr->NPatchComma[lv][1] )
+            {
+               NPar          = amr->patch[0][lv][PPID]->NPar;
+               ParList       = amr->patch[0][lv][PPID]->ParList;
+               UseParAttCopy = false;
 
-#           ifdef DEBUG_PARTICLE
-            if ( amr->patch[0][lv][PPID]->NPar_Copy != -1 )
-               Aux_Error( ERROR_INFO, "lv %d, PPID %d, NPar_Copy = %d != -1 !!\n",
-                          lv, PPID, amr->patch[0][lv][PPID]->NPar_Copy );
-#           endif
+#              ifdef DEBUG_PARTICLE
+               if ( amr->patch[0][lv][PPID]->NPar_Copy != -1 )
+                  Aux_Error( ERROR_INFO, "lv %d, PPID %d, NPar_Copy = %d != -1 !!\n",
+                           lv, PPID, amr->patch[0][lv][PPID]->NPar_Copy );
+#              endif
+            }
+
+            else
+            {
+//             note that amr->patch[0][lv][PPID]->NPar>0 is still possible
+               NPar          = amr->patch[0][lv][PPID]->NPar_Copy;
+#              ifdef LOAD_BALANCE
+               ParList       = NULL;
+               UseParAttCopy = true;
+#              else
+               ParList       = amr->patch[0][lv][PPID]->ParList_Copy;
+               UseParAttCopy = false;
+#              endif
+            } // if ( amr->patch[0][lv][PPID]->son == -1  &&  PPID < amr->NPatchComma[lv][1] ) ... else ...
 
 #           ifdef LOAD_BALANCE
             if ( UseParAttCopy ) {
@@ -539,7 +556,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
 #        ifdef MY_DEBUG
-         fprintf( File, "%d",  NNearbyPatch);
+         fprintf( File, "%d",  NPar);
          fprintf( File, "\n" );
 #        endif
 
