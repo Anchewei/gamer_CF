@@ -275,7 +275,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          bool InsideAccRadius = false;
          bool NotPassDen      = false;
 
-// ##############################
          real  *ParAtt_Local[PAR_NATT_TOTAL];
          int    NParMax   = -1;
 
@@ -376,141 +375,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             if ( InsideAccRadius )           break;
             if ( NotPassDen )                break;
-         }
-// ##############################
-//          for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++) // loop over all patches
-//          {
-//             real  *ParAtt_APID[PAR_NATT_TOTAL];
-//             int    NParMax   = -1;
-//             long  *ParList = NULL;
-//             int    NParAPID;
-//             bool   UseParAttCopy;
-
-
-//             for (int v=0; v<PAR_NATT_TOTAL; v++)   ParAtt_APID[v] = NULL;
-
-//             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar      );
-//             NParMax = MAX( NParMax, amr->patch[0][lv][APID]->NPar_Copy );
-
-//             if ( NParMax > 0 )
-//             {
-//                for (int v=0; v<PAR_NATT_TOTAL; v++)
-//                   if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_APID[v] = new real [NParMax];
-//             }
-
-//             NParAPID          = amr->patch[0][lv][APID]->NPar;
-//             ParList       = amr->patch[0][lv][APID]->ParList;
-//             UseParAttCopy = false;
-
-// #           ifdef DEBUG_PARTICLE
-//             if ( amr->patch[0][lv][PID]->NPar_Copy != -1 )
-//                Aux_Error( ERROR_INFO, "lv %d, PID %d, NPar_Copy = %d != -1 !!\n",
-//                           lv, PID, amr->patch[0][lv][PID]->NPar_Copy );
-// #           endif
-
-// // #           ifdef MY_DEBUG
-// //             if (NParAPID>0)
-// //             {
-// //                fprintf( File, "%d %d",  amr->patch[0][lv][APID]->NPar, amr->patch[0][lv][APID]->NPar_Copy);
-// //                fprintf( File, "\n" );
-// //             }
-// // #           endif
-
-// #           ifdef LOAD_BALANCE
-//             if ( UseParAttCopy ) {
-//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
-//                   if ( ParAttBitIdx_In & BIDX(v) ) {
-
-// #                 ifdef DEBUG_PARTICLE
-//                   if ( NParAPID > 0  &&  amr->patch[0][lv][APID]->ParAtt_Copy[v] == NULL )
-//                      Aux_Error( ERROR_INFO, "ParAtt_Copy == NULL for NParAPID (%d) > 0 (lv %d, APID %d, v %d) !!\n",
-//                                  NParAPID, lv, APID, v );
-// #                 endif
-
-//                   for (int p=0; p<NParAPID; p++)
-//                      ParAtt_APID[v][p] = amr->patch[0][lv][APID]->ParAtt_Copy[v][p];
-//             }}}
-
-//             else
-// #           endif // #ifdef LOAD_BALANCE
-//             {
-// #              ifdef DEBUG_PARTICLE
-//                if ( NParAPID > 0  &&  ParList == NULL )
-//                   Aux_Error( ERROR_INFO, "ParList == NULL for NPar (%d) > 0 (lv %d, APID %d) !!\n",
-//                               NParAPID, lv, APID );
-// #              endif
-
-//                for (int v=0; v<PAR_NATT_TOTAL; v++) {
-//                   if ( ParAttBitIdx_In & BIDX(v) )
-//                      for (int p=0; p<NParAPID; p++)
-//                         ParAtt_APID[v][p] = amr->Par->Attribute[v][ ParList[p] ];
-//                }
-//             } // if ( UseParAttCopy ) ... else ...
-
-//             for (int p=0; p<NParAPID; p++) // loop over all particle in APID
-//             {
-//                PCP[0] = x - ParAtt_APID[PAR_POSX][p];
-//                PCP[1] = y - ParAtt_APID[PAR_POSY][p];
-//                PCP[2] = z - ParAtt_APID[PAR_POSZ][p];
-//                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-//                if ( D2Par < AccRadius )
-//                {
-//                   InsideAccRadius = true;
-//                   break;
-//                }
-
-//                PCV[0] = VelX - ParAtt_APID[PAR_VELX][p];
-//                PCV[1] = VelY - ParAtt_APID[PAR_VELY][p];
-//                PCV[2] = VelZ - ParAtt_APID[PAR_VELZ][p];
-
-//                NPCP[0] = PCP[0]/D2Par;
-//                NPCP[1] = PCP[1]/D2Par;
-//                NPCP[2] = PCP[2]/D2Par;
-
-//                GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-//                if ( GasDens < GasDensFreeFall )
-//                {
-//                   NotPassDen = true;
-//                   break;
-//                }
-
-//             } // for (int p=0; p<NParAPID; p++) 
-
-//             if ( InsideAccRadius )           break;
-//             if ( NotPassDen )                break;
-//          } // for (int APID=0; APID<amr->NPatchComma[lv][1]; APID++)
-
-// ##############################
-
-//          // for (int p=0; p<NParTot; p++) // for the existing particles
-//          // {
-//             // PCP[0] = x - ParPos[0][p];
-//             // PCP[1] = y - ParPos[1][p];
-//             // PCP[2] = z - ParPos[2][p];
-
-
-//             // D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-//             // if ( D2Par < AccRadius )
-//             // {
-//             //    InsideAccRadius = true;
-//             //    break;
-//             // }
-
-//             // PCV[0] = VelX - ParVel[0][p];
-//             // PCV[1] = VelY - ParVel[1][p];
-//             // PCV[2] = VelZ - ParVel[2][p];
-
-//             // NPCP[0] = PCP[0]/D2Par;
-//             // NPCP[1] = PCP[1]/D2Par;
-//             // NPCP[2] = PCP[2]/D2Par;
-
-//             // GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NPCP[0]*PCV[0] + NPCP[1]*PCV[1] + NPCP[2]*PCV[2])/D2Par); // Clarke et al. 2017, eqn (5)
-//             // if ( GasDens < GasDensFreeFall )
-//             // {
-//             //    NotPassDen = true;
-//             //    break;
-//             // }
-//          // } // NParTot
+         } // for (int t=0; t<NNearbyPatch; t++)
 
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
@@ -532,7 +397,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if      ((NeighborID == 0) || (NeighborID == 1)) VelNeighbor[NeighborID] = dfluid[MOMX]/dfluid[DENS];
             else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = dfluid[MOMY]/dfluid[DENS];
             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
-         }
+         } // for (int NeighborID=0; NeighborID<6; NeighborID++)
 
          if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
          if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
@@ -541,9 +406,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
          real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
-         for (int vk=0; vk<Size_Flu; vk++)
-         for (int vj=0; vj<Size_Flu; vj++)
-         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
          {  
             vx = Corner_Array_F[0] + vi*dh;
             vy = Corner_Array_F[1] + vj*dh;
@@ -565,12 +430,88 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-         bool NotMiniEg      = false;
-         real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
-         const real CCEg = GasDens*Pot_Array_USG_F[t]; // Eg for the centered cell
-         for (int vk=0; vk<Size_Flu; vk++)
-         for (int vj=0; vj<Size_Flu; vj++)
-         for (int vi=0; vi<Size_Flu; vi++) // loop the all cells, to find the cells inside the control volumne (v)
+//       3.0 Gravitational potential inside the control volumn
+//       ###########################
+         // Calculate the centeral one first
+         real Eg000 = (real)0.0, vvolume = dv;
+         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         {
+            vx = Corner_Array_F[0] + vi*dh;
+            vy = Corner_Array_F[1] + vj*dh;
+            vz = Corner_Array_F[2] + vk*dh;
+
+            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
+            if ( D2CC == 0.0 )                      continue; // singularity
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+
+            Eg000 += -Const_NewtonG*vfluid[DENS]*dv/D2CC; // potential
+            vvolume += dv; // total control (v) volume
+         }  // vi, vj, vk
+         Eg000 *= fluid[DENS]*dv/vvolume; // energy density
+
+         // Calculate for the surrounding cells and totoal potential density
+         real Egtot = (real)0.0;
+         real vifluid[FLU_NIN], vjfluid[FLU_NIN];
+         bool NotMiniEg      = false; // do the check during the process
+         for (int vki=pk-AccCellNum; vki<=pk+AccCellNum; vki++)
+         for (int vji=pj-AccCellNum; vji<=pj+AccCellNum; vji++)
+         for (int vii=pi-AccCellNum; vii<=pi+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         {
+            real vxi, vyi, vzi, vxj, vyj, vzj;
+            real Egijk = (real)0.0, vvolume = dv;
+            vxi = Corner_Array_F[0] + vii*dh;
+            vyi = Corner_Array_F[1] + vji*dh;
+            vzi = Corner_Array_F[2] + vki*dh;
+
+            real D2CCi = SQRT(SQR(vxi - x)+SQR(vyi - y)+SQR(vzi - z)); // distance to the center cell
+            if ( D2CCi > AccRadius )                 continue; // check whether it is inside the control volume
+            const int vti = IDX321( vii, vji, vki, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vifluid[v] = Flu_Array_F_In[v][vti];
+
+            for (int vkj=pk-AccCellNum; vkj<=pk+AccCellNum; vkj++)
+            for (int vjj=pj-AccCellNum; vjj<=pj+AccCellNum; vjj++)
+            for (int vij=pi-AccCellNum; vij<=pi+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+            {
+               vxj = Corner_Array_F[0] + vij*dh;
+               vyj = Corner_Array_F[1] + vjj*dh;
+               vzj = Corner_Array_F[2] + vkj*dh;
+
+               real rij = SQRT(SQR(vxi - vxj)+SQR(vyi - vyj)+SQR(vzi - vzj));
+               if ( rij == 0.0 )                     continue;
+
+               real D2CCj = SQRT(SQR(vxj - x)+SQR(vyj - y)+SQR(vzj - z)); // distance to the center cell
+               if ( D2CCj > AccRadius )                 continue; // check whether it is inside the control volume
+               const int vtj = IDX321( vij, vjj, vkj, Size_Flu, Size_Flu );
+               for (int v=0; v<FLU_NIN; v++)    vjfluid[v] = Flu_Array_F_In[v][vtj];
+
+               Egijk += -Const_NewtonG*vjfluid[DENS]*dv/rij; // potential
+               vvolume += dv; // total control (v) volume
+            } // vij, vjj, vkj
+
+            Egijk *= vifluid[DENS]*dv/vvolume; // energy density
+
+//          3.1 Gravitational Potential Minimum Check
+            if ( Egijk < Eg000 )
+            {
+               NotMiniEg = true;
+               break;
+            }
+
+            Egtot += 0.5*Egijk;
+         } // vii, vji, vki
+
+         if ( NotMiniEg )                                   continue;
+
+//       ###########################
+
+         real Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
+         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
          {
             vx = Corner_Array_F[0] + vi*dh;
             vy = Corner_Array_F[1] + vj*dh;
@@ -582,17 +523,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-//          3.1 Gravitational Potential Minimum Check
-            vEg = vfluid[DENS]*Pot_Array_USG_F[vt]; // Eg for the current cell
-            if ( vEg < CCEg )
-            {
-               NotMiniEg = true;
-               break;
-            }
-
 //          3.2 Storing Egtot, Ethtot, Emagtot, Ekintot
             const bool CheckMinPres_No = false;
-            Egtot += vEg;
 
 #           ifdef MHD
             vEmag = MHD_GetCellCenteredBEnergy( Mag_Array_F_In[MAGX],
@@ -611,7 +543,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 
-         if ( NotMiniEg )                                   continue;
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
 
