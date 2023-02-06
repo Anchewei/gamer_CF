@@ -432,7 +432,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       3.0 Gravitational potential inside the control volumn
 //       ###########################
          // Calculate the centeral one first
-         real Eg000 = (real)0.0, vvolume = dv;
+         real phi000 = (real)0.0;
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -447,10 +447,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-            Eg000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
-            vvolume += dv; // total control (v) volume
+            phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
          }  // vi, vj, vk
-         Eg000 *= fluid[DENS]*dv; // energy density
 
          // Calculate for the surrounding cells and totoal potential density
          real Egtot = (real)0.0;
@@ -461,7 +459,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int vii=pi-AccCellNum; vii<=pi+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
          {
             real vxi, vyi, vzi, vxj, vyj, vzj;
-            real Egijk = (real)0.0, vvolume = dv;
+            real phiijk = (real)0.0;
             vxi = Corner_Array_F[0] + vii*dh;
             vyi = Corner_Array_F[1] + vji*dh;
             vzi = Corner_Array_F[2] + vki*dh;
@@ -487,20 +485,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                const int vtj = IDX321( vij, vjj, vkj, Size_Flu, Size_Flu );
                for (int v=0; v<FLU_NIN; v++)    vjfluid[v] = Flu_Array_F_In[v][vtj];
 
-               Egijk += -NEWTON_G*vjfluid[DENS]*dv/rij; // potential
-               vvolume += dv; // total control (v) volume
+               phiijk += -NEWTON_G*vjfluid[DENS]*dv/rij; // potential
             } // vij, vjj, vkj
 
-            Egijk *= vifluid[DENS]*dv; // energy density
-
 //          3.1 Gravitational Potential Minimum Check
-            if ( Egijk < Eg000 )
+            if ( phiijk < phi000 )
             {
                NotMiniEg = true;
                break;
             }
 
-            Egtot += 0.5*Egijk;
+            Egtot += 0.5*vifluid[DENS]*dv*phiijk;
          } // vii, vji, vki
 
          if ( NotMiniEg )                                   continue;
