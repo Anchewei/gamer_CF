@@ -506,11 +506,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( NotMiniEg )                                   continue;
 
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e",  Egtot);
-         fprintf( File, "\n" );
-#        endif
-
 //       ###########################
 
          real Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
@@ -547,6 +542,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             Ekintot += 0.5*vfluid[DENS]*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
+
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e %13.7e %13.7e",  Egtot, Ethtot, Ekintot);
+         fprintf( File, "\n" );
+#        endif
 
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
