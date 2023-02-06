@@ -505,6 +505,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // vii, vji, vki
 
          if ( NotMiniEg )                                   continue;
+#        ifdef MY_DEBUG
+         fprintf( File, "%13.7e %13.7e",  Egijk, Eg000);
+         fprintf( File, "\n" );
+#        endif
 
 //       ###########################
 
@@ -564,11 +568,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
-
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e",  x, y, z);
-         fprintf( File, "\n" );
-#        endif
 
 //       particle acceleration
 #        ifdef STORE_PAR_ACC
