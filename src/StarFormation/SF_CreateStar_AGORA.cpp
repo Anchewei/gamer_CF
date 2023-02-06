@@ -371,11 +371,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   break;
                }
 
-            } // for (int p=0; p<NParAPID; p++) 
+            } // for (int p=0; p<NPar; p++) 
 
             if ( InsideAccRadius )           break;
             if ( NotPassDen )                break;
          } // for (int t=0; t<NNearbyPatch; t++)
+         
+         for (int v=0; v<PAR_NATT_TOTAL; v++)   delete [] ParAtt_Local[v];
 
          if ( InsideAccRadius )               continue;
          if ( NotPassDen )                    continue;
@@ -429,9 +431,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-//       3.0 Gravitational potential inside the control volumn
-//       ###########################
-         // Calculate the centeral one first
+         // Calculate the potential for the centeral one first
          real phi000 = (real)0.0;
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
@@ -450,10 +450,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
          }  // vi, vj, vk
 
-         // Calculate for the surrounding cells and totoal potential density
+         // Calculate for the surrounding cells and totoal energy
          real Egtot = (real)0.0;
          real vifluid[FLU_NIN], vjfluid[FLU_NIN];
-         bool NotMiniEg      = false; // do the check during the process
+         bool NotMiniPot      = false; // do the check during the process
          for (int vki=pk-AccCellNum; vki<=pk+AccCellNum; vki++)
          for (int vji=pj-AccCellNum; vji<=pj+AccCellNum; vji++)
          for (int vii=pi-AccCellNum; vii<=pi+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -478,7 +478,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                vzj = Corner_Array_F[2] + vkj*dh;
 
                real rij = SQRT(SQR(vxi - vxj)+SQR(vyi - vyj)+SQR(vzi - vzj));
-               if ( rij == 0.0 )                     continue;
+               if ( rij == 0.0 )                        continue;
 
                real D2CCj = SQRT(SQR(vxj - x)+SQR(vyj - y)+SQR(vzj - z)); // distance to the center cell
                if ( D2CCj > AccRadius )                 continue; // check whether it is inside the control volume
@@ -491,16 +491,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //          3.1 Gravitational Potential Minimum Check
             if ( phiijk < phi000 )
             {
-               NotMiniEg = true;
+               NotMiniPot = true;
                break;
             }
 
             Egtot += 0.5*vifluid[DENS]*dv*phiijk;
          } // vii, vji, vki
 
-         if ( NotMiniEg )                                   continue;
-
-//       ###########################
+         if ( NotMiniPot )                                   continue;
 
          real Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
@@ -537,10 +535,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Ekintot += 0.5*vfluid[DENS]*dv*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 
-#        ifdef MY_DEBUG
-         fprintf( File, "%13.7e %13.7e %13.7e",  Egtot, Ethtot, Ekintot);
-         fprintf( File, "\n" );
-#        endif
+// #        ifdef MY_DEBUG
+//          fprintf( File, "%13.7e %13.7e %13.7e",  Egtot, Ethtot, Ekintot);
+//          fprintf( File, "\n" );
+// #        endif
 
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
