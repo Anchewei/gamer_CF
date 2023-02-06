@@ -295,7 +295,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                if ( ParAttBitIdx_In & BIDX(v) )    ParAtt_Local[v] = new real [NParMax];
          }
 
-         // iterate over all nearby patches of the target patch group to apply feedback
+         // iterate over all nearby patches of the target patch group
          for (int t=0; t<NNearbyPatch; t++)
          {
             const int PPID = Nearby_PID_List[t];
@@ -535,13 +535,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Ekintot += 0.5*vfluid[DENS]*dv*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 
-// #        ifdef MY_DEBUG
-//          fprintf( File, "%13.7e %13.7e %13.7e",  Egtot, Ethtot, Ekintot);
-//          fprintf( File, "\n" );
-// #        endif
-
          if ( FABS(Egtot) < 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
+
+#        ifdef MY_DEBUG
+         fprintf( File, "%d",  NNearbyPatch);
+         fprintf( File, "\n" );
+#        endif
 
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
