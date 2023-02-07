@@ -418,9 +418,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
          } // for (int NeighborID=0; NeighborID<6; NeighborID++)
 
-         if ( (VelNeighbor[0] - VelNeighbor[1]) > 0 )                       continue;
-         if ( (VelNeighbor[2] - VelNeighbor[3]) > 0 )                       continue;
-         if ( (VelNeighbor[4] - VelNeighbor[5]) > 0 )                       continue;
+         if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 )                       continue;
+         if ( (VelNeighbor[2] - VelNeighbor[3]) >= 0 )                       continue;
+         if ( (VelNeighbor[4] - VelNeighbor[5]) >= 0 )                       continue;
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
@@ -506,7 +506,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             } // vij, vjj, vkj
 
 //          3.1 Gravitational Potential Minimum Check
-            if ( phiijk < phi000 )
+            if ( phiijk <= phi000 )
             {
                NotMiniPot = true;
                break;
@@ -552,8 +552,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Ekintot += 0.5*vfluid[DENS]*dv*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
 
-         if ( FABS(Egtot) < 2*Ethtot)                       continue;
-         if (( Egtot + Ethtot + Ekintot + Emagtot ) > 0)    continue;
+         if ( FABS(Egtot) <= 2*Ethtot)                       continue;
+         if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 
 #        ifdef MY_DEBUG
          fprintf( File, "%13.7e %13.7e %13.7e",  x, y, z);
