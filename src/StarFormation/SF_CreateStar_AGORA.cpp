@@ -509,12 +509,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( phi000 != MIN( phi000, phiijk ) )
             {
                NotMiniPot = true;
-
-#              ifdef MY_DEBUG
-               fprintf( File, "%13.7e %13.7e",  phi000, phiijk);
-               fprintf( File, "\n" );
-#              endif
-
                break;
             }
 
@@ -560,6 +554,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
+
+#        ifdef MY_DEBUG
+         fprintf( File, "'%13.7e %13.7e %13.7e',",  phi000, phiijk);
+         fprintf( File, "\n" );
+#        endif
 
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
