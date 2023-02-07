@@ -511,7 +511,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                NotMiniPot = true;
 
 #              ifdef MY_DEBUG
-               printf( File, "%13.7e %13.7e",  phi000, phiijk);
+               fprintf( File, "%13.7e %13.7e",  phi000, phiijk);
                fprintf( File, "\n" );
 #              endif
 
