@@ -556,7 +556,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 
 #        ifdef MY_DEBUG
-         fprintf( File, "'%13.7e %13.7e %13.7e',",  phi000, phiijk);
+         fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
          fprintf( File, "\n" );
 #        endif
 
