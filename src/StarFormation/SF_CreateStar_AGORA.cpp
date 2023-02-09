@@ -170,7 +170,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
 // --> bitwise reproducibility will still break when running with different numbers of OpenMP threads and/or MPI ranks
 //     unless both BITWISE_REPRODUCIBILITY and SF_CREATE_STAR_DET_RANDOM are enabled
-   NNewPar = 0;
 #  pragma omp for schedule( static )
    for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
    {
@@ -243,7 +242,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
 
 
-      // NNewPar = 0; ##########################
+      NNewPar = 0;
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
@@ -633,94 +632,50 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //        --> order of particles stored in the particle repository (i.e., their particle ID) may change from run to run
 //        --> particle text file may change from run to run since it's dumped according to the order of particle ID
 //    --> but it's not an issue since the actual data of each particle will not be affected
-// #     pragma omp critical
-//       {
-// //       6-1. add particles to the particle repository
-//          for (int p=0; p<NNewPar; p++)
-//             NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
-
-
-// //       6-2. add particles to the patch
-//          const real *PType = amr->Par->Type;
-//          int ParInPatch;
-//          for (int PID=PID0; PID<PID0+8; PID++)
-//          {
-//             long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
-//             ParInPatch = 0;
-//             for (int p=0; p<NNewPar; p++)
-//             {
-//                if (NewParPID[p] == PID) 
-//                {
-//                   ParIDInPatch[ParInPatch] = NewParID[p];
-//                   ParInPatch ++;
-//                } // if (NewParPID[p] == PID) 
-//             } // for (int p=0; p<NNewPar; p++)
-
-//             if ( ParInPatch == 0 )                        continue;
-
-// #           ifdef DEBUG_PARTICLE
-// //          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
-// //          may change after calling amr->Par->AddOneParticle()
-//             const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-//             char Comment[100];
-//             sprintf( Comment, "%s", __FUNCTION__ );
-            
-//             amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
-//                                                          PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
-
-// #           else
-//             amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
-// #           endif
-
-//             delete [] ParIDInPatch;
-
-//          } // for (int PID=PID0; PID<PID0+8; PID++)
-//       } // pragma omp critical
-   } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
-
-#  pragma omp critical
-   {
-//    6-1. add particles to the particle repository
-      for (int p=0; p<NNewPar; p++)
-         NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
-
-
-//    6-2. add particles to the patch
-      const real *PType = amr->Par->Type;
-      int ParInPatch;
-      for (int PID=0; PID<amr->NPatchComma[lv][1]; PID++)
+#     pragma omp critical
       {
-         long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
-         ParInPatch = 0;
+//       6-1. add particles to the particle repository
          for (int p=0; p<NNewPar; p++)
+            NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
+
+
+//       6-2. add particles to the patch
+         const real *PType = amr->Par->Type;
+         int ParInPatch;
+         for (int PID=PID0; PID<PID0+8; PID++)
          {
-            if (NewParPID[p] == PID) 
+            long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+            ParInPatch = 0;
+            for (int p=0; p<NNewPar; p++)
             {
-               ParIDInPatch[ParInPatch] = NewParID[p];
-               ParInPatch ++;
-            } // if (NewParPID[p] == PID) 
-         } // for (int p=0; p<NNewPar; p++)
+               if (NewParPID[p] == PID) 
+               {
+                  ParIDInPatch[ParInPatch] = NewParID[p];
+                  ParInPatch ++;
+               } // if (NewParPID[p] == PID) 
+            } // for (int p=0; p<NNewPar; p++)
 
-         if ( ParInPatch == 0 )                        continue;
+            if ( ParInPatch == 0 )                        continue;
 
-#        ifdef DEBUG_PARTICLE
-//       do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
-//       may change after calling amr->Par->AddOneParticle()
-         const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-         char Comment[100];
-         sprintf( Comment, "%s", __FUNCTION__ );
-         
-         amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
-                                                      PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+#           ifdef DEBUG_PARTICLE
+//          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+//          may change after calling amr->Par->AddOneParticle()
+            const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+            char Comment[100];
+            sprintf( Comment, "%s", __FUNCTION__ );
+            
+            amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
 
-#        else
-         amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
-#        endif
+#           else
+            amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+#           endif
 
-         delete [] ParIDInPatch;
+            delete [] ParIDInPatch;
 
-      } // for (int PID=0; PID<amr->NPatchComma[lv][1]; PID++)
-   } // pragma omp critical
+         } // for (int PID=PID0; PID<PID0+8; PID++)
+      } // pragma omp critical
+   } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
