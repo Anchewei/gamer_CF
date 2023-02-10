@@ -429,7 +429,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          {
          fprintf( File, "%d %d %d",  ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), 
                                      ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
-                                     ( (VelNeighbor[4] - VelNeighbor[5]) < 0 );
+                                     ( (VelNeighbor[4] - VelNeighbor[5]) < 0 ));
          fprintf( File, "\n" );
          }
          // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
