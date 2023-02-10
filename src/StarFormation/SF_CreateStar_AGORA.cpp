@@ -427,7 +427,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
          if (D2O < 0.5*AccRadius)
          {
-         fprintf( File, "%d %d %d",  (VelNeighbor[0] - VelNeighbor[1]), (VelNeighbor[2] - VelNeighbor[3]), (VelNeighbor[4] - VelNeighbor[5]));
+         fprintf( File, "%d %d %d",  ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), 
+                                     ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
+                                     ( (VelNeighbor[4] - VelNeighbor[5]) < 0 );
          fprintf( File, "\n" );
          }
          // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
