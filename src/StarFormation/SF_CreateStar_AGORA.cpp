@@ -418,6 +418,21 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
          } // for (int NeighborID=0; NeighborID<6; NeighborID++)
 
+#        ifdef MY_DEBUG
+         real dx, dy, dz;
+         dx = x - BoxCenter[0];
+         dy = y - BoxCenter[1];
+         dz = z - BoxCenter[2];
+         real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
+         if (D2O < 0.5*AccRadius)
+         {
+         fprintf( File, "%d %d %d",  (VelNeighbor[0] - VelNeighbor[1]), (VelNeighbor[2] - VelNeighbor[3]), (VelNeighbor[4] - VelNeighbor[5]));
+         fprintf( File, "\n" );
+         }
+         // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
+         // fprintf( File, "\n" );
+#        endif
+
          if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 )                       continue;
          if ( (VelNeighbor[2] - VelNeighbor[3]) >= 0 )                       continue;
          if ( (VelNeighbor[4] - VelNeighbor[5]) >= 0 )                       continue;
@@ -554,11 +569,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
-
-#        ifdef MY_DEBUG
-         fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
-         fprintf( File, "\n" );
-#        endif
 
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
