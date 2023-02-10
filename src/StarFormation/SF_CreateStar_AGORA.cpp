@@ -419,6 +419,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // for (int NeighborID=0; NeighborID<6; NeighborID++)
 
 #        ifdef MY_DEBUG
+         real BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
          real dx, dy, dz;
          dx = x - BoxCenter[0];
          dy = y - BoxCenter[1];
