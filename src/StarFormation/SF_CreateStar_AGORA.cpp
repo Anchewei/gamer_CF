@@ -418,24 +418,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = dfluid[MOMZ]/dfluid[DENS];
          } // for (int NeighborID=0; NeighborID<6; NeighborID++)
 
-#        ifdef MY_DEBUG
-         real BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
-         real dx, dy, dz;
-         dx = x - BoxCenter[0];
-         dy = y - BoxCenter[1];
-         dz = z - BoxCenter[2];
-         real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
-         if (D2O < 0.5*AccRadius)
-         {
-         fprintf( File, "%d %d %d",  ( (VelNeighbor[0] - VelNeighbor[1]) < 0 ), 
-                                     ( (VelNeighbor[2] - VelNeighbor[3]) < 0 ), 
-                                     ( (VelNeighbor[4] - VelNeighbor[5]) < 0 ));
-         fprintf( File, "\n" );
-         }
-         // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
-         // fprintf( File, "\n" );
-#        endif
-
          if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 )                       continue;
          if ( (VelNeighbor[2] - VelNeighbor[3]) >= 0 )                       continue;
          if ( (VelNeighbor[4] - VelNeighbor[5]) >= 0 )                       continue;
@@ -532,7 +514,21 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             Egtot += 0.5*vifluid[DENS]*dv*phiijk;
          } // vii, vji, vki
-
+#        ifdef MY_DEBUG
+         real BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+         real dx, dy, dz;
+         dx = x - BoxCenter[0];
+         dy = y - BoxCenter[1];
+         dz = z - BoxCenter[2];
+         real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
+         if (D2O < 0.5*AccRadius)
+         {
+         fprintf( File, "%d",  NotMiniPot);
+         fprintf( File, "\n" );
+         }
+         // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
+         // fprintf( File, "\n" );
+#        endif
          if ( NotMiniPot )                                   continue;
 
          real Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
