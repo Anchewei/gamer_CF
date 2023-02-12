@@ -425,6 +425,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
          real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
+         real phi000 = (real)0.0;
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -442,30 +443,32 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             MVel[1] += vfluid[MOMY]*dv;
             MVel[2] += vfluid[MOMZ]*dv;
             Mtot += vfluid[DENS]*dv;
+
+            if ( D2CC != 0.0 )        phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
          } // vi, vj, vk
 
          MWvel[0] = MVel[0]/Mtot;
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-         // Calculate the potential for the centeral one first
-         real phi000 = (real)0.0;
-         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
-         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
-         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         {
-            vx = Corner_Array_F[0] + vi*dh;
-            vy = Corner_Array_F[1] + vj*dh;
-            vz = Corner_Array_F[2] + vk*dh;
+         // // Calculate the potential for the centeral one first
+         // real phi000 = (real)0.0;
+         // for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+         // for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+         // for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         // {
+         //    vx = Corner_Array_F[0] + vi*dh;
+         //    vy = Corner_Array_F[1] + vj*dh;
+         //    vz = Corner_Array_F[2] + vk*dh;
 
-            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
-            if ( D2CC == 0.0 )                      continue; // singularity
-            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+         //    D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+         //    if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
+         //    if ( D2CC == 0.0 )                      continue; // singularity
+         //    const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+         //    for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-            phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
-         }  // vi, vj, vk
+         //    phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
+         // }  // vi, vj, vk
 
          // Calculate for the surrounding cells and totoal energy
          real Egtot = (real)0.0;
@@ -561,7 +564,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ((D2O < 0.5*AccRadius) and (PID == 31))
          {
          fprintf( File, "%7.4e %d %d%d%d %7.4e %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
-                  VelX, Mtot, MWvel[0], MVel[0]);
+                  phi000, Mtot, MWvel[0], MVel[0]);
          fprintf( File, "\n" );
          }
          // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
