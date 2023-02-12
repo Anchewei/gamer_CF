@@ -558,9 +558,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          dy = y - BoxCenter[1];
          dz = z - BoxCenter[2];
          real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
-         if (D2O < 0.5*AccRadius)
+         if ((D2O < 0.5*AccRadius) and (PID == 31))
          {
-         fprintf( File, "%d %d %d %d",  PID, NotMiniPot, FABS(Egtot) <= 2*Ethtot, ( Egtot + Ethtot + Ekintot + Emagtot ) >= 0);
+         fprintf( File, "%7.4e %d %d%d%d %d %d %d",  TimeNew, PID, pi, pj, pk,
+                  NotMiniPot, FABS(Egtot) <= 2*Ethtot, ( Egtot + Ethtot + Ekintot + Emagtot ) >= 0);
          fprintf( File, "\n" );
          }
          // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
