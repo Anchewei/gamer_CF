@@ -424,7 +424,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 //       3. Gravitational Potential Minimum Check + Jeans Instability Check + Check for Bound State
 //       ===========================================================================================================
-         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3] = { (real)0.0, (real)0.0, (real)0.0}; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
+         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -560,9 +560,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
          if ((D2O < 0.5*AccRadius) and (PID == 31))
          {
-         fprintf( File, "%7.4e %d %d%d%d %d %d %d %7.4e %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
-                  NotMiniPot, FABS(Egtot) <= 2*Ethtot, ( Egtot + Ethtot + Ekintot + Emagtot ) >= 0,
-                  Ekintot, MWvel[0], MWvel[1], MWvel[2]);
+         fprintf( File, "%7.4e %d %d%d%d %7.4e %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
+                  VelX, Mtot, MWvel[0], MVel[0]);
          fprintf( File, "\n" );
          }
          // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
