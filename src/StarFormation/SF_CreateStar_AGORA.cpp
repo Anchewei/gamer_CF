@@ -428,7 +428,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         {  
+         {
             vx = Corner_Array_F[0] + vi*dh;
             vy = Corner_Array_F[1] + vj*dh;
             vz = Corner_Array_F[2] + vk*dh;
@@ -562,7 +562,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          {
          fprintf( File, "%7.4e %d %d%d%d %d %d %d %7.4e %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
                   NotMiniPot, FABS(Egtot) <= 2*Ethtot, ( Egtot + Ethtot + Ekintot + Emagtot ) >= 0,
-                  phi000, Egtot, Ethtot, Ekintot);
+                  Ekintot, MWvel[0], MWvel[1], MWvel[2]);
          fprintf( File, "\n" );
          }
          // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
