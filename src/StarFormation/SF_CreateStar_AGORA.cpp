@@ -459,7 +459,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        ifdef MY_DEBUG
          if (PID == 31)
          {
-         fprintf( File, "#%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
+         fprintf( File, "#%7.4e %d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
                   phi000, Mtot, MVel[0]);
          fprintf( File, "\n" );
          }
