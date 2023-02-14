@@ -454,7 +454,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
             if ((D2O < 0.5*AccRadius) and (PID == 31))
             {
-            fprintf( File, "%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,, vi, vj, vk,
+            fprintf( File, "%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, vi, vj, vk,
                      phi000, Mtot, MVel[0]);
             fprintf( File, "\n" );
             }
