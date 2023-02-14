@@ -446,13 +446,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             if ( D2CC != 0.0 )        phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
 #           ifdef MY_DEBUG
-            real BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
-            real dx, dy, dz;
-            dx = x - BoxCenter[0];
-            dy = y - BoxCenter[1];
-            dz = z - BoxCenter[2];
-            real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
-            if ((D2O < 0.5*AccRadius) and (PID == 31))
+            if ((D2CC < AccRadius) and (PID == 31))
             {
             fprintf( File, "%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, vi, vj, vk,
                      phi000, Mtot, MVel[0]);
@@ -463,13 +457,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #           endif
          } // vi, vj, vk
 #        ifdef MY_DEBUG
-         real BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
-         real dx, dy, dz;
-         dx = x - BoxCenter[0];
-         dy = y - BoxCenter[1];
-         dz = z - BoxCenter[2];
-         real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
-         if ((D2O < 0.5*AccRadius) and (PID == 31))
+         if (PID == 31)
          {
          fprintf( File, "#%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
                   phi000, Mtot, MVel[0]);
