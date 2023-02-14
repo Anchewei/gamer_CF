@@ -561,6 +561,7 @@ void EvolveLevel( const int lv, const double dTime_FaLv )
 //###REVISE: we have assumed that SF_CreateStar() requires no ghost zones
          TIMING_FUNC(   SF_CreateStar( lv, TimeNew, dt_SubStep ),
                         Timer_SF[lv],   TIMER_ON   );
+         Buf_GetBufferData( lv, SaveSg_Flu, SaveSg_Mag, SaveSg_Pot, DATA_GENERAL, _TOTAL|_POTE, _MAG, AccCellNum, USELB_YES );
 
          if ( OPT__VERBOSE  &&  MPI_Rank == 0 )    Aux_Message( stdout, "done\n" );
       } // if ( SF_CREATE_STAR_SCHEME != SF_CREATE_STAR_SCHEME_NONE )
