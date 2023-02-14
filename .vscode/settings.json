@@ -2,6 +2,8 @@
     "files.associations": {
         "chrono": "cpp",
         "variant": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "__bit_reference": "cpp",
+        "unordered_map": "cpp"
     }
 }

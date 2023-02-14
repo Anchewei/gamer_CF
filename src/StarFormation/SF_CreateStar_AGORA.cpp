@@ -426,6 +426,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       ===========================================================================================================
          real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
          real phi000 = (real)0.0;
+#        ifdef MY_DEBUG
+         int count = 0;
+#        endif
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -446,11 +449,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             if ( D2CC != 0.0 )        phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
 #           ifdef MY_DEBUG
-            if ((D2CC < AccRadius) and (PID == 31) and (pi==19) and (pj==19)and ( pk==19))
+            if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
             {
-            fprintf( File, "%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, vi, vj, vk,
+            fprintf( File, "%7.4e %d %d%d%d %d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, count,
                      phi000, Mtot, MVel[0]);
             fprintf( File, "\n" );
+            count++;
             }
             // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
             // fprintf( File, "\n" );
@@ -459,7 +463,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        ifdef MY_DEBUG
          if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
          {
-         fprintf( File, "#%7.4e %d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
+         fprintf( File, "%7.4e %d %d%d%d %d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, count,
                   phi000, Mtot, MVel[0]);
          fprintf( File, "\n" );
          }
