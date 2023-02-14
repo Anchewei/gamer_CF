@@ -462,7 +462,22 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             // fprintf( File, "\n" );
 #           endif
          } // vi, vj, vk
-
+#        ifdef MY_DEBUG
+         real BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+         real dx, dy, dz;
+         dx = x - BoxCenter[0];
+         dy = y - BoxCenter[1];
+         dz = z - BoxCenter[2];
+         real D2O = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
+         if ((D2O < 0.5*AccRadius) and (PID == 31))
+         {
+         fprintf( File, "#%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
+                  phi000, Mtot, MVel[0]);
+         fprintf( File, "\n" );
+         }
+         // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
+         // fprintf( File, "\n" );
+#        endif
          MWvel[0] = MVel[0]/Mtot;
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
