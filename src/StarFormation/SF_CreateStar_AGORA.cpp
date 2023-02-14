@@ -451,10 +451,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #           ifdef MY_DEBUG
             if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
             {
-            fprintf( File, "%7.4e %d %d%d%d %d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, count,
+            count++;
+            fprintf( File, "%7.4e %d %d%d%d %d %7.4e %7.4e %7.4e",  TimeNew, PID, vi, vj, vk, count,
                      phi000, Mtot, MVel[0]);
             fprintf( File, "\n" );
-            count++;
             }
             // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
             // fprintf( File, "\n" );
@@ -463,7 +463,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        ifdef MY_DEBUG
          if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
          {
-         fprintf( File, "%7.4e %d %d%d%d %d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, count,
+         fprintf( File, "Total: %7.4e %d %d %7.4e %7.4e %7.4e",  TimeNew, PID, count,
                   phi000, Mtot, MVel[0]);
          fprintf( File, "\n" );
          }
