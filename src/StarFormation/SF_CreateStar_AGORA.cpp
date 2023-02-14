@@ -446,7 +446,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             if ( D2CC != 0.0 )        phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
 #           ifdef MY_DEBUG
-            if ((D2CC < AccRadius) and (PID == 31))
+            if ((D2CC < AccRadius) and (PID == 31) and (pi==19) and (pj==19)and ( pk==19))
             {
             fprintf( File, "%7.4e %d %d%d%d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk, vi, vj, vk,
                      phi000, Mtot, MVel[0]);
@@ -457,7 +457,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #           endif
          } // vi, vj, vk
 #        ifdef MY_DEBUG
-         if (PID == 31)
+         if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
          {
          fprintf( File, "#%7.4e %d %d%d%d %7.4e %7.4e %7.4e",  TimeNew, PID, pi, pj, pk,
                   phi000, Mtot, MVel[0]);
