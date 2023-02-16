@@ -474,25 +474,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
 
-         // // Calculate the potential for the centeral one first
-         // real phi000 = (real)0.0;
-         // for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
-         // for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
-         // for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         // {
-         //    vx = Corner_Array_F[0] + vi*dh;
-         //    vy = Corner_Array_F[1] + vj*dh;
-         //    vz = Corner_Array_F[2] + vk*dh;
-
-         //    D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-         //    if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
-         //    if ( D2CC == 0.0 )                      continue; // singularity
-         //    const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-         //    for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
-
-         //    phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
-         // }  // vi, vj, vk
-
          // Calculate for the surrounding cells and totoal energy
          real Egtot = (real)0.0;
          real vifluid[FLU_NIN], vjfluid[FLU_NIN];
@@ -639,8 +620,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
          NewParPID[NNewPar] = PID;
 
-         // for (int v=0; v<NCOMP_TOTAL; v++)
-         // amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
          
          NNewPar ++;
       } // pi, pj, pk
@@ -653,49 +634,49 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    //     --> order of particles stored in the particle repository (i.e., their particle ID) may change from run to run
    //     --> particle text file may change from run to run since it's dumped according to the order of particle ID
    // --> but it's not an issue since the actual data of each particle will not be affected
-// #     pragma omp critical
-//       {
-// //       6-1. add particles to the particle repository
-//          for (int p=0; p<NNewPar; p++)
-//             NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
+#     pragma omp critical
+      {
+//       6-1. add particles to the particle repository
+         for (int p=0; p<NNewPar; p++)
+            NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
 
 
-// //       6-2. add particles to the patch
-//          const real *PType = amr->Par->Type;
-//          int ParInPatch;
-//          for (int PID=PID0; PID<PID0+8; PID++)
-//          {
-//             long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
-//             ParInPatch = 0;
-//             for (int p=0; p<NNewPar; p++)
-//             {
-//                if (NewParPID[p] == PID) 
-//                {
-//                   ParIDInPatch[ParInPatch] = NewParID[p];
-//                   ParInPatch ++;
-//                } // if (NewParPID[p] == PID) 
-//             } // for (int p=0; p<NNewPar; p++)
+//       6-2. add particles to the patch
+         const real *PType = amr->Par->Type;
+         int ParInPatch;
+         for (int PID=PID0; PID<PID0+8; PID++)
+         {
+            long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+            ParInPatch = 0;
+            for (int p=0; p<NNewPar; p++)
+            {
+               if (NewParPID[p] == PID) 
+               {
+                  ParIDInPatch[ParInPatch] = NewParID[p];
+                  ParInPatch ++;
+               } // if (NewParPID[p] == PID) 
+            } // for (int p=0; p<NNewPar; p++)
 
-//             if ( ParInPatch == 0 )                        continue;
+            if ( ParInPatch == 0 )                        continue;
 
-// #           ifdef DEBUG_PARTICLE
-// //          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
-// //          may change after calling amr->Par->AddOneParticle()
-//             const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-//             char Comment[100];
-//             sprintf( Comment, "%s", __FUNCTION__ );
+#           ifdef DEBUG_PARTICLE
+//          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+//          may change after calling amr->Par->AddOneParticle()
+            const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+            char Comment[100];
+            sprintf( Comment, "%s", __FUNCTION__ );
             
-//             amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
-//                                                          PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+            amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
 
-// #           else
-//             amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
-// #           endif
+#           else
+            amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+#           endif
 
-//             delete [] ParIDInPatch;
+            delete [] ParIDInPatch;
 
-//          } // for (int PID=PID0; PID<PID0+8; PID++)
-//       } // pragma omp critical
+         } // for (int PID=PID0; PID<PID0+8; PID++)
+      } // pragma omp critical
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
 #  ifdef MY_DEBUG
