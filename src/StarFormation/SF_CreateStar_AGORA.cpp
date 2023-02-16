@@ -426,9 +426,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       ===========================================================================================================
          real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
          real phi000 = (real)0.0;
-#        ifdef MY_DEBUG
-         int count = 0;
-#        endif
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -448,28 +445,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Mtot += vfluid[DENS]*dv;
 
             if ( D2CC != 0.0 )        phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
-#           ifdef MY_DEBUG
-            if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
-            {
-            count++;
-            fprintf( File, "%7.4e %d %d%d%d %d %7.4e %7.4e %7.4e",  TimeNew, PID, vi, vj, vk, count,
-                     phi000, Mtot, MVel[0]);
-            fprintf( File, "\n" );
-            }
-            // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
-            // fprintf( File, "\n" );
-#           endif
          } // vi, vj, vk
-#        ifdef MY_DEBUG
-         if ((PID == 31) and (pi==19) and (pj==19)and ( pk==19))
-         {
-         fprintf( File, "Total: %7.4e %d %d %7.4e %7.4e %7.4e",  TimeNew, PID, count,
-                  phi000, Mtot, MVel[0]);
-         fprintf( File, "\n" );
-         }
-         // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
-         // fprintf( File, "\n" );
-#        endif
+
          MWvel[0] = MVel[0]/Mtot;
          MWvel[1] = MVel[1]/Mtot;
          MWvel[2] = MVel[2]/Mtot; // COM velocity
@@ -558,7 +535,22 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             Ekintot += 0.5*vfluid[DENS]*dv*( SQR(vfluid[MOMX]/vfluid[DENS] - MWvel[0]) + SQR(vfluid[MOMY]/vfluid[DENS] - MWvel[1]) + SQR(vfluid[MOMZ]/vfluid[DENS] - MWvel[2]));
          } // vi, vj, vk
-
+#        ifdef MY_DEBUG
+         const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
+         real dx, dy, dz;
+         dx = x - BoxCenter[0];
+         dy = y - BoxCenter[1];
+         dz = z - BoxCenter[2];
+         real DOC = SQRT(SQR(dx)+SQR(dy)+SQR(dz));
+         if (DOC <= 0.5*AccRadius)
+         {
+         fprintf( File, "Total: %7.4e %d %d%d%d %d %d %d %d",  TimeNew, PID, pi, pj, pk,
+                  NotMiniPot, FABS(Egtot) <= 2*Ethtot, ( Egtot + Ethtot + Ekintot + Emagtot ) >= 0, NNewPar);
+         fprintf( File, "\n" );
+         }
+         // fprintf( File, "'%13.7e %13.7e %13.7e',",  x, y, z);
+         // fprintf( File, "\n" );
+#        endif
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 
