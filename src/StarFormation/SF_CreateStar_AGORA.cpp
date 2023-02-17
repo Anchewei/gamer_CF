@@ -568,7 +568,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 #        ifdef MY_DEBUG
-         fprintf( File, "'%d %7.4e %7.4e %7.4e',",  PID, x, y, z);
+         fprintf( File, "'%d %13.7e %13.7e %13.7e',",  PID, x, y, z);
          fprintf( File, "\n" );
 #        endif
 //       4. store the information of new star particles
