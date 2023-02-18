@@ -646,7 +646,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          RemovalGas[NNewPar][4] = GasMFracLeft;
 #        ifdef MY_DEBUG
          fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
-         fprintf( File, "'%d %d %7.4e',", RemovalGas[NNewPar][0], RemovalGas[NNewPar][3], RemovalGas[NNewPar][4]);
+         fprintf( File, "'%d %d %7.4e',", RemovalGas[NNewPar][0], RemovalGas[NNewPar][3], *RemovalGas[NNewPar][4]);
          fprintf( File, "\n" );
 #        endif
          NNewPar ++;
