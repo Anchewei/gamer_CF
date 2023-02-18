@@ -636,20 +636,20 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          // for (int v=0; v<NCOMP_TOTAL; v++)
          // amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
 
-   #     pragma omp critical // prepare the information for the removal of the gas
-         {
-            GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
-            RemovalGas[NNewPar][0] = PID;
-            RemovalGas[NNewPar][1] = PGk - Disp_k;
-            RemovalGas[NNewPar][2] = PGj - Disp_j;
-            RemovalGas[NNewPar][3] = PGi - Disp_i;
-            RemovalGas[NNewPar][4] = GasMFracLeft;
-#           ifdef MY_DEBUG
-            fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
-            fprintf( File, "\n" );
-#           endif
-            NNewPar ++;
-         }
+   // #     pragma omp critical // prepare the information for the removal of the gas
+   //       {
+         GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+         RemovalGas[NNewPar][0] = PID;
+         RemovalGas[NNewPar][1] = PGk - Disp_k;
+         RemovalGas[NNewPar][2] = PGj - Disp_j;
+         RemovalGas[NNewPar][3] = PGi - Disp_i;
+         RemovalGas[NNewPar][4] = GasMFracLeft;
+#        ifdef MY_DEBUG
+         fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
+         fprintf( File, "\n" );
+#        endif
+         NNewPar ++;
+         // }
       } // pi, pj, pk
 
    // 6. create new star particles
@@ -724,6 +724,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParAtt;
    delete [] NewParID;
    delete [] NewParPID;
+   delete [] RemovalGas;
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
