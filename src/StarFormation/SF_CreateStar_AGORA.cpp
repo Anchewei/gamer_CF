@@ -726,7 +726,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ((RemovalFlu[pi][2] < RemovalFlu[pj][2]) or (RemovalFlu[pi][3] < RemovalFlu[pj][3]) or (RemovalFlu[pi][4] < RemovalFlu[pj][4]))
          {
             CreateHere = false;
-            break
+            break;
          }
       } // for (int pj=0; pj<NNewPar; pj++)
 
