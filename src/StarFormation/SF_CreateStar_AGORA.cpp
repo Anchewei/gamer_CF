@@ -139,6 +139,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    const int MaxNewParPerPG = CUBE(PS2);
    real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
+// ###################
+   real   (*RemovalGas)[5]                    = new real [MaxNewParPerPG][5];
+// ###################
    long    *NewParID                          = new long [MaxNewParPerPG];
    long    *NewParPID                         = new long [MaxNewParPerPG];
    real   (*Flu_Array_F_In)[CUBE(Size_Flu)]   = new real [FLU_NIN][CUBE(Size_Flu)];
@@ -567,10 +570,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
-#        ifdef MY_DEBUG
-         fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
-         fprintf( File, "\n" );
-#        endif
+
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
 //           the OpenMP synchronization overhead
@@ -623,16 +623,25 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        endif // ifdef STORE_PAR_ACC
 
          NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
+         NewParPID[NNewPar] = PID;
 
 //       5. remove the gas that has been converted to stars
 //       ===========================================================================================================
-         GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
-         NewParPID[NNewPar] = PID;
+         // GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
 
-         for (int v=0; v<NCOMP_TOTAL; v++)
-         amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
-         
-         NNewPar ++;
+         // for (int v=0; v<NCOMP_TOTAL; v++)
+         // amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
+
+   #     pragma omp critical // prepare the information for the removal of the gas
+         {
+            GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+            RemovalGas[NNewPar][0] = PID;
+            RemovalGas[NNewPar][1] = PGk - Disp_k;
+            RemovalGas[NNewPar][2] = PGj - Disp_j;
+            RemovalGas[NNewPar][3] = PGi - Disp_i;
+            RemovalGas[NNewPar][4] = GasMFracLeft;
+            NNewPar ++;
+         }
       } // pi, pj, pk
 
    // 6. create new star particles
@@ -643,50 +652,58 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    //     --> order of particles stored in the particle repository (i.e., their particle ID) may change from run to run
    //     --> particle text file may change from run to run since it's dumped according to the order of particle ID
    // --> but it's not an issue since the actual data of each particle will not be affected
-#     pragma omp critical
-      {
-//       6-1. add particles to the particle repository
-         for (int p=0; p<NNewPar; p++)
-            NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
+// #     pragma omp critical
+//       {
+// //       6-1. add particles to the particle repository
+//          for (int p=0; p<NNewPar; p++)
+//             NewParID[p] = amr->Par->AddOneParticle( NewParAtt[p] );
 
 
-//       6-2. add particles to the patch
-         const real *PType = amr->Par->Type;
-         int ParInPatch;
-         for (int PID=PID0; PID<PID0+8; PID++)
-         {
-            long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
-            ParInPatch = 0;
-            for (int p=0; p<NNewPar; p++)
-            {
-               if (NewParPID[p] == PID) 
-               {
-                  ParIDInPatch[ParInPatch] = NewParID[p];
-                  ParInPatch ++;
-               } // if (NewParPID[p] == PID) 
-            } // for (int p=0; p<NNewPar; p++)
+// //       6-2. add particles to the patch
+//          const real *PType = amr->Par->Type;
+//          int ParInPatch;
+//          for (int PID=PID0; PID<PID0+8; PID++)
+//          {
+//             long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+//             ParInPatch = 0;
+//             for (int p=0; p<NNewPar; p++)
+//             {
+//                if (NewParPID[p] == PID) 
+//                {
+//                   ParIDInPatch[ParInPatch] = NewParID[p];
+//                   ParInPatch ++;
+//                } // if (NewParPID[p] == PID) 
+//             } // for (int p=0; p<NNewPar; p++)
 
-            if ( ParInPatch == 0 )                        continue;
+//             if ( ParInPatch == 0 )                        continue;
 
-#           ifdef DEBUG_PARTICLE
-//          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
-//          may change after calling amr->Par->AddOneParticle()
-            const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-            char Comment[100];
-            sprintf( Comment, "%s", __FUNCTION__ );
+// #           ifdef DEBUG_PARTICLE
+// //          do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+// //          may change after calling amr->Par->AddOneParticle()
+//             const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+//             char Comment[100];
+//             sprintf( Comment, "%s", __FUNCTION__ );
             
-            amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
-                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+//             amr->patch[0][lv][PID]->AddParticle(ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+//                                                          PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
 
-#           else
-            amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
-#           endif
+// #           else
+//             amr->patch[0][lv][PID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+// #           endif
 
-            delete [] ParIDInPatch;
+//             delete [] ParIDInPatch;
 
-         } // for (int PID=PID0; PID<PID0+8; PID++)
-      } // pragma omp critical
+//          } // for (int PID=PID0; PID<PID0+8; PID++)
+//       } // pragma omp critical
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
+
+#  ifdef MY_DEBUG
+   for (int p=0; p<NNewPar; p++)
+   {
+      fprintf( File, "'%d %d %7.4e',",  RemovalGas[p][0], RemovalGas[p][1], RemovalGas[p][4]);
+      fprintf( File, "\n" );
+   }
+#  endif
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
