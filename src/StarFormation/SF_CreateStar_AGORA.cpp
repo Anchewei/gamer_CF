@@ -140,7 +140,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const int MaxNewParPerPG = CUBE(PS2);
    real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
 // ###################
-   real   (*RemovalGas)[5]                    = new real [MaxNewParPerPG][5];
+   real    *RemovalFracLeft                   = new real [MaxNewParPerPG];
+   long    *RemovalPos[4]                     = new long [MaxNewParPerPG][4];
 // ###################
    long    *NewParID                          = new long [MaxNewParPerPG];
    long    *NewParPID                         = new long [MaxNewParPerPG];
@@ -639,15 +640,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    // #     pragma omp critical // prepare the information for the removal of the gas
    //       {
          GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
-         RemovalGas[NNewPar][0] = 0.0;
-         RemovalGas[NNewPar][1] = 0.0;
-         RemovalGas[NNewPar][2] = 0.0;
-         RemovalGas[NNewPar][3] = 0.0;
-         RemovalGas[NNewPar][4] = GasMFracLeft;
+         RemovalPos[NNewPar][0] = PID;
+         RemovalPos[NNewPar][1] = PGk - Disp_k;
+         RemovalPos[NNewPar][2] = PGj - Disp_j;
+         RemovalPos[NNewPar][3] = PGi - Disp_i;
+         RemovalFracLeft[NNewPar] = GasMFracLeft;
 #        ifdef MY_DEBUG
          fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
          fprintf( File, "\n" );
-         fprintf( File, "'%7.4e %7.4e',",  NewParAtt[NNewPar][PAR_MASS], RemovalGas[NNewPar][4]);
+         fprintf( File, "'%d %d %7.4e',",  RemovalPos[NNewPar][0], RemovalPos[NNewPar][3], RemovalFracLeft[NNewPar] );
          fprintf( File, "\n" );
 #        endif
          NNewPar ++;
