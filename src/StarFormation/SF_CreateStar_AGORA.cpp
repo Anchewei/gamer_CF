@@ -140,7 +140,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const int MaxNewParPerPG = CUBE(PS2);
    real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
 // ###################
-   real    *RemovalFracLeft                   = new real [MaxNewParPerPG];
+   real    (*RemovalFlu)[5]                   = new real [MaxNewParPerPG][5];
    long    (*RemovalPos)[4]                   = new long [MaxNewParPerPG][4];
 // ###################
    long    *NewParID                          = new long [MaxNewParPerPG];
@@ -630,32 +630,26 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
          NewParPID[NNewPar] = PID;
 
-//       5. remove the gas that has been converted to stars
+//       5. store the information for removing the gas from the cell
 //       ===========================================================================================================
-         // GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
 
          // for (int v=0; v<NCOMP_TOTAL; v++)
          // amr->patch[FluSg][lv][PID]->fluid[v][PGk - Disp_k][PGj - Disp_j][PGi - Disp_i] *= GasMFracLeft;
 
-   // #     pragma omp critical // prepare the information for the removal of the gas
-   //       {
          GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
          RemovalPos[NNewPar][0] = PID;
          RemovalPos[NNewPar][1] = PGk - Disp_k;
          RemovalPos[NNewPar][2] = PGj - Disp_j;
          RemovalPos[NNewPar][3] = PGi - Disp_i;
-         RemovalFracLeft[NNewPar] = GasMFracLeft;
-// #        ifdef MY_DEBUG
-//          fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
-//          fprintf( File, "\n" );
-//          fprintf( File, "'%d %d %7.4e',",  RemovalPos[NNewPar][0], RemovalPos[NNewPar][3], RemovalFracLeft[NNewPar] );
-//          fprintf( File, "\n" );
-// #        endif
+         RemovalFlu[NNewPar][0] = GasMFracLeft;
+         RemovalFlu[NNewPar][1] = phi000;
+         RemovalFlu[NNewPar][2] = x;
+         RemovalFlu[NNewPar][3] = y;
+         RemovalFlu[NNewPar][4] = z;
 #     pragma omp critical
          {
             NNewPar ++;
          }
-         // }
       } // pi, pj, pk
 
    // 6. create new star particles
@@ -711,13 +705,50 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       } // pragma omp critical
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
-#  ifdef MY_DEBUG
-   for (int p=0; p<NNewPar; p++)
-   {
-      fprintf( File, "'%d %d %7.4e',",  RemovalPos[p][0], RemovalPos[p][3], RemovalFracLeft[p] );
-      fprintf( File, "\n" );
-   }
-#  endif
+// 7.  remove the gas
+// ===========================================================================================================
+   real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
+   for (int pi=0; pi<NNewPar; pi++)
+   {  
+      bool CreateHere = true;
+      for (int pj=0; pj<NNewPar; pj++)
+      {
+         if (pi == pj)                                continue;
+
+         dxpp = RemovalFlu[pi][2] - RemovalFlu[pj][2];
+         dypp = RemovalFlu[pi][3] - RemovalFlu[pj][3];
+         dzpp = RemovalFlu[pi][4] - RemovalFlu[pj][4];
+         D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
+         if ( D2C > AccRadius )                       continue;
+
+         // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
+         // if (RemovalFlu[pi][1] != RemovalFlu[pi][1])  continue;   // check whether there are other cells with the same potential
+         if ((RemovalFlu[pi][2] < RemovalFlu[pj][2]) or (RemovalFlu[pi][3] < RemovalFlu[pj][3]) or (RemovalFlu[pi][4] < RemovalFlu[pj][4]))
+         {
+            CreateHere = false;
+            break
+         }
+      } // for (int pj=0; pj<NNewPar; pj++)
+
+      if ( CreateHere )
+      {
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+
+#        ifdef MY_DEBUG
+         fprintf( File, "'%d',",  RemovalPos[pi][0]);
+         fprintf( File, "\n" );
+#        endif
+      }
+   } // for (int pi=0; pi<NNewPar; pi++)
+
+// #  ifdef MY_DEBUG
+//    for (int p=0; p<NNewPar; p++)
+//    {
+//       fprintf( File, "'%d %d %7.4e',",  RemovalPos[p][0], RemovalPos[p][3], RemovalFlu[p] );
+//       fprintf( File, "\n" );
+//    }
+// #  endif
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
@@ -731,7 +762,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParID;
    delete [] NewParPID;
    delete [] RemovalPos;
-   delete [] RemovalFracLeft;
+   delete [] RemovalFlu;
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
