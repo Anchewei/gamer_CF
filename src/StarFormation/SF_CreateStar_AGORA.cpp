@@ -141,7 +141,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
 // ###################
    real    *RemovalFracLeft                   = new real [MaxNewParPerPG];
-   long    *RemovalPos[4]                     = new long [MaxNewParPerPG][4];
+   long    (*RemovalPos)[4]                   = new long [MaxNewParPerPG][4];
 // ###################
    long    *NewParID                          = new long [MaxNewParPerPG];
    long    *NewParPID                         = new long [MaxNewParPerPG];
