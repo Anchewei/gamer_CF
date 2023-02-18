@@ -109,6 +109,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // const real   GraConst       = ( OPT__GRA_P5_GRADIENT ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh);
    const real   GraConst       = ( false                ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh); // P5 is NOT supported yet
 
+// ###################
+   real    (*RemovalFlu)[5]                   = new real [MaxNewParPerPG][5];
+   long    (*RemovalPos)[4]                   = new long [MaxNewParPerPG][4];
+// ###################
+
 
 // checking the value of accretion radius
    if (AccCellNum > PS1)
@@ -139,10 +144,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    const int MaxNewParPerPG = CUBE(PS2);
    real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
-// ###################
-   real    (*RemovalFlu)[5]                   = new real [MaxNewParPerPG][5];
-   long    (*RemovalPos)[4]                   = new long [MaxNewParPerPG][4];
-// ###################
    long    *NewParID                          = new long [MaxNewParPerPG];
    long    *NewParPID                         = new long [MaxNewParPerPG];
    real   (*Flu_Array_F_In)[CUBE(Size_Flu)]   = new real [FLU_NIN][CUBE(Size_Flu)];
@@ -705,6 +706,31 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       } // pragma omp critical
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
+// #  ifdef MY_DEBUG
+//    for (int p=0; p<NNewPar; p++)
+//    {
+//       fprintf( File, "'%d %d %7.4e',",  RemovalPos[p][0], RemovalPos[p][3], RemovalFlu[p] );
+//       fprintf( File, "\n" );
+//    }
+// #  endif
+
+// #  ifdef MY_DEBUG
+//    fprintf( File, "Step finished");
+//    fprintf( File, "\n" );
+//    fclose( File );
+// #  endif
+
+
+// free memory
+   delete [] NewParAtt;
+   delete [] NewParID;
+   delete [] NewParPID;
+   delete [] Flu_Array_F_In;
+   delete [] Mag_Array_F_In;
+   delete [] Pot_Array_USG_F;
+   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
+   } // end of OpenMP parallel region
+
 // 7.  remove the gas
 // ===========================================================================================================
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
@@ -742,32 +768,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 
-// #  ifdef MY_DEBUG
-//    for (int p=0; p<NNewPar; p++)
-//    {
-//       fprintf( File, "'%d %d %7.4e',",  RemovalPos[p][0], RemovalPos[p][3], RemovalFlu[p] );
-//       fprintf( File, "\n" );
-//    }
-// #  endif
+   delete [] RemovalPos;
+   delete [] RemovalFlu;
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
    fprintf( File, "\n" );
    fclose( File );
 #  endif
-
-
-// free memory
-   delete [] NewParAtt;
-   delete [] NewParID;
-   delete [] NewParPID;
-   delete [] RemovalPos;
-   delete [] RemovalFlu;
-   delete [] Flu_Array_F_In;
-   delete [] Mag_Array_F_In;
-   delete [] Pot_Array_USG_F;
-   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
-   } // end of OpenMP parallel region
 
 // get the total number of active particles in all MPI ranks
    MPI_Allreduce( &amr->Par->NPar_Active, &amr->Par->NPar_Active_AllRank, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD );
