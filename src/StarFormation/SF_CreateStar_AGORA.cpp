@@ -645,13 +645,16 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          RemovalPos[NNewPar][2] = PGj - Disp_j;
          RemovalPos[NNewPar][3] = PGi - Disp_i;
          RemovalFracLeft[NNewPar] = GasMFracLeft;
-#        ifdef MY_DEBUG
-         fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
-         fprintf( File, "\n" );
-         fprintf( File, "'%d %d %7.4e',",  RemovalPos[NNewPar][0], RemovalPos[NNewPar][3], RemovalFracLeft[NNewPar] );
-         fprintf( File, "\n" );
-#        endif
-         NNewPar ++;
+// #        ifdef MY_DEBUG
+//          fprintf( File, "'%d %d %d %7.4e',",  NNewPar, PID, PGi - Disp_i, GasMFracLeft);
+//          fprintf( File, "\n" );
+//          fprintf( File, "'%d %d %7.4e',",  RemovalPos[NNewPar][0], RemovalPos[NNewPar][3], RemovalFracLeft[NNewPar] );
+//          fprintf( File, "\n" );
+// #        endif
+#     pragma omp critical
+         {
+            NNewPar ++;
+         }
          // }
       } // pi, pj, pk
 
@@ -708,13 +711,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       } // pragma omp critical
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
 
-// #  ifdef MY_DEBUG
-//    for (int p=0; p<NNewPar; p++)
-//    {
-//       fprintf( File, "'%d %d %7.4e',",  RemovalGas[p][0], RemovalGas[p][1], RemovalGas[p][4]);
-//       fprintf( File, "\n" );
-//    }
-// #  endif
+#  ifdef MY_DEBUG
+   for (int p=0; p<NNewPar; p++)
+   {
+      fprintf( File, "'%d %d %7.4e',",  RemovalPos[p][0], RemovalPos[p][3], RemovalFracLeft[p] );
+      fprintf( File, "\n" );
+   }
+#  endif
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
