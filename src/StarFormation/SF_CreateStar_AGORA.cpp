@@ -727,7 +727,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParAtt;
    delete [] NewParID;
    delete [] NewParPID;
-   delete [] RemovalGas;
+   delete [] RemovalPos;
+   delete [] RemovalFracLeft;
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
