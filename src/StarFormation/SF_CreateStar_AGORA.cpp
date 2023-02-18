@@ -110,8 +110,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const real   GraConst       = ( false                ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh); // P5 is NOT supported yet
 
 // ###################
-   real    (*RemovalFlu)[5]                   = new real [MaxNewParPerPG][5];
-   long    (*RemovalPos)[4]                   = new long [MaxNewParPerPG][4];
+   int NNewPar = 0;
+   real    (*RemovalFlu)[5]                   = new real [1000][5];
+   long    (*RemovalPos)[4]                   = new long [1000][4];
 // ###################
 
 
@@ -150,7 +151,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*Mag_Array_F_In)                   = new real [Size_Flu_P1*SQR(Size_Flu)];
    real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
 
-   int NNewPar, LocalID, delta_t, PGi, PGj, PGk;
+   int LocalID, delta_t, PGi, PGj, PGk;
 
 //    load the existing particles ID (their number)
    // const int   NParTot   = amr->Par->NPar_Active_AllRank;
@@ -175,7 +176,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
 // --> bitwise reproducibility will still break when running with different numbers of OpenMP threads and/or MPI ranks
 //     unless both BITWISE_REPRODUCIBILITY and SF_CREATE_STAR_DET_RANDOM are enabled
-   NNewPar = 0;   
 #  pragma omp for schedule( static )
    for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
    {
