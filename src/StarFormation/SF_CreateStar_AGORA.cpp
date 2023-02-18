@@ -173,6 +173,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // use static schedule to ensure bitwise reproducibility when running with the same numbers of OpenMP threads and MPI ranks
 // --> bitwise reproducibility will still break when running with different numbers of OpenMP threads and/or MPI ranks
 //     unless both BITWISE_REPRODUCIBILITY and SF_CREATE_STAR_DET_RANDOM are enabled
+   NNewPar = 0;   
 #  pragma omp for schedule( static )
    for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
    {
@@ -245,7 +246,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
 
 
-      NNewPar = 0;
+      // NNewPar = 0;
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
@@ -570,60 +571,63 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
-
+#        ifdef MY_DEBUG
+         fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
+         fprintf( File, "\n" );
+#        endif
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
 //           the OpenMP synchronization overhead
 //       ===========================================================================================================
-#        ifdef GAMER_DEBUG
-         if ( NNewPar >= MaxNewParPerPG )
-            Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewParPerPG (%d) !!\n", NNewPar, MaxNewParPerPG );
-#        endif
+// #        ifdef GAMER_DEBUG
+//          if ( NNewPar >= MaxNewParPerPG )
+//             Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewParPerPG (%d) !!\n", NNewPar, MaxNewParPerPG );
+// #        endif
 
-         NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
-         NewParAtt[NNewPar][PAR_POSX] = x;
-         NewParAtt[NNewPar][PAR_POSY] = y;
-         NewParAtt[NNewPar][PAR_POSZ] = z;
-         NewParAtt[NNewPar][PAR_VELX] = VelX;
-         NewParAtt[NNewPar][PAR_VELY] = VelY;
-         NewParAtt[NNewPar][PAR_VELZ] = VelZ;
-         NewParAtt[NNewPar][PAR_TIME] = TimeNew;
-         NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
+//          NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
+//          NewParAtt[NNewPar][PAR_POSX] = x;
+//          NewParAtt[NNewPar][PAR_POSY] = y;
+//          NewParAtt[NNewPar][PAR_POSZ] = z;
+//          NewParAtt[NNewPar][PAR_VELX] = VelX;
+//          NewParAtt[NNewPar][PAR_VELY] = VelY;
+//          NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+//          NewParAtt[NNewPar][PAR_TIME] = TimeNew;
+//          NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
-//       particle acceleration
-#        ifdef STORE_PAR_ACC
-         real GasAcc[3] = { (real)0.0, (real)0.0, (real)0.0 };
+// //       particle acceleration
+// #        ifdef STORE_PAR_ACC
+//          real GasAcc[3] = { (real)0.0, (real)0.0, (real)0.0 };
 
-//       external acceleration
-         if ( OPT__EXT_ACC )  CPUExtAcc_Ptr( GasAcc, x, y, z, TimeNew, ExtAcc_AuxArray );
+// //       external acceleration
+//          if ( OPT__EXT_ACC )  CPUExtAcc_Ptr( GasAcc, x, y, z, TimeNew, ExtAcc_AuxArray );
 
-//       self-gravity and external potential
-         if ( OPT__SELF_GRAVITY  ||  OPT__EXT_POT )
-         {
-            for (int NeighborID=0; NeighborID<6; NeighborID++)
-            {  
-               if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-               else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+// //       self-gravity and external potential
+//          if ( OPT__SELF_GRAVITY  ||  OPT__EXT_POT )
+//          {
+//             for (int NeighborID=0; NeighborID<6; NeighborID++)
+//             {  
+//                if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+//                else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+//                else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+//                else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+//                else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+//                else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
 
-               const int Neighbort = t + delta_t;
-               PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
-            }
-            GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
-            GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
-            GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
-         }
+//                const int Neighbort = t + delta_t;
+//                PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
+//             }
+//             GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
+//             GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
+//             GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
+//          }
 
-         NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
-         NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
-         NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
-#        endif // ifdef STORE_PAR_ACC
+//          NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
+//          NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
+//          NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
+// #        endif // ifdef STORE_PAR_ACC
 
-         NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
-         NewParPID[NNewPar] = PID;
+//          NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
+//          NewParPID[NNewPar] = PID;
 
 //       5. remove the gas that has been converted to stars
 //       ===========================================================================================================
