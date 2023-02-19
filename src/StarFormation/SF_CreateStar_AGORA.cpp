@@ -766,8 +766,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       if ( CreateHere )
       {
-         for (int v=0; v<NCOMP_TOTAL; v++)
-         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+         // for (int v=0; v<NCOMP_TOTAL; v++)
+         // amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
 
 // #        ifdef MY_DEBUG
 //          fprintf( File, "'%d',",  RemovalPos[pi][0]);
