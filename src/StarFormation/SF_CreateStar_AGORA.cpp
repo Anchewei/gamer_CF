@@ -647,6 +647,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          RemovalFlu[NNewPar][2] = x;
          RemovalFlu[NNewPar][3] = y;
          RemovalFlu[NNewPar][4] = z;
+#        ifdef MY_DEBUG
+         fprintf( File, "'%d',",  NNewPar);
+         fprintf( File, "\n" );
+#        endif
 #     pragma omp critical
          {
             NNewPar ++;
@@ -761,10 +765,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          for (int v=0; v<NCOMP_TOTAL; v++)
          amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
 
-#        ifdef MY_DEBUG
-         fprintf( File, "'%d',",  RemovalPos[pi][0]);
-         fprintf( File, "\n" );
-#        endif
+// #        ifdef MY_DEBUG
+//          fprintf( File, "'%d',",  RemovalPos[pi][0]);
+//          fprintf( File, "\n" );
+// #        endif
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 
