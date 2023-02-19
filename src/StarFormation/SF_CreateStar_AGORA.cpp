@@ -738,8 +738,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // 7.  remove the gas
 // ===========================================================================================================
 #  ifdef MY_DEBUG
-   fprintf( File, "'%d',",  NNewPar);
-   fprintf( File, "\n" );
+   if (NNewPar != 0 )
+   {
+      fprintf( File, "'%d',",  NNewPar);
+      fprintf( File, "\n" );
+   }
 #  endif
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    for (int pi=0; pi<NNewPar; pi++)
