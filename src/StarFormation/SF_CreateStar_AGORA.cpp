@@ -516,6 +516,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                break;
             }
 
+            if ( phi000 == phiijk )
+            {
+                // if there is another cell within the control volume with the same potential
+                // use their position to determine whether to form the particle
+               if ( (x < vxi) or (y < vyi) or (z < vzi) )
+               {
+                  NotMiniPot = true;
+                  break;
+               }
+            }
+
             Egtot += 0.5*vifluid[DENS]*dv*phiijk;
          } // vii, vji, vki
 // #        ifdef MY_DEBUG
@@ -573,10 +584,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
-// #        ifdef MY_DEBUG
-//          fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
-//          fprintf( File, "\n" );
-// #        endif
+#        ifdef MY_DEBUG
+         fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
+         fprintf( File, "\n" );
+#        endif
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
 //           the OpenMP synchronization overhead
@@ -737,13 +748,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 // 7.  remove the gas
 // ===========================================================================================================
-#  ifdef MY_DEBUG
-   if (NNewPar != 0 )
-   {
-      fprintf( File, "'%d',",  NNewPar);
-      fprintf( File, "\n" );
-   }
-#  endif
+// #  ifdef MY_DEBUG
+//    if (NNewPar != 0 )
+//    {
+//       fprintf( File, "'%d',",  NNewPar);
+//       fprintf( File, "\n" );
+//    }
+// #  endif
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    for (int pi=0; pi<NNewPar; pi++)
    {  
