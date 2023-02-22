@@ -851,7 +851,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParID;
    delete [] NewParPID;
    delete [] SelNewParPID;
-   // delete [] UniqueParPID;
+   delete [] UniqueParPID;
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
