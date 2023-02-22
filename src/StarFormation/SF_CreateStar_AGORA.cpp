@@ -113,7 +113,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    int NNewPar = 0;
    real    (*RemovalFlu)[5]                   = new real [1000][5];
    long    (*RemovalPos)[4]                   = new long [1000][4];
-   
+
    const int MaxNewParPerPG = CUBE(PS2);
    real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
    long    *NewParID                          = new long [MaxNewParPerPG];
@@ -798,7 +798,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
       if (i==j)
       {
-         UniqueParPID[count] = SelNewParPID[i];
+         UniqueParPID[UniqueCount] = SelNewParPID[i];
          UniqueCount ++;
       }
    }
