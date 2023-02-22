@@ -516,17 +516,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                break;
             }
 
-            if ( phi000 == phiijk )
-            {
-                // if there is another cell within the control volume with the same potential
-                // use their position to determine whether to form the particle
-               if ( (x < vxi) or (y < vyi) or (z < vzi) )
-               {
-                  NotMiniPot = true;
-                  break;
-               }
-            }
-
             Egtot += 0.5*vifluid[DENS]*dv*phiijk;
          } // vii, vji, vki
 // #        ifdef MY_DEBUG
@@ -584,10 +573,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
-#        ifdef MY_DEBUG
-         fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
-         fprintf( File, "\n" );
-#        endif
+// #        ifdef MY_DEBUG
+//          fprintf( File, "'%d %7.4e %7.4e %7.4e %13.8e',",  PID, x, y, z, phi000);
+//          fprintf( File, "\n" );
+// #        endif
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
 //           the OpenMP synchronization overhead
@@ -737,9 +726,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 
 // free memory
-   delete [] NewParAtt;
-   delete [] NewParID;
-   delete [] NewParPID;
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
@@ -748,14 +734,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 // 7.  remove the gas
 // ===========================================================================================================
-// #  ifdef MY_DEBUG
-//    if (NNewPar != 0 )
-//    {
-//       fprintf( File, "'%d',",  NNewPar);
-//       fprintf( File, "\n" );
-//    }
-// #  endif
+   long    *SelNewParPID                         = new long [MaxNewParPerPG]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
+   int SelNNewPar = 0; // the number of selected particles after the following check
    for (int pi=0; pi<NNewPar; pi++)
    {  
       bool CreateHere = true;
@@ -780,8 +761,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       if ( CreateHere )
       {
-         // for (int v=0; v<NCOMP_TOTAL; v++)
-         // amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+
+//       6-1. add particles to the particle repository
+         NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
+
+         SelNewParPID[SelNNewPar] = NewParPID[pi];
+
+         SelNNewPar++;
 
 // #        ifdef MY_DEBUG
 //          fprintf( File, "'%d',",  RemovalPos[pi][0]);
@@ -789,9 +777,86 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // #        endif
       }
    } // for (int pi=0; pi<NNewPar; pi++)
+#  ifdef MY_DEBUG
+   if (SelNNewPar != 0 )
+   {
+      fprintf( File, "'%d',",  SelNNewPar);
+      fprintf( File, "\n" );
+   }
+#  endif
+// 6-2. add particles to the patch
+   long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
+   int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
+   int UniqueCount = 0;
+   for (int i=0; i<SelNewParPIDSize; i++)
+   {
+      int j;
+      for (j=0; j<i; j++)
+      {
+         if (SelNewParPID[i] == SelNewParPID[j])
+               break;
+      }
+      if (i==j)
+      {
+         UniqueParPID[count] = SelNewParPID[i];
+         UniqueCount ++;
+      }
+   }
+
+   const real *PType = amr->Par->Type;
+   int ParInPatch;
+
+   for (int i=0; i<UniqueCount; i++)
+   {
+      const int SPID = UniqueParPID[i];
+      long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+      ParInPatch = 0;
+
+      for (int p=0; p<SelNNewPar; p++)
+      {
+         if (SelNewParPID[p] == SPID) 
+         {
+            ParIDInPatch[ParInPatch] = SelNewParPID[p];
+            ParInPatch ++;
+         } // if (SelNewParPID[p] == SPID) 
+      } // for (int p=0; p<SelNNewPar; p++)
+
+      if ( ParInPatch == 0 )                        continue;
+
+#     ifdef DEBUG_PARTICLE
+//    do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+//    may change after calling amr->Par->AddOneParticle()
+      const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+      char Comment[100];
+      sprintf( Comment, "%s", __FUNCTION__ );
+      
+      amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+
+#     else
+      amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+#     endif
+
+      delete [] ParIDInPatch;
+   }
+
+
+
+
+
+
+
+
+
+
 
    delete [] RemovalPos;
    delete [] RemovalFlu;
+   delete [] NewParAtt;
+   delete [] NewParID;
+   delete [] NewParPID;
+   delete [] SelNewParPID;
+   delete [] UniqueParPID;
 
 #  ifdef MY_DEBUG
    fprintf( File, "Step finished");
