@@ -648,7 +648,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          RemovalFlu[NNewPar][3] = y;
          RemovalFlu[NNewPar][4] = z;
 #        ifdef MY_DEBUG
-         fprintf( File, "'%7.4e, %7.4e, %7.4e',",  RemovalPos[NNewPar][2], RemovalPos[NNewPar][3], RemovalPos[NNewPar][4]);
+         fprintf( File, "'%7.4e, %7.4e, %7.4e',",  RemovalFlu[NNewPar][2], RemovalFlu[NNewPar][3], RemovalFlu[NNewPar][4]);
          fprintf( File, "\n" );
 #        endif
 #     pragma omp critical
