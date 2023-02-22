@@ -113,6 +113,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    int NNewPar = 0;
    real    (*RemovalFlu)[5]                   = new real [1000][5];
    long    (*RemovalPos)[4]                   = new long [1000][4];
+   
+   const int MaxNewParPerPG = CUBE(PS2);
+   real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
+   long    *NewParID                          = new long [MaxNewParPerPG];
+   long    *NewParPID                         = new long [MaxNewParPerPG];
 // ###################
 
 
@@ -142,11 +147,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real vEg, Pres, Cs2, vEmag=NULL_REAL;
    real PotNeighbor[6]; // record the neighboring cell potential [x+, x-, y+, y+, z+, z-]
 
-
-   const int MaxNewParPerPG = CUBE(PS2);
-   real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewParPerPG][PAR_NATT_TOTAL];
-   long    *NewParID                          = new long [MaxNewParPerPG];
-   long    *NewParPID                         = new long [MaxNewParPerPG];
    real   (*Flu_Array_F_In)[CUBE(Size_Flu)]   = new real [FLU_NIN][CUBE(Size_Flu)];
    real   (*Mag_Array_F_In)                   = new real [Size_Flu_P1*SQR(Size_Flu)];
    real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
