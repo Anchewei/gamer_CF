@@ -771,19 +771,19 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          SelNNewPar++;
 
-// #        ifdef MY_DEBUG
-//          fprintf( File, "'%d',",  RemovalPos[pi][0]);
-//          fprintf( File, "\n" );
-// #        endif
+#        ifdef MY_DEBUG
+         fprintf( File, "'%7.4e, %7.4e, %7.4e',",  RemovalPos[pi][2], RemovalPos[pi][3], RemovalPos[pi][4]);
+         fprintf( File, "\n" );
+#        endif
       }
    } // for (int pi=0; pi<NNewPar; pi++)
-#  ifdef MY_DEBUG
-   if (SelNNewPar != 0 )
-   {
-      fprintf( File, "'%d',",  SelNNewPar);
-      fprintf( File, "\n" );
-   }
-#  endif
+// #  ifdef MY_DEBUG
+//    if (SelNNewPar != 0 )
+//    {
+//       fprintf( File, "'%d',",  SelNNewPar);
+//       fprintf( File, "\n" );
+//    }
+// #  endif
 // 6-2. add particles to the patch
    long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
    int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
