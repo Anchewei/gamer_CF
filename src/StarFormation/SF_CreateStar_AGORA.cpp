@@ -651,6 +651,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          {
             NNewPar ++;
          }
+#        ifdef MY_DEBUG
+         fprintf( File, "'%7.4e, %7.4e, %7.4e',",  x, y, z);
+         fprintf( File, "\n" );
+#        endif
       } // pi, pj, pk
 
    // 6. create new star particles
@@ -766,10 +770,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          SelNewParPID[SelNNewPar] = NewParPID[pi];
 
          SelNNewPar++;
-#        ifdef MY_DEBUG
-         fprintf( File, "'%7.4e, %7.4e, %7.4e',",  RemovalFlu[pi][2], RemovalFlu[pi][3], RemovalFlu[pi][4]);
-         fprintf( File, "\n" );
-#        endif
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 // #  ifdef MY_DEBUG
@@ -780,60 +780,60 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //    }
 // #  endif
 // 6-2. add particles to the patch
-//    long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
-//    int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
-//    int UniqueCount = 0;
-//    for (int i=0; i<SelNewParPIDSize; i++)
-//    {
-//       int j;
-//       for (j=0; j<i; j++)
-//       {
-//          if (SelNewParPID[i] == SelNewParPID[j])
-//                break;
-//       }
-//       if (i==j)
-//       {
-//          UniqueParPID[UniqueCount] = SelNewParPID[i];
-//          UniqueCount ++;
-//       }
-//    }
+   long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
+   int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
+   int UniqueCount = 0;
+   for (int i=0; i<SelNewParPIDSize; i++)
+   {
+      int j;
+      for (j=0; j<i; j++)
+      {
+         if (SelNewParPID[i] == SelNewParPID[j])
+               break;
+      }
+      if (i==j)
+      {
+         UniqueParPID[UniqueCount] = SelNewParPID[i];
+         UniqueCount ++;
+      }
+   }
 
-//    const real *PType = amr->Par->Type;
-//    int ParInPatch;
+   const real *PType = amr->Par->Type;
+   int ParInPatch;
 
-//    for (int i=0; i<UniqueCount; i++)
-//    {
-//       const int SPID = UniqueParPID[i];
-//       long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
-//       ParInPatch = 0;
+   for (int i=0; i<UniqueCount; i++)
+   {
+      const int SPID = UniqueParPID[i];
+      long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+      ParInPatch = 0;
 
-//       for (int p=0; p<SelNNewPar; p++)
-//       {
-//          if (SelNewParPID[p] == SPID) 
-//          {
-//             ParIDInPatch[ParInPatch] = SelNewParPID[p];
-//             ParInPatch ++;
-//          } // if (SelNewParPID[p] == SPID) 
-//       } // for (int p=0; p<SelNNewPar; p++)
+      for (int p=0; p<SelNNewPar; p++)
+      {
+         if (SelNewParPID[p] == SPID) 
+         {
+            ParIDInPatch[ParInPatch] = SelNewParPID[p];
+            ParInPatch ++;
+         } // if (SelNewParPID[p] == SPID) 
+      } // for (int p=0; p<SelNNewPar; p++)
 
-//       if ( ParInPatch == 0 )                        continue;
+      if ( ParInPatch == 0 )                        continue;
 
-// #     ifdef DEBUG_PARTICLE
-// //    do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
-// //    may change after calling amr->Par->AddOneParticle()
-//       const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-//       char Comment[100];
-//       sprintf( Comment, "%s", __FUNCTION__ );
+#     ifdef DEBUG_PARTICLE
+//    do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+//    may change after calling amr->Par->AddOneParticle()
+      const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+      char Comment[100];
+      sprintf( Comment, "%s", __FUNCTION__ );
       
-//       amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
-//                                                          PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+      amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
 
-// #     else
-//       amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
-// #     endif
+#     else
+      amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+#     endif
 
-//       delete [] ParIDInPatch;
-//    }
+      delete [] ParIDInPatch;
+   }
 
 
 
