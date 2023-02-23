@@ -650,10 +650,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
 
       // 6-1. add particles to the particle repository
-#  ifdef MY_DEBUG
-         fprintf( File, "%7.4e %7.4e %7.4e", NewParAtt[pi][PAR_ACCX], NewParAtt[pi][PAR_ACCY], NewParAtt[pi][PAR_ACCZ]);
-         fprintf( File, "\n" );
-#  endif
          NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
          
          SelNewParPID[SelNNewPar] = NewParPID[pi];
@@ -697,6 +693,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       } // for (int p=0; p<SelNNewPar; p++)
 
       if ( ParInPatch == 0 )                        continue;
+
+#  ifdef MY_DEBUG
+         fprintf( File, "%d %d", ParInPatch, ParIDInPatch[ParInPatch]);
+         fprintf( File, "\n" );
+#  endif
 
 #     ifdef DEBUG_PARTICLE
 //    do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
