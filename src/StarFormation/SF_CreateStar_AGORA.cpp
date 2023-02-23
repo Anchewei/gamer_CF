@@ -621,7 +621,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NNewPar ++;
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
-   
+
 // 7.  remove the gas
 // ===========================================================================================================
    long    *SelNewParPID        = new long [MaxNewParPerPG]; // PID of the selected paritcles
@@ -662,14 +662,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 
-#  ifdef MY_DEBUG
-   if (SelNNewPar > 0)
-   {
-      fprintf( File, "SelNNewPar = %d", SelNNewPar);
-      fprintf( File, "\n" );
-   }
-#  endif
-
    long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
    int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
    int UniqueCount = 0;
@@ -688,6 +680,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
    } // for (int i=0; i<SelNewParPIDSize; i++)
 
+#  ifdef MY_DEBUG
+   for (int i = 0; i<UniqueCount;i++)
+   {
+      fprintf( File, "%d", UniqueParPID[i]);
+      fprintf( File, "\n" );
+   }
+#  endif
+
    const real *PType = amr->Par->Type;
    int ParInPatch;
 
@@ -696,7 +696,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       const int SPID = UniqueParPID[i];
       long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
       ParInPatch = 0;
-
       for (int p=0; p<SelNNewPar; p++)
       {
          if (SelNewParPID[p] == SPID) 
