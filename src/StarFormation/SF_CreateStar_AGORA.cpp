@@ -544,10 +544,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
-#        ifdef MY_DEBUG
-         fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
-         fprintf( File, "\n" );
-#        endif
+// #        ifdef MY_DEBUG
+//          fprintf( File, "'%d %13.7e %13.7e %13.7e %13.7e',",  PID, x, y, z, phi000);
+//          fprintf( File, "\n" );
+// #        endif
 //       4. store the information of new star particles
 //       --> we will not create these new particles until looping over all cells in a patch in order to reduce
 //           the OpenMP synchronization overhead
@@ -622,7 +622,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NNewPar ++;
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
-
+#  ifdef MY_DEBUG
+   if (NNewPar > 0)
+   {
+      fprintf( File, "NNewPar = %d", SelNNewPar);
+      fprintf( File, "\n" );
+   }
+#  endif
 // 7.  remove the gas
 // ===========================================================================================================
    long    *SelNewParPID        = new long [MaxNewParPerPG]; // PID of the selected paritcles
@@ -666,7 +672,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  ifdef MY_DEBUG
    if (SelNNewPar > 0)
    {
-      fprintf( File, "%d", SelNNewPar);
+      fprintf( File, "SelNNewPar = %d", SelNNewPar);
       fprintf( File, "\n" );
    }
 #  endif
