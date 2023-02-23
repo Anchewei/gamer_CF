@@ -248,7 +248,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
 
 
-      NNewPar = 0;
       for (int pk=NGhost; pk<PS2 + NGhost; pk++)
       for (int pj=NGhost; pj<PS2 + NGhost; pj++)
       for (int pi=NGhost; pi<PS2 + NGhost; pi++) // loop inside the patch group
