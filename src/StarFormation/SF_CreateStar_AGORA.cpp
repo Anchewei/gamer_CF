@@ -695,7 +695,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       if ( ParInPatch == 0 )                        continue;
 
 #  ifdef MY_DEBUG
-         fprintf( File, "%d %d", ParInPatch, ParIDInPatch[ParInPatch]);
+         fprintf( File, "%d %d %d", SPID, ParInPatch, ParIDInPatch[ParInPatch-1]);
          fprintf( File, "\n" );
 #  endif
 
