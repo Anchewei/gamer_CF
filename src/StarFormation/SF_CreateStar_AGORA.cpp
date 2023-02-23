@@ -666,6 +666,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          SelNewParPID[SelNNewPar] = NewParPID[pi];
 
          SelNNewPar++;
+#  ifdef MY_DEBUG
+         fprintf( File, "%7.4e, %7.4e, %7.4e", RemovalFlu[pi][2], RemovalFlu[pi][3], RemovalFlu[pi][4]);
+         fprintf( File, "\n" );
+#  endif
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 #  ifdef MY_DEBUG
