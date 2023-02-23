@@ -687,7 +687,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       {
          if (SelNewParPID[p] == SPID) 
          {
-            ParIDInPatch[ParInPatch] = SelNewParPID[p];
+            ParIDInPatch[ParInPatch] = NewParID[p];
             ParInPatch ++;
          } // if (SelNewParPID[p] == SPID) 
       } // for (int p=0; p<SelNNewPar; p++)
