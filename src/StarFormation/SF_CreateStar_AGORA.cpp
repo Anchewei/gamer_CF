@@ -621,13 +621,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          NNewPar ++;
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
-#  ifdef MY_DEBUG
-   if (NNewPar > 0)
-   {
-      fprintf( File, "NNewPar = %d", NNewPar);
-      fprintf( File, "\n" );
-   }
-#  endif
+   
 // 7.  remove the gas
 // ===========================================================================================================
    long    *SelNewParPID        = new long [MaxNewParPerPG]; // PID of the selected paritcles
@@ -657,21 +651,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       if ( CreateHere )
       {
-         // for (int v=0; v<NCOMP_TOTAL; v++)
-         // amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
 
-//       6-1. add particles to the particle repository
-         // NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
+      // 6-1. add particles to the particle repository
+         NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
          
          SelNewParPID[SelNNewPar] = NewParPID[pi];
-
          SelNNewPar++;
-#  ifdef MY_DEBUG
-         fprintf( File, "%7.4e, %7.4e, %7.4e", RemovalFlu[pi][2], RemovalFlu[pi][3], RemovalFlu[pi][4]);
-         fprintf( File, "\n" );
-#  endif
       }
    } // for (int pi=0; pi<NNewPar; pi++)
+
 #  ifdef MY_DEBUG
    if (SelNNewPar > 0)
    {
@@ -679,6 +669,61 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       fprintf( File, "\n" );
    }
 #  endif
+
+   long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
+   int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
+   int UniqueCount = 0;
+   for (int i=0; i<SelNewParPIDSize; i++)
+   {
+      int j;
+      for (j=0; j<i; j++)
+      {
+         if (SelNewParPID[i] == SelNewParPID[j])
+               break;
+      }
+      if (i==j)
+      {
+         UniqueParPID[UniqueCount] = SelNewParPID[i];
+         UniqueCount ++;
+      }
+   } // for (int i=0; i<SelNewParPIDSize; i++)
+
+   const real *PType = amr->Par->Type;
+   int ParInPatch;
+
+   for (int i=0; i<UniqueCount; i++)
+   {
+      const int SPID = UniqueParPID[i];
+      long    *ParIDInPatch      = new long [MaxNewParPerPG]; // ParID in the current patch
+      ParInPatch = 0;
+
+      for (int p=0; p<SelNNewPar; p++)
+      {
+         if (SelNewParPID[p] == SPID) 
+         {
+            ParIDInPatch[ParInPatch] = SelNewParPID[p];
+            ParInPatch ++;
+         } // if (SelNewParPID[p] == SPID) 
+      } // for (int p=0; p<SelNNewPar; p++)
+
+      if ( ParInPatch == 0 )                        continue;
+
+#     ifdef DEBUG_PARTICLE
+//    do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
+//    may change after calling amr->Par->AddOneParticle()
+      const real *NewParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
+      char Comment[100];
+      sprintf( Comment, "%s", __FUNCTION__ );
+      
+      amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv],
+                                                         PType, NewParPos, amr->Par->NPar_AcPlusInac, Comment );
+
+#    else
+      amr->patch[0][lv][SPID]->AddParticle( ParInPatch, ParIDInPatch, &amr->Par->NPar_Lv[lv], PType );
+#     endif
+
+      delete [] ParIDInPatch;
+   } // for (int i=0; i<UniqueCount; i++)
 
 
 #  ifdef MY_DEBUG
@@ -689,12 +734,16 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 
 // free memory
-   delete [] NewParAtt;
-   delete [] NewParID;
-   delete [] NewParPID;
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
+   delete [] RemovalPos;
+   delete [] RemovalFlu;
+   delete [] NewParAtt;
+   delete [] NewParID;
+   delete [] NewParPID;
+   delete [] SelNewParPID;
+   delete [] UniqueParPID;
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
    } // end of OpenMP parallel region
 
