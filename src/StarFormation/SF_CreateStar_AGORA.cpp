@@ -153,11 +153,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    int LocalID, delta_t, PGi, PGj, PGk;
 
-//    load the existing particles ID (their number)
-   // const int   NParTot   = amr->Par->NPar_Active_AllRank;
-   // const real *ParPos[3] = { amr->Par->PosX, amr->Par->PosY, amr->Par->PosZ };
-   // const real *ParVel[3] = { amr->Par->VelX, amr->Par->VelY, amr->Par->VelZ };
-
    const bool TimingSendPar_Yes = true;
    const bool JustCountNPar_No  = false;
    const bool PredictPos_No     = false;
@@ -663,9 +658,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    } // for (int pi=0; pi<NNewPar; pi++)
 
    long   *UniqueParPID  = new long [MaxNewParPerPG]; // Record the non-repeating PID
-   int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
+   // int SelNewParPIDSize = sizeof(SelNewParPID)/sizeof(SelNewParPID[0]);
    int UniqueCount = 0;
-   for (int i=0; i<SelNewParPIDSize; i++)
+   for (int i=0; i<SelNNewPar; i++)
    {
       int j;
       for (j=0; j<i; j++)
@@ -678,7 +673,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          UniqueParPID[UniqueCount] = SelNewParPID[i];
          UniqueCount ++;
       }
-   } // for (int i=0; i<SelNewParPIDSize; i++)
+   } // for (int i=0; i<SelNNewPar; i++)
 
 #  ifdef MY_DEBUG
    for (int i = 0; i<UniqueCount;i++)
