@@ -625,7 +625,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  ifdef MY_DEBUG
    if (NNewPar > 0)
    {
-      fprintf( File, "NNewPar = %d", SelNNewPar);
+      fprintf( File, "NNewPar = %d", NNewPar);
       fprintf( File, "\n" );
    }
 #  endif
