@@ -446,7 +446,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                PCP[1] = y - ParAtt_Local[PAR_POSY][p];
                PCP[2] = z - ParAtt_Local[PAR_POSZ][p];
                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-               if ( D2Par < AccRadius )
+               if ( D2Par < 2*AccRadius )
                {
                   InsideAccRadius = true;
                   break;
@@ -644,6 +644,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       // add particles to the particle repository
          NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
+
+#  ifdef MY_DEBUG
+         fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
+         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX]);
+         fprintf( File, "\n" );
+#  endif
          
          SelNewParPID[SelNNewPar] = NewParPID[pi];
          SelNNewPar++;
@@ -686,10 +692,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       if ( ParInPatch == 0 )                        continue;
 
-#  ifdef MY_DEBUG
-         fprintf( File, "%d %d %d", SPID, ParInPatch, ParIDInPatch[ParInPatch-1]);
-         fprintf( File, "\n" );
-#  endif
 
 #     ifdef DEBUG_PARTICLE
 //    do not set ParPos too early since pointers to the particle repository (e.g., amr->Par->PosX)
