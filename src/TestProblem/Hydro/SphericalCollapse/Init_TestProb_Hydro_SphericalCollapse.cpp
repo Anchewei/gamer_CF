@@ -308,7 +308,6 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    const double dz = z - BoxCenter[0];
    const double Rc = SQRT( SQR(dx) + SQR(dy) );
    const double Rs = SQRT( SQR(dx) + SQR(dy) + SQR(dz) );
-   const double Mag_Rot_Angle_Rad = 0.0;
 
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
    double VelX, VelY, VelZ;
@@ -330,10 +329,9 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    if ( Rs < R0 )
    {
-      Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(dy / (COS(Mag_Rot_Angle_Rad) * dx - SIN(Mag_Rot_Angle_Rad) * dz))));
-      VelX += ( Omega0 * dy * COS(Mag_Rot_Angle_Rad) );
-      VelY += ( Omega0 * dx * (COS(Mag_Rot_Angle_Rad) - SIN(Mag_Rot_Angle_Rad)) );
-      VelZ += ( Omega0 * dy * SIN(Mag_Rot_Angle_Rad) );
+      Dens = Rho0;
+      VelX += Omega0 * dy;
+      VelY -= Omega0 * dx;
    }
    else
    {
