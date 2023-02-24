@@ -330,8 +330,8 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    if ( Rs < R0 )
    {
       Dens = Rho0;
-      VelX += Omega0 * dy;
-      VelY -= Omega0 * dx;
+      VelX -= Omega0 * dy;
+      VelY += Omega0 * dx;
    }
    else
    {
