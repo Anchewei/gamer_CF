@@ -620,7 +620,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
    int      RemovalFluSize         = MaxNewPar*5;
-   long     *GatherNNewPar         = new long [world_size];
+   int      *GatherNNewPar         = new int [world_size];
    real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*world_size][5];
 
    MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_FLOAT, 
