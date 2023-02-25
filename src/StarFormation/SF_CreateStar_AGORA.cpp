@@ -643,6 +643,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       for (rank=0; rank<world_size; rank++);
       {
          int NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
+#  ifdef MY_DEBUG
+         fprintf( File, "NNewParRank = %d", NNewParRank);
+         fprintf( File, "\n" );
+#  endif
          for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
          {
             if ( (rank == world_rank) and ((pj-MaxNewPar*rank) == pi) ) continue;
@@ -651,7 +655,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
             dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
 #  ifdef MY_DEBUG
-            fprintf( File, "%7.4e", dxpp);
+            fprintf( File, "Ranki: %d, Rankj: %d, 
+                        RemovalFlu[pi][2] = %7.4e, GatherRemovalFlu[pj][2] = %7.4e", 
+                        world_rank, RemovalFlu[pi][2], GatherRemovalFlu[pj][2]);
             fprintf( File, "\n" );
 #  endif
             D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
