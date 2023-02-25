@@ -656,7 +656,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
 #  ifdef MY_DEBUG
             fprintf( File, "Ranki: %d, Rankj: %d, RemovalFlu[pi][2] = %7.4e, GatherRemovalFlu[pj][2] = %7.4e", 
-                        world_rank, RemovalFlu[pi][2], GatherRemovalFlu[pj][2]);
+                        world_rank, rank, RemovalFlu[pi][2], GatherRemovalFlu[pj][2]);
             fprintf( File, "\n" );
 #  endif
             D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
