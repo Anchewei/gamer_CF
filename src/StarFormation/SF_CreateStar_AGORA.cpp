@@ -612,8 +612,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 // Excluding the nearby particles + remove the gas from the cell + add particles
 // ===========================================================================================================
-
 #  ifdef LOAD_BALANCE
+   MPI_Barrier(MPI_COMM_WORLD);
+
    int world_rank, world_size;
    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -632,7 +633,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       fprintf( File, "NNewPar from processor %d = %d", i, GatherNNewPar[i]);
       fprintf( File, "\n" );
    }
-
 #  endif
 
    long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
@@ -686,9 +686,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 
-
-
-
+   delete[] GatherNNewPar;
+   delete[] GatherRemovalFlu;
 
 #  else
    long    *SelNewParPID        = new long [MaxNewPar]; // PID of the selected paritcles
