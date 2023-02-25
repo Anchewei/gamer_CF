@@ -619,6 +619,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+#  ifdef MY_DEBUG
+   fprintf( File, "This is proccessor %d/%d", world_rank, world_size);
+   fprintf( File, "\n" );
+#  endif
+
    int      RemovalFluSize         = MaxNewPar*5;
    int      *GatherNNewPar         = new int [world_size];
    real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*world_size][5];
@@ -640,7 +645,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    for (int pi=0; pi<NNewPar; pi++)
    {  
       bool CreateHere = true;
-      int rank;
       for (int rank=0; rank<world_size; rank++);
       {
          NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
@@ -655,11 +659,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
             dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
             dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
-#  ifdef MY_DEBUG
-            fprintf( File, "Ranki: %d, Rankj: %d, RemovalFlu[pi][2] = %7.4e, GatherRemovalFlu[pj][2] = %7.4e", 
-                        world_rank, rank, RemovalFlu[pi][2], GatherRemovalFlu[pj][2]);
-            fprintf( File, "\n" );
-#  endif
+// #  ifdef MY_DEBUG
+//             fprintf( File, "Ranki: %d, Rankj: %d, RemovalFlu[pi][2] = %7.4e, GatherRemovalFlu[pj][2] = %7.4e", 
+//                         world_rank, rank, RemovalFlu[pi][2], GatherRemovalFlu[pj][2]);
+//             fprintf( File, "\n" );
+// #  endif
             D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
             if ( D2C > AccRadius )                       continue;
 
