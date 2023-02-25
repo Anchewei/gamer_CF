@@ -629,13 +629,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    int SelNNewPar = 0; // the number of selected particles after the following check
-   int NNewParRank;
    for (int pi=0; pi<NNewPar; pi++)
    {  
       bool CreateHere = true;
-      for (int rank=0; rank<world_rank; rank++);
+      int rank;
+      for (rank=0; rank<world_rank; rank++);
       {
-         NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
+         int NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
          for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
          {
             if ( (rank == world_rank) and ((pj-MaxNewPar*rank) == pi) ) continue;
