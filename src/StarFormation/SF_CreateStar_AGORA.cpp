@@ -644,7 +644,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    {  
       bool CreateHere = true;
       int rank;
-      for (rank=0; rank<world_rank; rank++);
+      for (rank=0; rank<world_size; rank++);
       {
          int NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
          for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
