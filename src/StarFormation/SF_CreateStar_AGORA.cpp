@@ -627,7 +627,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    MPI_Allgather(&NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
 
 #  ifdef MY_DEBUG
-   for (int i=0;, i<world_size)
+   for (int i=0; i<world_size; i++)
    {
       fprintf( File, "NNewPar from processor %d = %d", i, GatherNNewPar[i]);
       fprintf( File, "\n" );
