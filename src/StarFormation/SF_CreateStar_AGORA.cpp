@@ -96,13 +96,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const double dh             = amr->dh[lv];
    
    const int    AccCellNum     = 4;
-   const double AccRadius      = AccCellNum*dh;
+   const real AccRadius        = AccCellNum*dh;
    const int    NGhost         = AccCellNum; // the number of ghost cell at each side
    const int    Size_Flu       = PS2 + 2*NGhost; // final cube size
    const int    Size_Flu_P1    = Size_Flu + 1; // for face-centered B field
    const int    Size_Pot       = Size_Flu; // for potential
    const int    NPG            = 1;
-   const int MaxNewPar = 1000;
+   const int    MaxNewPar      = 32;
 
    const real   dv             = CUBE( dh );
    const int    FluSg          = amr->FluSg[lv];
@@ -113,7 +113,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    int NNewPar = 0;
    real    (*RemovalFlu)[5]                   = new real [MaxNewPar][5];
    long    (*RemovalPos)[4]                   = new long [MaxNewPar][4];
-   real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewPar][PAR_NATT_TOTAL];
+   real    (*NewParAtt)[PAR_NATT_TOTAL]       = new real [MaxNewPar][PAR_NATT_TOTAL];
    long    *NewParID                          = new long [MaxNewPar];
    long    *NewParPID                         = new long [MaxNewPar];
 
@@ -612,6 +612,75 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 // Excluding the nearby particles + remove the gas from the cell + add particles
 // ===========================================================================================================
+
+#  ifdef LOAD_BALANCE
+   int world_rank, world_size;
+   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+   int      RemovalFluSize         = MaxNewPar*5;
+   long     *GatherNNewPar         = new long [world_size]
+   real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*world_size][5];
+
+   MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_FLOAT, 
+                 GatherRemovalFlu, RemovalFluSize, MPI_FLOAT, MPI_COMM_WORLD);
+   MPI_Allgather(NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
+
+   long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
+   real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
+   int SelNNewPar = 0; // the number of selected particles after the following check
+   for (int pi=0; pi<NNewPar; pi++)
+   {  
+      bool CreateHere = true;
+      for (int rank=0; rank<world_rank, rank++)
+      {
+         int NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
+         for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+         {
+            if ( (rank == world_rank) and ((pj-MaxNewPar*rank) == pi) ) continue;
+
+            dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
+            dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
+            dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
+            D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
+            if ( D2C > AccRadius )                       continue;
+
+            // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
+            // if (RemovalFlu[pi][1] != RemovalFlu[pi][1])  continue;   // check whether there are other cells with the same potential
+            if ((RemovalFlu[pi][2] < GatherRemovalFlu[pj][2]) or (RemovalFlu[pi][3] < GatherRemovalFlu[pj][3]) or (RemovalFlu[pi][4] < GatherRemovalFlu[pj][4]))
+            {
+               CreateHere = false;
+               break;
+            }
+         } // for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+
+         if ( CreateHere == false )          break;
+      } // for (int rank=0; rank<world_rank, rank++)
+
+      if ( CreateHere )
+      {
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+
+      // add particles to the particle repository
+         NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
+
+#  ifdef MY_DEBUG
+         fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
+         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX]);
+         fprintf( File, "\n" );
+#  endif
+         
+         SelNewParPID[SelNNewPar] = NewParPID[pi];
+         SelNNewPar++;
+      }
+   } // for (int pi=0; pi<NNewPar; pi++)
+
+
+
+
+
+#  else
    long    *SelNewParPID        = new long [MaxNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    int SelNNewPar = 0; // the number of selected particles after the following check
@@ -655,6 +724,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          SelNNewPar++;
       }
    } // for (int pi=0; pi<NNewPar; pi++)
+#  endif
+
+
 
    long   *UniqueParPID  = new long [MaxNewPar]; // Record the non-repeating PID
    int UniqueCount = 0;
