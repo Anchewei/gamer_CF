@@ -626,6 +626,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                  GatherRemovalFlu, RemovalFluSize, MPI_FLOAT, MPI_COMM_WORLD);
    MPI_Allgather(&NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
 
+#  ifdef MY_DEBUG
+   for (int i=0;, i<world_size)
+   {
+      fprintf( File, "NNewPar from processor %d = %d", i, GatherNNewPar[i]);
+      fprintf( File, "\n" );
+   }
+
+#  endif
+
    long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    int SelNNewPar = 0; // the number of selected particles after the following check
