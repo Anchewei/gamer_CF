@@ -631,13 +631,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                  GatherRemovalFlu, RemovalFluSize, MPI_FLOAT, MPI_COMM_WORLD);
 #  endif
 
-#  ifdef MY_DEBUG
-   if (NNewPar>0)
-   {
-      fprintf( File, "%7.4e %7.4e", GatherRemovalFlu[0][2], GatherRemovalFlu[0][3]);
-      fprintf( File, "\n" );
-   }
-#  endif
    MPI_Allgather(&NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
 
    long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
@@ -657,6 +650,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
             dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
             dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
+#  ifdef MY_DEBUG
+            fprintf( File, "%7.4e", dxpp);
+            fprintf( File, "\n" );
+#  endif
             D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
             if ( D2C > AccRadius )                       continue;
 
