@@ -96,13 +96,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const double dh             = amr->dh[lv];
    
    const int    AccCellNum     = 4;
-   const double AccRadius      = AccCellNum*dh;
+   const real AccRadius        = AccCellNum*dh;
    const int    NGhost         = AccCellNum; // the number of ghost cell at each side
    const int    Size_Flu       = PS2 + 2*NGhost; // final cube size
    const int    Size_Flu_P1    = Size_Flu + 1; // for face-centered B field
    const int    Size_Pot       = Size_Flu; // for potential
    const int    NPG            = 1;
-   const int MaxNewPar = 1000;
+   const int    MaxNewPar      = 32;
 
    const real   dv             = CUBE( dh );
    const int    FluSg          = amr->FluSg[lv];
@@ -110,12 +110,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // const real   GraConst       = ( OPT__GRA_P5_GRADIENT ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh);
    const real   GraConst       = ( false                ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh); // P5 is NOT supported yet
 
-   int NNewPar = 0;
-   real    (*RemovalFlu)[5]                   = new real [MaxNewPar][5];
-   long    (*RemovalPos)[4]                   = new long [MaxNewPar][4];
-   real   (*NewParAtt)[PAR_NATT_TOTAL]        = new real [MaxNewPar][PAR_NATT_TOTAL];
-   long    *NewParID                          = new long [MaxNewPar];
-   long    *NewParPID                         = new long [MaxNewPar];
+   int      NNewPar = 0;
+   real   (*RemovalFlu)[5]                   = new real [MaxNewPar][5];
+   long   (*RemovalPos)[4]                   = new long [MaxNewPar][4];
+   real   (*NewParAtt)[PAR_NATT_TOTAL]       = new real [MaxNewPar][PAR_NATT_TOTAL];
+   long    *NewParID                         = new long [MaxNewPar];
+   long    *NewParPID                        = new long [MaxNewPar];
 
 
 
@@ -550,68 +550,154 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewPar (%d) !!\n", NNewPar, MaxNewPar );
 #        endif
 
-         NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
-         NewParAtt[NNewPar][PAR_POSX] = x;
-         NewParAtt[NNewPar][PAR_POSY] = y;
-         NewParAtt[NNewPar][PAR_POSZ] = z;
-         NewParAtt[NNewPar][PAR_VELX] = VelX;
-         NewParAtt[NNewPar][PAR_VELY] = VelY;
-         NewParAtt[NNewPar][PAR_VELZ] = VelZ;
-         NewParAtt[NNewPar][PAR_TIME] = TimeNew;
-         NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
-
-//       particle acceleration
-#        ifdef STORE_PAR_ACC
-         real GasAcc[3] = { (real)0.0, (real)0.0, (real)0.0 };
-
-//       external acceleration
-         if ( OPT__EXT_ACC )  CPUExtAcc_Ptr( GasAcc, x, y, z, TimeNew, ExtAcc_AuxArray );
-
-//       self-gravity and external potential
-         if ( OPT__SELF_GRAVITY  ||  OPT__EXT_POT )
+#        pragma omp critical
          {
-            for (int NeighborID=0; NeighborID<6; NeighborID++)
-            {  
-               if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
-               else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
-               else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+            NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
+            NewParAtt[NNewPar][PAR_POSX] = x;
+            NewParAtt[NNewPar][PAR_POSY] = y;
+            NewParAtt[NNewPar][PAR_POSZ] = z;
+            NewParAtt[NNewPar][PAR_VELX] = VelX;
+            NewParAtt[NNewPar][PAR_VELY] = VelY;
+            NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+            NewParAtt[NNewPar][PAR_TIME] = TimeNew;
+            NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
-               const int Neighbort = t + delta_t;
-               PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
+   //       particle acceleration
+   #        ifdef STORE_PAR_ACC
+            real GasAcc[3] = { (real)0.0, (real)0.0, (real)0.0 };
+
+   //       external acceleration
+            if ( OPT__EXT_ACC )  CPUExtAcc_Ptr( GasAcc, x, y, z, TimeNew, ExtAcc_AuxArray );
+
+   //       self-gravity and external potential
+            if ( OPT__SELF_GRAVITY  ||  OPT__EXT_POT )
+            {
+               for (int NeighborID=0; NeighborID<6; NeighborID++)
+               {  
+                  if      (NeighborID == 0) delta_t = IDX321(  1,  0,  0, Size_Flu, Size_Flu );
+                  else if (NeighborID == 1) delta_t = IDX321( -1,  0,  0, Size_Flu, Size_Flu );
+                  else if (NeighborID == 2) delta_t = IDX321(  0,  1,  0, Size_Flu, Size_Flu );
+                  else if (NeighborID == 3) delta_t = IDX321(  0, -1,  0, Size_Flu, Size_Flu );
+                  else if (NeighborID == 4) delta_t = IDX321(  0,  0,  1, Size_Flu, Size_Flu );
+                  else if (NeighborID == 5) delta_t = IDX321(  0,  0, -1, Size_Flu, Size_Flu );
+
+                  const int Neighbort = t + delta_t;
+                  PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
+               }
+               GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
+               GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
+               GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
             }
-            GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
-            GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
-            GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
-         }
 
-         NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
-         NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
-         NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
-#        endif // ifdef STORE_PAR_ACC
+            NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
+            NewParAtt[NNewPar][PAR_ACCY] = GasAcc[1];
+            NewParAtt[NNewPar][PAR_ACCZ] = GasAcc[2];
+   #        endif // ifdef STORE_PAR_ACC
 
-         NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
-         NewParPID[NNewPar] = PID;
+            NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
+            NewParPID[NNewPar] = PID;
 
-         GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
-         RemovalPos[NNewPar][0] = PID;
-         RemovalPos[NNewPar][1] = PGk - Disp_k;
-         RemovalPos[NNewPar][2] = PGj - Disp_j;
-         RemovalPos[NNewPar][3] = PGi - Disp_i;
-         RemovalFlu[NNewPar][0] = GasMFracLeft;
-         RemovalFlu[NNewPar][1] = phi000;
-         RemovalFlu[NNewPar][2] = x;
-         RemovalFlu[NNewPar][3] = y;
-         RemovalFlu[NNewPar][4] = z;
+            GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+            RemovalPos[NNewPar][0] = PID;
+            RemovalPos[NNewPar][1] = PGk - Disp_k;
+            RemovalPos[NNewPar][2] = PGj - Disp_j;
+            RemovalPos[NNewPar][3] = PGi - Disp_i;
+            RemovalFlu[NNewPar][0] = GasMFracLeft;
+            RemovalFlu[NNewPar][1] = phi000;
+            RemovalFlu[NNewPar][2] = x;
+            RemovalFlu[NNewPar][3] = y;
+            RemovalFlu[NNewPar][4] = z;
 
-         NNewPar ++;
+            NNewPar ++;
+         } // # pragma omp critical
       } // pi, pj, pk
-   } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8)
+   } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8) #  pragma omp for schedule( static )
 
-// Excluding the nearby particles + remove the gas from the cell + add particles
+// Excluding the nearby particles + remove the gas from the cell
 // ===========================================================================================================
+#  ifdef LOAD_BALANCE
+   MPI_Barrier(MPI_COMM_WORLD);
+
+   int world_rank, world_size;
+   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+#  ifdef MY_DEBUG
+   fprintf( File, "This is proccessor %d/%d", world_rank, world_size);
+   fprintf( File, "\n" );
+#  endif
+
+   int      RemovalFluSize         = MaxNewPar*5;
+   int      *GatherNNewPar         = new int [world_size];
+   real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*world_size][5];
+
+#  ifdef FLOAT8
+   MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_DOUBLE, 
+                 GatherRemovalFlu, RemovalFluSize, MPI_DOUBLE, MPI_COMM_WORLD);
+#  else
+   MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_FLOAT, 
+                 GatherRemovalFlu, RemovalFluSize, MPI_FLOAT, MPI_COMM_WORLD);
+#  endif
+
+   MPI_Allgather(&NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
+
+   long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
+   real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
+   int SelNNewPar = 0; // the number of selected particles after the following check
+   int NNewParRank;
+   for (int pi=0; pi<NNewPar; pi++)
+   {  
+      bool CreateHere = true;
+      for (int rank=0; rank<world_size; rank++)
+      {
+         NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
+#  ifdef MY_DEBUG
+         fprintf( File, "rank = %d, NNewParRank = %d", rank, NNewParRank);
+         fprintf( File, "\n" );
+#  endif
+         for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+         {
+            dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
+            dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
+            dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
+            D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
+            if ( D2C > AccRadius )                       continue;
+
+            // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
+            // if (RemovalFlu[pi][1] != RemovalFlu[pi][1])  continue;   // check whether there are other cells with the same potential
+            if ((dxpp<0) or (dypp<0) or (dzpp<0))
+            {
+               CreateHere = false;
+               break;
+            }
+         } // for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+
+         if ( CreateHere == false )          break;
+      } // for (int rank=0; rank<world_rank, rank++)
+
+      if ( CreateHere )
+      {
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+
+      // add particles to the particle repository
+         NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
+
+#  ifdef MY_DEBUG
+         fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
+         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX]);
+         fprintf( File, "\n" );
+#  endif
+         
+         SelNewParPID[SelNNewPar] = NewParPID[pi];
+         SelNNewPar++;
+      }
+   } // for (int pi=0; pi<NNewPar; pi++)
+
+   delete[] GatherNNewPar;
+   delete[] GatherRemovalFlu;
+
+#  else
    long    *SelNewParPID        = new long [MaxNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    int SelNNewPar = 0; // the number of selected particles after the following check
@@ -620,8 +706,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       bool CreateHere = true;
       for (int pj=0; pj<NNewPar; pj++)
       {
-         if (pi == pj)                                continue;
-
          dxpp = RemovalFlu[pi][2] - RemovalFlu[pj][2];
          dypp = RemovalFlu[pi][3] - RemovalFlu[pj][3];
          dzpp = RemovalFlu[pi][4] - RemovalFlu[pj][4];
@@ -655,7 +739,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          SelNNewPar++;
       }
    } // for (int pi=0; pi<NNewPar; pi++)
+#  endif
 
+// Add the selected particles
+// ===========================================================================================================
    long   *UniqueParPID  = new long [MaxNewPar]; // Record the non-repeating PID
    int UniqueCount = 0;
    for (int i=0; i<SelNNewPar; i++)
