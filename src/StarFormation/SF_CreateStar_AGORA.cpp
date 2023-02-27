@@ -623,9 +623,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 
 #  ifdef MY_DEBUG
-   fprintf( File, "%d %7.4e %7.4e %7.4e", NNewPar, 
-   RemovalFlu[NNewPar][2], RemovalFlu[NNewPar][3], RemovalFlu[NNewPar][4]);
-   fprintf( File, "\n" );
+   if (NNewPar>0)
+   {
+      fprintf( File, "%d %7.4e %7.4e %7.4e", NNewPar, 
+      RemovalFlu[NNewPar][2], RemovalFlu[NNewPar][3], RemovalFlu[NNewPar][4]);
+      fprintf( File, "\n" );
+   }
 #  endif
 
 // Excluding the nearby particles + remove the gas from the cell
