@@ -798,6 +798,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
          delete [] ParIDInPatch;
       } // for (int i=0; i<UniqueCount; i++)
+      
+      delete [] SelNewParPID;
+      delete [] UniqueParPID;
    } // #  pragma omp critical
 
 
@@ -817,8 +820,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParAtt;
    delete [] NewParID;
    delete [] NewParPID;
-   delete [] SelNewParPID;
-   delete [] UniqueParPID;
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
    } // end of OpenMP parallel region
 
