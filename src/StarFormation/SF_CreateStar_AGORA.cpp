@@ -626,7 +626,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    if (NNewPar>0)
    {
       fprintf( File, "%d %7.4e %7.4e %7.4e", NNewPar, 
-      RemovalFlu[NNewPar][2], RemovalFlu[NNewPar][3], RemovalFlu[NNewPar][4]);
+      RemovalFlu[NNewPar-1][2], RemovalFlu[NNewPar-1][3], RemovalFlu[NNewPar-1][4]);
       fprintf( File, "\n" );
    }
 #  endif
