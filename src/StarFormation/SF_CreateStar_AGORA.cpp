@@ -123,6 +123,15 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    if (AccCellNum > PS1)
       Aux_Error( ERROR_INFO, "AccCellNum should be smaller than PATCH_SIZE !!" );
 
+   const bool TimingSendPar_Yes = true;
+   const bool JustCountNPar_No  = false;
+   const bool PredictPos_No     = false;
+   const bool SibBufPatch_Yes   = true;
+   const bool FaSibBufPatch_No  = false;
+   const long ParAttBitIdx_In   = _PAR_TOTAL;
+   Par_CollectParticle2OneLevel( lv, ParAttBitIdx_In, PredictPos_No, TimeNew, SibBufPatch_Yes, FaSibBufPatch_No,
+                                 JustCountNPar_No, TimingSendPar_Yes );
+
 // start of OpenMP parallel region
 #  pragma omp parallel
    {
@@ -150,15 +159,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
 
    int LocalID, delta_t, PGi, PGj, PGk;
-
-   const bool TimingSendPar_Yes = true;
-   const bool JustCountNPar_No  = false;
-   const bool PredictPos_No     = false;
-   const bool SibBufPatch_Yes   = true;
-   const bool FaSibBufPatch_No  = false;
-   const long ParAttBitIdx_In   = _PAR_TOTAL;
-   Par_CollectParticle2OneLevel( lv, ParAttBitIdx_In, PredictPos_No, TimeNew, SibBufPatch_Yes, FaSibBufPatch_No,
-                                 JustCountNPar_No, TimingSendPar_Yes );
 
 // get the sibling index differences along different directions
    int NSibPID_Delta[26], *SibPID_Delta[26];
@@ -613,14 +613,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8) #  pragma omp for schedule( static )
 
-// free memory
    delete [] Flu_Array_F_In;
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
-   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
    } // end of OpenMP parallel region
 
-
+// free memory
+   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
 
 #  ifdef MY_DEBUG
    if (NNewPar>0)
@@ -633,16 +632,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 // Excluding the nearby particles + remove the gas from the cell
 // ===========================================================================================================
-#  ifdef LOAD_BALANCE
    MPI_Barrier(MPI_COMM_WORLD);
 
-   int world_rank, world_size;
-   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
    int      RemovalFluSize         = MaxNewPar*5;
-   int      *GatherNNewPar         = new int [world_size];
-   real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*world_size][5];
+   int      *GatherNNewPar         = new int [MPI_NRank];
+   real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*MPI_NRank][5];
 
 #  ifdef FLOAT8
    MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_DOUBLE, 
@@ -661,7 +655,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    for (int pi=0; pi<NNewPar; pi++)
    {  
       bool CreateHere = true;
-      for (int rank=0; rank<world_size; rank++)
+      for (int rank=0; rank<MPI_NRank; rank++)
       {
          NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
          for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
@@ -682,7 +676,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          } // for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
 
          if ( CreateHere == false )          break;
-      } // for (int rank=0; rank<world_rank, rank++)
+      } // for (int rank=0; rank<MPI_Rank, rank++)
 
       if ( CreateHere )
       {
@@ -705,50 +699,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    delete[] GatherNNewPar;
    delete[] GatherRemovalFlu;
-
-#  else // LOAD_BALANCE
-   long    *SelNewParPID        = new long [MaxNewPar]; // PID of the selected paritcles
-   real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
-   int SelNNewPar = 0; // the number of selected particles after the following check
-   for (int pi=0; pi<NNewPar; pi++)
-   {  
-      bool CreateHere = true;
-      for (int pj=0; pj<NNewPar; pj++)
-      {
-         dxpp = RemovalFlu[pi][2] - RemovalFlu[pj][2];
-         dypp = RemovalFlu[pi][3] - RemovalFlu[pj][3];
-         dzpp = RemovalFlu[pi][4] - RemovalFlu[pj][4];
-         D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
-         if ( D2C > AccRadius )                       continue;
-
-         // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
-         // if (RemovalFlu[pi][1] != RemovalFlu[pi][1])  continue;   // check whether there are other cells with the same potential
-         if ((RemovalFlu[pi][2] < RemovalFlu[pj][2]) or (RemovalFlu[pi][3] < RemovalFlu[pj][3]) or (RemovalFlu[pi][4] < RemovalFlu[pj][4]))
-         {
-            CreateHere = false;
-            break;
-         }
-      } // for (int pj=0; pj<NNewPar; pj++)
-
-      if ( CreateHere )
-      {
-         for (int v=0; v<NCOMP_TOTAL; v++)
-         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
-
-      // add particles to the particle repository
-         NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
-
-#  ifdef MY_DEBUG
-         fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
-         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX]);
-         fprintf( File, "\n" );
-#  endif
-         
-         SelNewParPID[SelNNewPar] = NewParPID[pi];
-         SelNNewPar++;
-      }
-   } // for (int pi=0; pi<NNewPar; pi++)
-#  endif //LOAD_BALANCE
 
 //    Add the selected particles
 //    ===========================================================================================================
