@@ -639,10 +639,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*MPI_NRank][5];
 
 #  ifdef FLOAT8
-   MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_DOUBLE, 
+   MPI_Allgather(RemovalFlu[0], RemovalFluSize, MPI_DOUBLE, 
                GatherRemovalFlu, RemovalFluSize, MPI_DOUBLE, MPI_COMM_WORLD);
 #  else
-   MPI_Allgather(RemovalFlu, RemovalFluSize, MPI_FLOAT, 
+   MPI_Allgather(RemovalFlu[0], RemovalFluSize, MPI_FLOAT, 
                GatherRemovalFlu, RemovalFluSize, MPI_FLOAT, MPI_COMM_WORLD);
 #  endif
 
