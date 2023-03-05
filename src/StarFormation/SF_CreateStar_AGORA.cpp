@@ -90,7 +90,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const double dh             = amr->dh[lv];
    
    const int    AccCellNum     = 4;
-   const real AccRadius        = AccCellNum*dh;
    const int    NGhost         = AccCellNum; // the number of ghost cell at each side
    const int    Size_Flu       = PS2 + 2*NGhost; // final cube size
    const int    Size_Flu_P1    = Size_Flu + 1; // for face-centered B field
@@ -99,6 +98,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const int    MaxNewPar      = 32;
 
    const real   dv             = CUBE( dh );
+   const real   AccRadius      = AccCellNum*dh;
    const int    FluSg          = amr->FluSg[lv];
    const real   Coeff_FreeFall = SQRT( (32.0*NEWTON_G)/(3.0*M_PI) );
 // const real   GraConst       = ( OPT__GRA_P5_GRADIENT ) ? -1.0/(12.0*dh) : -1.0/(2.0*dh);
@@ -110,8 +110,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real   (*NewParAtt)[PAR_NATT_TOTAL]       = new real [MaxNewPar][PAR_NATT_TOTAL];
    long    *NewParID                         = new long [MaxNewPar];
    long    *NewParPID                        = new long [MaxNewPar];
-
-
 
 // checking the value of accretion radius
    if (AccCellNum > PS1)
@@ -535,9 +533,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( FABS(Egtot) <= 2*Ethtot)                       continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 
-//       store the information of new star particles
-//       --> we will not create these new particles until looping over all cells in order to reduce
-//           the OpenMP synchronization overhead
+//       Store the information of new star particles
 //       ===========================================================================================================
 #        ifdef GAMER_DEBUG
          if ( NNewPar >= MaxNewPar )
@@ -679,8 +675,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete[] GatherNNewPar;
    delete[] GatherRemovalFlu;
 
-//    Add the selected particles
-//    ===========================================================================================================
+// Add the selected particles
+// ===========================================================================================================
    long   *UniqueParPID  = new long [MaxNewPar]; // Record the non-repeating PID
    int UniqueCount = 0;
    for (int i=0; i<SelNNewPar; i++)
