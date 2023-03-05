@@ -36,7 +36,8 @@ COMPILE_VERBOSE := 0
 SIMU_OPTION += -DMODEL=HYDRO
 
 # enable gravity
-SIMU_OPTION += -DGRAVITY
+# --> must enable SUPPORT_FFTW
+#SIMU_OPTION += -DGRAVITY
 
 # enable particles
 #SIMU_OPTION += -DPARTICLE
@@ -54,7 +55,7 @@ ifeq "$(filter -DMODEL=HYDRO, $(SIMU_OPTION))" "-DMODEL=HYDRO"
 # hydrodynamic scheme: RTVD/MHM/MHM_RP/CTU
 # --> must be set when MODEL=HYDRO
 # --> MHD only supports MHM_RP and CTU
-SIMU_OPTION += -DFLU_SCHEME=MHM
+SIMU_OPTION += -DFLU_SCHEME=CTU
 
 # scheme of spatial data reconstruction: PLM/PPM (piecewise-linear/piecewise-parabolic)
 # --> useless for RTVD
@@ -64,7 +65,7 @@ SIMU_OPTION += -DLR_SCHEME=PPM
 # --> pure hydro: EXACT/ROE/HLLE/HLLC(*); MHD: ROE/HLLE/HLLD(*);
 #                 (recommended solvers are highlighted by *)
 # --> useless for RTVD
-SIMU_OPTION += -DRSOLVER=HLLC
+SIMU_OPTION += -DRSOLVER=ROE
 
 # dual energy formalism: DE_ENPY/DE_EINT (evolve entropy or internal energy)
 # --> DE_EINT is not supported yet; useless for RTVD
@@ -83,11 +84,11 @@ SIMU_OPTION += -DNCOMP_PASSIVE_USER=0
 
 # equation of state: EOS_GAMMA/EOS_ISOTHERMAL/EOS_NUCLEAR/EOS_TABULAR/EOS_USER
 # --> must be set when MODEL=HYDRO; must also enable BAROTROPIC_EOS for EOS_ISOTHERMAL
-SIMU_OPTION += -DEOS=EOS_ISOTHERMAL
+SIMU_OPTION += -DEOS=EOS_GAMMA
 
 # whether or not the EOS set above is barotropic
 # --> mandatory for EOS_ISOTHERMAL; optional for EOS_TABULAR/EOS_USER
-SIMU_OPTION += -DBAROTROPIC_EOS
+#SIMU_OPTION += -DBAROTROPIC_EOS
 
 
 # (b-2) ELBDM options
@@ -104,7 +105,7 @@ SIMU_OPTION += -DLAPLACIAN_4TH
 #SIMU_OPTION += -DQUARTIC_SELF_INTERACTION
 
 # number of passively advected scalars
-# --> not supported yet and must be set to 0 (or comment it out)
+# --> not supported yet and thus can only be used as auxiliary fields
 SIMU_OPTION += -DNCOMP_PASSIVE_USER=0
 
 endif # MODEL
@@ -142,7 +143,7 @@ SIMU_OPTION += -DSTORE_PAR_ACC
 
 # allow for creating new particles after initialization
 # --> must turn on STORE_POT_GHOST when STORE_PAR_ACC is adopted
-SIMU_OPTION += -DSTAR_FORMATION
+#SIMU_OPTION += -DSTAR_FORMATION
 
 # number of user-defined particle attributes
 # --> set it to 0 or comment it out if none is required
@@ -169,7 +170,7 @@ SIMU_OPTION += -DPATCH_SIZE=8
 #SIMU_OPTION += -DGPU
 
 # GPU architecture: FERMI/KEPLER/MAXWELL/PASCAL/VOLTA/TURING/AMPERE
-#SIMU_OPTION += -DGPU_ARCH=TURING
+SIMU_OPTION += -DGPU_ARCH=TURING
 
 # debug mode
 #SIMU_OPTION += -DGAMER_DEBUG
@@ -185,15 +186,15 @@ SIMU_OPTION += -DTIMING
 #SIMU_OPTION += -DTIMING_SOLVER
 
 # double precision
-SIMU_OPTION += -DFLOAT8
+#SIMU_OPTION += -DFLOAT8
 
 # serial mode (in which no MPI libraries are required)
 # --> must disable LOAD_BALANCE
-#SIMU_OPTION += -DSERIAL
+SIMU_OPTION += -DSERIAL
 
 # load-balance parallelization: HILBERT
 # --> must disable SERIAL
-SIMU_OPTION += -DLOAD_BALANCE=HILBERT
+#SIMU_OPTION += -DLOAD_BALANCE=HILBERT
 
 # overlap MPI communication with computation
 # --> NOT supported yet; must enable LOAD_BALANCE
@@ -206,10 +207,14 @@ SIMU_OPTION += -DOPENMP
 #SIMU_OPTION += -DLAOHU
 
 # support HDF5 format
-SIMU_OPTION += -DSUPPORT_HDF5
+#SIMU_OPTION += -DSUPPORT_HDF5
 
 # support GNU scientific library
-SIMU_OPTION += -DSUPPORT_GSL
+#SIMU_OPTION += -DSUPPORT_GSL
+
+# support FFTW library
+# --> must be enabled when GRAVITY is enabled
+#SIMU_OPTION += -DSUPPORT_FFTW
 
 # support yt inline analysis
 #SIMU_OPTION += -DSUPPORT_LIBYT
@@ -231,16 +236,17 @@ SIMU_OPTION += -DRANDOM_NUMBER=RNG_GNU_EXT
 #######################################################################################################
 
 # intel
-# -------------------------------------------------------------------------------#
+# -------------------------------------------------------------------------------
 # CXX         = icpc                                      # serial compiler
-CXX         = $(MPI_PATH)/bin/mpicxx                    # MPI compiler
+##CXX         = $(MPI_PATH)/bin/mpicxx                    # MPI compiler
 ##CXX         = CC                                        # cray wrapper script
- CXXFLAG     = -g -O3                                    # general flags
+# CXXFLAG     = -g -O3                                    # general flags
 ##CXXFLAG     = -g -O3 -std=c++11 #-gxx-name=YOUR_G++
 ##CXXFLAG     = -g -fast
 # CXXFLAG    += -w1                                       # warning flags
- OPENMPFLAG  = -fopenmp                                  # openmp flag
- LIB         = -limf                                     # libraries and linker flags
+# CXXFLAG    += -fp-model precise                         # disable optimizations that are not value-safe
+# OPENMPFLAG  = -fopenmp                                  # openmp flag
+# LIB         = -limf                                     # libraries and linker flags
 #
 ## for debug only
 #ifeq "$(filter -DGAMER_DEBUG, $(SIMU_OPTION))" "-DGAMER_DEBUG"
@@ -256,23 +262,25 @@ CXX         = $(MPI_PATH)/bin/mpicxx                    # MPI compiler
 
 # gnu
 # -------------------------------------------------------------------------------
-# CXX         = g++                                       # serial compiler
+ CXX         = g++                                       # serial compiler
 #CXX         = $(MPI_PATH)/bin/mpicxx                    # MPI compiler
 #CXX         = CC                                        # cray wrapper script
-# CXXFLAG     = -g -O3                                    # general flags
+ CXXFLAG     = -g -O3                                    # general flags
 #CXXFLAG     = -g -O3 -std=c++11
 #CXXFLAG     = -g -Ofast
-# CXXFLAG    += -Wall -Wextra                             # warning flags
-# CXXFLAG    += -Wno-unused-variable -Wno-unused-parameter \
-#               -Wno-maybe-uninitialized -Wno-unused-but-set-variable \
-#               -Wno-unused-result -Wno-unused-function \
-#	       -Wno-implicit-fallthrough -Wno-parentheses
- #OPENMPFLAG  = -fopenmp                                  # openmp flag
- #LIB         =                                           # libraries and linker flags
+ CXXFLAG    += -Wall -Wextra                             # warning flags
+ CXXFLAG    += -Wno-unused-variable -Wno-unused-parameter \
+               -Wno-maybe-uninitialized -Wno-unused-but-set-variable \
+               -Wno-unused-result -Wno-unused-function \
+	       -Wno-implicit-fallthrough -Wno-parentheses
+ OPENMPFLAG  = -fopenmp                                  # openmp flag
+ LIB         =                                           # libraries and linker flags
 
 # for debug only
 ifeq "$(filter -DGAMER_DEBUG, $(SIMU_OPTION))" "-DGAMER_DEBUG"
 #CXXFLAG    += -fstack-protector-all
+#CXXFLAG    += -fsanitize=undefined -fsanitize=address
+#LIB        += -fsanitize=undefined -fsanitize=address
 endif
 
 # suppress warning when OpenMP is disabled
@@ -296,11 +304,11 @@ endif
 
 # template
 CUDA_PATH    :=
-FFTW_PATH    := /software/opt/fftw/2.1.5_openmpi_2.1.5_ic17.0
-MPI_PATH     := /software/opt/openmpi/2.1.5_ic17.0
-HDF5_PATH    := /software/opt/hdf5/1.8.21_openmpi_2.1.5_ic17.0
+FFTW_PATH    :=
+MPI_PATH     :=
+HDF5_PATH    :=
 GRACKLE_PATH :=
-GSL_PATH     := /software/opt/gsl/1.16_ic17.0
+GSL_PATH     :=
 LIBYT_PATH   :=
 
 # NCSA-bluewaters (only need to specify the path of user-installed packages)
@@ -427,8 +435,9 @@ LIBYT_PATH   :=
 # -------------------------------------------------------------------------------
 # CUDA source files (compiled with nvcc)
 GPU_FILE    := CUAPI_Asyn_FluidSolver.cu  CUAPI_DiagnoseDevice.cu  CUAPI_MemAllocate_Fluid.cu \
-               CUAPI_MemFree_Fluid.cu  CUAPI_Set_Default_GPU_Parameter.cu  CUAPI_SetDevice.cu \
-               CUAPI_Synchronize.cu  CUAPI_Asyn_dtSolver.cu  CUAPI_SetConstMemory.cu  CUAPI_SetConstMemory_EoS.cu
+               CUAPI_MemFree_Fluid.cu  CUAPI_SetMemSize.cu  CUAPI_SetCache.cu  CUAPI_SetDevice.cu \
+               CUAPI_Synchronize.cu  CUAPI_Asyn_dtSolver.cu  CUAPI_SetConstMemory.cu  CUAPI_SetConstMemory_EoS.cu \
+               CUAPI_MemAllocate.cu
 
 
 # C/C++ source files (compiled with c++ compiler)
@@ -441,7 +450,7 @@ CPU_FILE    += Aux_Check_Parameter.cpp  Aux_Check_Conservation.cpp  Aux_Check.cp
                Aux_GetMemInfo.cpp  Aux_Message.cpp  Aux_Record_PatchCount.cpp  Aux_TakeNote.cpp  Aux_Timing.cpp \
                Aux_Check_MemFree.cpp  Aux_Record_Performance.cpp  Aux_CheckFileExist.cpp  Aux_Array.cpp \
                Aux_Record_User.cpp  Aux_Record_CorrUnphy.cpp  Aux_SwapPointer.cpp  Aux_Check_NormalizePassive.cpp \
-               Aux_LoadTable.cpp  Aux_IsFinite.cpp  Aux_ComputeProfile.cpp
+               Aux_LoadTable.cpp  Aux_IsFinite.cpp  Aux_ComputeProfile.cpp  Aux_FindExtrema.cpp
 
 CPU_FILE    += CPU_FluidSolver.cpp  Flu_AdvanceDt.cpp  Flu_Prepare.cpp  Flu_Close.cpp  Flu_FixUp_Flux.cpp \
                Flu_FixUp_Restrict.cpp  Flu_AllocateFluxArray.cpp  Flu_BoundaryCondition_User.cpp  Flu_ResetByUser.cpp \
@@ -454,7 +463,7 @@ CPU_FILE    += End_GAMER.cpp  End_MemFree.cpp  End_MemFree_Fluid.cpp  End_StopMa
                Init_MemAllocate_Fluid.cpp  Init_Parallelization.cpp  Init_RecordBasePatch.cpp  Init_Refine.cpp \
                Init_ByRestart_v1.cpp  Init_ByFunction.cpp  Init_TestProb.cpp  Init_ByFile.cpp  Init_OpenMP.cpp \
                Init_ByRestart_HDF5.cpp  Init_ResetParameter.cpp  Init_ByRestart_v2.cpp  Init_MemoryPool.cpp \
-               Init_Unit.cpp  Init_UniformGrid.cpp  Init_Field.cpp  Init_User.cpp
+               Init_Unit.cpp  Init_UniformGrid.cpp  Init_Field.cpp  Init_User.cpp  Init_FFTW.cpp
 
 CPU_FILE    += Interpolate.cpp  Int_CQuadratic.cpp  Int_MinMod1D.cpp  Int_MinMod3D.cpp  Int_vanLeer.cpp \
                Int_Quadratic.cpp  Int_Table.cpp  Int_CQuartic.cpp  Int_Quartic.cpp
@@ -468,7 +477,7 @@ CPU_FILE    += Mis_CompareRealValue.cpp  Mis_GetTotalPatchNumber.cpp  Mis_GetTim
 CPU_FILE    += Output_DumpData_Total.cpp  Output_DumpData.cpp  Output_DumpManually.cpp  Output_PatchMap.cpp \
                Output_DumpData_Part.cpp  Output_FlagMap.cpp  Output_Patch.cpp  Output_PreparedPatch_Fluid.cpp \
                Output_PatchCorner.cpp  Output_Flux.cpp  Output_User.cpp  Output_BasePowerSpectrum.cpp \
-               Output_DumpData_Total_HDF5.cpp  Output_L1Error.cpp
+               Output_DumpData_Total_HDF5.cpp  Output_L1Error.cpp  Output_UserWorkBeforeOutput.cpp
 
 CPU_FILE    += Flag_Real.cpp  Refine.cpp   SiblingSearch.cpp  SiblingSearch_Base.cpp  FindFather.cpp \
                Flag_User.cpp  Flag_Check.cpp  Flag_Lohner.cpp  Flag_Region.cpp
@@ -512,7 +521,8 @@ ifeq "$(filter -DMHD, $(SIMU_OPTION))" "-DMHD"
 CPU_FILE    += MHD_GetCellCenteredBInPatch.cpp  MHD_InterpolateBField.cpp  MHD_AllocateElectricArray.cpp \
                MHD_Aux_Check_InterfaceB.cpp  MHD_FixUp_Electric.cpp  MHD_Aux_Check_DivergenceB.cpp \
                MHD_BoundaryCondition_Outflow.cpp  MHD_BoundaryCondition_Reflecting.cpp  MHD_BoundaryCondition_User.cpp \
-               MHD_BoundaryCondition_Diode.cpp  MHD_CopyPatchInterfaceBField.cpp MHD_Init_BField_ByFile.cpp
+               MHD_BoundaryCondition_Diode.cpp  MHD_CopyPatchInterfaceBField.cpp  MHD_Init_BField_ByFile.cpp \
+               MHD_SameInterfaceB.cpp
 
 CPU_FILE    += CPU_Shared_ConstrainedTransport.cpp  CPU_Shared_RiemannSolver_HLLD.cpp
 
@@ -561,7 +571,7 @@ GPU_FILE    += CUPOT_PoissonSolver_SOR.cu \
 CPU_FILE    += CPU_PoissonGravitySolver.cpp  CPU_PoissonSolver_SOR.cpp  CPU_PoissonSolver_FFT.cpp \
                CPU_PoissonSolver_MG.cpp  CPU_ExtPotSolver.cpp  CPU_ExtPotSolver_BaseLevel.cpp
 
-CPU_FILE    += Init_FFTW.cpp  Gra_Close.cpp  Gra_Prepare_Flu.cpp  Gra_Prepare_Pot.cpp  Gra_Prepare_Corner.cpp \
+CPU_FILE    += Gra_Close.cpp  Gra_Prepare_Flu.cpp  Gra_Prepare_Pot.cpp  Gra_Prepare_Corner.cpp \
                Gra_AdvanceDt.cpp  Poi_Close.cpp  Poi_Prepare_Pot.cpp  Poi_Prepare_Rho.cpp \
                Output_PreparedPatch_Poisson.cpp  Init_MemAllocate_PoissonGravity.cpp \
                End_MemFree_PoissonGravity.cpp  Init_Set_Default_SOR_Parameter.cpp  Init_GreenFuncK.cpp \
@@ -630,7 +640,7 @@ endif # !SERIAL
 
 # load-balance source files (included only if "LOAD_BALANCE" is turned on)
 # ------------------------------------------------------------------------------------
-CPU_FILE    += LB_HilbertCurve.cpp  LB_Utility.cpp
+CPU_FILE    += LB_HilbertCurve.cpp  LB_Utility.cpp  LB_GatherTree.cpp
 
 ifeq "$(findstring -DLOAD_BALANCE, $(SIMU_OPTION))" "-DLOAD_BALANCE"
 CPU_FILE    += LB_Init_LoadBalance.cpp  LB_AllocateBufferPatch_Sibling.cpp  LB_RecordOvelapMPIPatchID.cpp \
@@ -732,7 +742,7 @@ ifeq "$(filter -DLAOHU, $(SIMU_OPTION))" "-DLAOHU"
 LIB += -L$(GPUID_PATH) -lgpudevmgr
 endif
 
-ifeq "$(filter -DGRAVITY, $(SIMU_OPTION))" "-DGRAVITY"
+ifeq "$(filter -DSUPPORT_FFTW, $(SIMU_OPTION))" "-DSUPPORT_FFTW"
    LIB += -L$(FFTW_PATH)/lib
    ifeq "$(filter -DFLOAT8, $(SIMU_OPTION))" "-DFLOAT8"
       ifeq "$(filter -DSERIAL, $(SIMU_OPTION))" "-DSERIAL"
@@ -778,7 +788,7 @@ ifeq "$(filter -DSERIAL, $(SIMU_OPTION))" ""
 INCLUDE += -I$(MPI_PATH)/include
 endif
 
-ifeq "$(filter -DGRAVITY, $(SIMU_OPTION))" "-DGRAVITY"
+ifeq "$(filter -DSUPPORT_FFTW, $(SIMU_OPTION))" "-DSUPPORT_FFTW"
 INCLUDE += -I$(FFTW_PATH)/include
 endif
 
