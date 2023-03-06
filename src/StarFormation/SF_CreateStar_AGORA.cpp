@@ -613,14 +613,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] Pot_Array_USG_F;
    } // end of OpenMP parallel region
 
-#  ifdef MY_DEBUG
-   if (NNewPar>0)
-   {
-      fprintf( File, "NNewPar = %d", NNewPar);
-      fprintf( File, "\n" );
-   }
-#  endif
-
 // free memory
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
 
@@ -679,6 +671,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       // add particles to the particle repository
          NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
+
+#  ifdef MY_DEBUG
+         fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
+         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX]);
+         fprintf( File, "\n" );
+#  endif
          
          SelNewParPID[SelNNewPar] = NewParPID[pi];
          SelNNewPar++;
@@ -754,8 +752,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParPID;
 
 #  ifdef MY_DEBUG
-   fprintf( File, "Step finished");
-   fprintf( File, "\n" );
    fclose( File );
 #  endif
 
