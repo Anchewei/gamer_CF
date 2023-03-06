@@ -752,6 +752,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParPID;
 
 #  ifdef MY_DEBUG
+   if (SelNNewPar>0)
+   {
+      fprintf( File, "###############################");
+      fprintf( File, "\n" );
+   }
    fclose( File );
 #  endif
 
