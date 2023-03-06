@@ -67,6 +67,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                           const real GasDensThres, const real Efficiency, const real MinStarMass, const real MaxStarMFrac,
                           const bool DetRandom, const bool UseMetal)
 {
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__Par_debug";
+   FILE *File = fopen( FileName, "a" );
+#  endif
+
 // check
 #  if ( defined STORE_PAR_ACC  &&  !defined STORE_POT_GHOST )
 #     error : STAR_FORMATION + STORE_PAR_ACC must work with STORE_POT_GHOST !!
@@ -608,6 +613,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] Pot_Array_USG_F;
    } // end of OpenMP parallel region
 
+#  ifdef MY_DEBUG
+   if (NNewPar>0)
+   {
+      fprintf( File, "NNewPar = %d", NNewPar);
+      fprintf( File, "\n" );
+   }
+#  endif
+
 // free memory
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
 
@@ -739,6 +752,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParAtt;
    delete [] NewParID;
    delete [] NewParPID;
+
+#  ifdef MY_DEBUG
+   fprintf( File, "Step finished");
+   fprintf( File, "\n" );
+   fclose( File );
+#  endif
 
 // get the total number of active particles in all MPI ranks
    MPI_Allreduce( &amr->Par->NPar_Active, &amr->Par->NPar_Active_AllRank, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD );
