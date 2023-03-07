@@ -305,7 +305,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 {
    const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
    const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
-   const double BoxEdgeR[3] = { amr->BoxEdgeR[0], amr->BoxEdgeR[1], amr->BoxEdgeR[2] }
+   const double BoxEdgeR[3] = { amr->BoxEdgeR[0], amr->BoxEdgeR[1], amr->BoxEdgeR[2] };
    const double dx = x - BoxCenter[0];
    const double dy = y - BoxCenter[0];
    const double dz = z - BoxCenter[0];
