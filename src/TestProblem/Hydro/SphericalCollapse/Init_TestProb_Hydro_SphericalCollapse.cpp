@@ -155,6 +155,7 @@ void SetParameter()
 // ********************************************************************************************************************************
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
    ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Alpha",         &ISM_Alpha,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Beta",          &ISM_Beta,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Core_Mass",     &ISM_Core_Mass,         0.0,           0.0,              NoMax_double      );
@@ -219,6 +220,7 @@ void SetParameter()
       Aux_Message( stdout, "=============================================================================\n" );
       Aux_Message( stdout, "  test problem ID           = %d\n",     TESTPROB_ID       );
       Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
+      Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
       Aux_Message( stdout, "  ISM_Alpha             = %13.7e \n",       ISM_Alpha                            );
@@ -330,16 +332,21 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    if ( Rs < R0 )
    {
       Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(dy/dx)));;
-      if ((Rc < 0.4*R0) and (Rc > 0.3*R0) and (FABS(dz) < 0.05*R0))
-      {
-         Dens = 10*Rho0;
-      }
       VelX -= Omega0 * dy;
       VelY += Omega0 * dx;
    }
    else
    {
       Dens = Rho0 / ISM_Dens_Contrast;
+   }
+
+   if (dz > 0)
+   {
+      VelY += CF_vflow*Const_km/UNIT_V;
+   }
+   else
+   {
+      VelY -= CF_vflow*Const_km/UNIT_V;
    }
 
    Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
