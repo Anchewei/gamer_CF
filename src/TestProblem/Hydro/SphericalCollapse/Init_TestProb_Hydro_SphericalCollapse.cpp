@@ -342,7 +342,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    if (dz > 0)
    {
-      VelY += CF_vflow*Const_km/UNIT_V;
+      VelZ += CF_vflow*Const_km/UNIT_V;
    }
    else
    {
