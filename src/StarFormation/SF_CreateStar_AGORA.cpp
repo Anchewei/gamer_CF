@@ -613,8 +613,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] Pot_Array_USG_F;
    } // end of OpenMP parallel region
 
-// free memory
-   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
+#  ifdef MY_DEBUG
+   fprintf( File, "%NNewPar = %d", NNewPar);
+   fprintf( File, "\n" );
+#  endif
 
 // Excluding the nearby particles + remove the gas from the cell
 // ===========================================================================================================
@@ -759,6 +761,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    }
    fclose( File );
 #  endif
+
+// free memory
+   Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
 
 // get the total number of active particles in all MPI ranks
    MPI_Allreduce( &amr->Par->NPar_Active, &amr->Par->NPar_Active_AllRank, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD );
