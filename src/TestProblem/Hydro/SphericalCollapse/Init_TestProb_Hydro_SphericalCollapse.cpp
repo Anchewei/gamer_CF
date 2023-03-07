@@ -335,9 +335,9 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
       VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
    }
 
-   if ( Rs < 0.5*R0 )
+   if ( Rs < 0.25*R0 )
    {
-      Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(ddy/ddx)));;
+      Dens = 8*Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(ddy/ddx)));;
       VelX -= Omega0 * ddy;
       VelY += Omega0 * ddx;
    }
