@@ -342,11 +342,11 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    if (dz > 0)
    {
-      VelZ += CF_vflow*Const_km/UNIT_V;
+      VelZ -= CF_vflow*Const_km/UNIT_V;
    }
    else
    {
-      VelZ -= CF_vflow*Const_km/UNIT_V;
+      VelZ += CF_vflow*Const_km/UNIT_V;
    }
 
    Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
