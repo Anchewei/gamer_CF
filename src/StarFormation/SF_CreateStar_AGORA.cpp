@@ -614,8 +614,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    } // end of OpenMP parallel region
 
 #  ifdef MY_DEBUG
+   if (NNewPar>0)
+   {
    fprintf( File, "NNewPar = %d", NNewPar);
    fprintf( File, "\n" );
+   }
 #  endif
 
 // Excluding the nearby particles + remove the gas from the cell
@@ -655,7 +658,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( D2C > AccRadius )                       continue;
 
             // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
-            // if (RemovalFlu[pi][1] != RemovalFlu[pi][1])  continue;   // check whether there are other cells with the same potential
+            // if (RemovalFlu[pi][1] != GatherRemovalFlu[pj][1])  continue;   // check whether there are other cells with the same potential
             if ((dxpp<0) or (dypp<0) or (dzpp<0))
             {
                CreateHere = false;
