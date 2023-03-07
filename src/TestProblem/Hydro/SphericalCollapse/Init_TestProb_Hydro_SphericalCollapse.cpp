@@ -317,7 +317,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    const double ddx = x - Center[0];
    const double ddy = y - Center[1];
    const double ddz = z - Center[2];
-   const double Rs = SQRT( SQR(ddx)) + SQR(ddy) + SQR(ddz) );
+   const double Rs = SQRT( SQR(ddx) + SQR(ddy) + SQR(ddz) );
 
    if ( CF_Mach != 0.0 )
    {
