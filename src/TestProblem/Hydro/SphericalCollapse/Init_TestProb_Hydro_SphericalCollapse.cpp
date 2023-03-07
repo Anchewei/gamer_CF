@@ -305,7 +305,6 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 {
    const double BoxSize[3]   = { amr->BoxSize[0], amr->BoxSize[1], amr->BoxSize[2] };
    const double BoxCenter[3] = { amr->BoxCenter[0], amr->BoxCenter[1], amr->BoxCenter[2] };
-   const double BoxEdgeR[3] = { amr->BoxEdgeR[0], amr->BoxEdgeR[1], amr->BoxEdgeR[2] };
    const double dx = x - BoxCenter[0];
    const double dy = y - BoxCenter[0];
    const double dz = z - BoxCenter[0];
@@ -313,7 +312,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
    double VelX, VelY, VelZ;
 
-   const double Center[3] = {dx/FABS(dx)*BoxEdgeR[0]/4, dy/FABS(dy)*BoxEdgeR[1]/4, dz/FABS(dz)*BoxEdgeR[2]/2};
+   const double Center[3] = {dx/FABS(dx)*BoxCenter[0]/2, dy/FABS(dy)*BoxCenter[1]/2, dz/FABS(dz)*BoxCenter[2]/2};
    const double ddx = x - Center[0];
    const double ddy = y - Center[1];
    const double ddz = z - Center[2];
