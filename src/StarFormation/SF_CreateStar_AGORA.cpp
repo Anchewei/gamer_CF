@@ -614,7 +614,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    } // end of OpenMP parallel region
 
 #  ifdef MY_DEBUG
-   fprintf( File, "%NNewPar = %d", NNewPar);
+   fprintf( File, "NNewPar = %d", NNewPar);
    fprintf( File, "\n" );
 #  endif
 
