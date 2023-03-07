@@ -312,7 +312,9 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
    double VelX, VelY, VelZ;
 
-   const double Center[3] = {dx/FABS(dx)*BoxCenter[0]/2, dy/FABS(dy)*BoxCenter[1]/2, dz/FABS(dz)*BoxCenter[2]/2};
+   const double Center[3] = {BoxCenter[0] + dx/FABS(dx)*BoxCenter[0]/2, 
+                             BoxCenter[0] + dy/FABS(dy)*BoxCenter[1]/2, 
+                             BoxCenter[0] + dz/FABS(dz)*BoxCenter[2]/2};
    const double ddx = x - Center[0];
    const double ddy = y - Center[1];
    const double ddz = z - Center[2];
