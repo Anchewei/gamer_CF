@@ -330,12 +330,12 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    if ( Rs < R0 )
    {
       Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(dy/dx)));;
+      if ((Rc < 0.4*R0) and (Rc > 0.3*R0) and (FABS(dz) < 0.5*R0))
+      {
+         Dens = 2*Rho0;
+      }
       VelX -= Omega0 * dy;
       VelY += Omega0 * dx;
-   }
-   else if ((Rc < 0.4*R0) and (Rc > 0.3*R0) and (FABS(dz) < 0.5*R0))
-   {
-      Dens = 2*Rho0;
    }
    else
    {
