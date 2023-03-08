@@ -100,7 +100,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const int    Size_Flu_P1    = Size_Flu + 1; // for face-centered B field
    const int    Size_Pot       = Size_Flu; // for potential
    const int    NPG            = 1;
-   const int    MaxNewPar      = 128;
+   const int    MaxNewPar      = 1000;
 
    const real   dv             = CUBE( dh );
    const real   AccRadius      = AccCellNum*dh;
@@ -624,49 +624,74 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 // ===========================================================================================================
    MPI_Barrier(MPI_COMM_WORLD);
 
-   int      RemovalFluSize         = MaxNewPar*5;
    int      *GatherNNewPar         = new int [MPI_NRank];
-   real    (*GatherRemovalFlu)[5]  = new real [MaxNewPar*MPI_NRank][5];
-
-#  ifdef FLOAT8
-   MPI_Allgather(RemovalFlu[0], RemovalFluSize, MPI_DOUBLE, 
-               GatherRemovalFlu[0], RemovalFluSize, MPI_DOUBLE, MPI_COMM_WORLD);
-#  else
-   MPI_Allgather(RemovalFlu[0], RemovalFluSize, MPI_FLOAT, 
-               GatherRemovalFlu[0], RemovalFluSize, MPI_FLOAT, MPI_COMM_WORLD);
-#  endif
-
    MPI_Allgather(&NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
 
-   long     *SelNewParPID          = new long [MaxNewPar]; // PID of the selected paritcles
+   int       TotalNNewPar          = 0; // get the total number of the candidates
+   for (int rank=0; rank<MPI_NRank; rank++) TotalNNewPar += GatherNNewPar[rank];
+
+   int      *disp                  = new int [MPI_NRank];
+   disp[0] = 0;
+   for (int rank=1; rank<MPI_NRank; rank++) disp[rank] = 5*(disp[rank-1] + GatherNNewPar[rank-1]);
+
+   int      RemovalFluSize     = NNewPar*5; // the number of information to be sent
+   real    (*GatherRemovalFlu)[5]  = new real [TotalNNewPar][5]; // the array containing all the candidates
+
+#  ifdef FLOAT8
+   MPI_Allgatherv(RemovalFlu[0], RemovalFluSize, MPI_DOUBLE, 
+                  GatherRemovalFlu[0], GatherNNewPar, disp, MPI_DOUBLE, MPI_COMM_WORLD);
+#  else
+   MPI_Allgatherv(RemovalFlu[0], RemovalFluSize, MPI_FLOAT, 
+                  GatherRemovalFlu[0], GatherNNewPar, disp, MPI_FLOAT, MPI_COMM_WORLD);
+#  endif
+   delete [] disp;
+
+   long     *SelNewParPID          = new long [TotalNNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    int SelNNewPar = 0; // the number of selected particles after the following check
-   int NNewParRank;
+   // int NNewParRank;
    for (int pi=0; pi<NNewPar; pi++)
    {  
       bool CreateHere = true;
-      for (int rank=0; rank<MPI_NRank; rank++)
+      for (int pj=0; pj<TotalNNewPar; pj++)
       {
-         NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
-         for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+         dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
+         dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
+         dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
+         D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
+         if ( D2C > AccRadius )                       continue;
+
+         // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
+         // if (RemovalFlu[pi][1] != GatherRemovalFlu[pj][1])  continue;   // check whether there are other cells with the same potential
+         if ((dxpp<0) or (dypp<0) or (dzpp<0))
          {
-            dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
-            dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
-            dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
-            D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
-            if ( D2C > AccRadius )                       continue;
+            CreateHere = false;
+            break;
+         }
+      } // for (int pj=0; pj<TotalNNewPar; pj++)
+      
+      // for (int rank=0; rank<MPI_NRank; rank++)
+      // {
+      //    NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
+      //    for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+      //    {
+      //       dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
+      //       dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
+      //       dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
+      //       D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
+      //       if ( D2C > AccRadius )                       continue;
 
-            // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
-            // if (RemovalFlu[pi][1] != GatherRemovalFlu[pj][1])  continue;   // check whether there are other cells with the same potential
-            if ((dxpp<0) or (dypp<0) or (dzpp<0))
-            {
-               CreateHere = false;
-               break;
-            }
-         } // for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
+      //       // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
+      //       // if (RemovalFlu[pi][1] != GatherRemovalFlu[pj][1])  continue;   // check whether there are other cells with the same potential
+      //       if ((dxpp<0) or (dypp<0) or (dzpp<0))
+      //       {
+      //          CreateHere = false;
+      //          break;
+      //       }
+      //    } // for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
 
-         if ( CreateHere == false )          break;
-      } // for (int rank=0; rank<MPI_Rank, rank++)
+      //    if ( CreateHere == false )          break;
+      // } // for (int rank=0; rank<MPI_Rank, rank++)
 
       if ( CreateHere )
       {
