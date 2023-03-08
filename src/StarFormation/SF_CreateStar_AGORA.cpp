@@ -604,6 +604,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalFlu[NNewPar][4] = z;
 
             NNewPar ++;
+#  ifdef MY_DEBUG
+            if (NNewPar>0)
+            {
+            fprintf( File, "NNewPar = %d", NNewPar);
+            fprintf( File, "\n" );
+            }
+#  endif
          } // # pragma omp critical
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8) #  pragma omp for schedule( static )
@@ -612,14 +619,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] Mag_Array_F_In;
    delete [] Pot_Array_USG_F;
    } // end of OpenMP parallel region
-
-#  ifdef MY_DEBUG
-   if (NNewPar>0)
-   {
-   fprintf( File, "NNewPar = %d", NNewPar);
-   fprintf( File, "\n" );
-   }
-#  endif
 
 // Excluding the nearby particles + remove the gas from the cell
 // ===========================================================================================================
