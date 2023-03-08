@@ -308,17 +308,11 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    const double dx = x - BoxCenter[0];
    const double dy = y - BoxCenter[0];
    const double dz = z - BoxCenter[0];
+   const double Rc = SQRT( SQR(dx) + SQR(dy) );
+   const double Rs = SQRT( SQR(dx) + SQR(dy) + SQR(dz) );
 
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
    double VelX, VelY, VelZ;
-
-   const double Center[3] = {BoxCenter[0] + dx/FABS(dx)*BoxCenter[0]/2, 
-                             BoxCenter[0] + dy/FABS(dy)*BoxCenter[1]/2, 
-                             BoxCenter[0] + dz/FABS(dz)*BoxCenter[2]/2};
-   const double ddx = x - Center[0];
-   const double ddy = y - Center[1];
-   const double ddz = z - Center[2];
-   const double Rs = SQRT( SQR(ddx) + SQR(ddy) + SQR(ddz) );
 
    if ( CF_Mach != 0.0 )
    {
@@ -335,11 +329,11 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
       VelZ = Vrms_Scale * ( Table_VelZ[ index ] - Total_VelZ / Total_Vrms_Count );
    }
 
-   if ( Rs < 0.25*R0 )
+   if ( Rs < R0 )
    {
-      Dens = 8*Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(ddy/ddx)));;
-      VelX -= Omega0 * ddy;
-      VelY += Omega0 * ddx;
+      Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(dy/dx)));;
+      VelX -= Omega0 * dy;
+      VelY += Omega0 * dx;
    }
    else
    {

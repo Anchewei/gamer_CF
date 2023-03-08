@@ -543,8 +543,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        ifdef GAMER_DEBUG
          if ( NNewPar >= MaxNewPar )
             Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewPar (%d) !!\n", NNewPar, MaxNewPar );
+#        error : Use higher MaxNewPar!
 #        endif
-
 #        pragma omp critical
          {
             NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
@@ -629,6 +629,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    int       TotalNNewPar          = 0; // get the total number of the candidates
    for (int rank=0; rank<MPI_NRank; rank++) TotalNNewPar += GatherNNewPar[rank];
+
+#  ifdef MY_DEBUG
+   fprintf( File, "TotalNNewPar = %d", TotalNNewPar);
+   fprintf( File, "\n" );
+#  endif
 
    int      *disp                  = new int [MPI_NRank];
    disp[0] = 0;
