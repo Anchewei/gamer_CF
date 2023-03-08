@@ -645,7 +645,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    int      *disp                  = new int [MPI_NRank];
    disp[0] = 0;
-   for (int rank=1; rank<MPI_NRank; rank++) disp[rank] = 5*(disp[rank-1] + GatherNNewPar[rank-1]);
+   for (int rank=1; rank<MPI_NRank; rank++) disp[rank] = disp[rank-1] + RecvRemovalFluSize[rank-1];
 
    int      SendRemovalFluSize     = NNewPar*5; // the number of information to be sent
    real    (*GatherRemovalFlu)[5]  = new real [TotalNNewPar][5]; // the array containing all the candidates
@@ -658,6 +658,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   GatherRemovalFlu[0], RecvRemovalFluSize, disp, MPI_FLOAT, MPI_COMM_WORLD);
 #  endif
    delete [] disp;
+   delete [] RecvRemovalFluSize;
 
    long     *SelNewParPID          = new long [TotalNNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
