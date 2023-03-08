@@ -628,26 +628,34 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    MPI_Allgather(&NNewPar, 1, MPI_INT, GatherNNewPar, 1, MPI_INT, MPI_COMM_WORLD);
 
    int       TotalNNewPar          = 0; // get the total number of the candidates
-   for (int rank=0; rank<MPI_NRank; rank++) TotalNNewPar += GatherNNewPar[rank];
+   int      *RecvRemovalFluSize    = new int [MPI_NRank];
+   for (int rank=0; rank<MPI_NRank; rank++) 
+   {
+      TotalNNewPar += GatherNNewPar[rank];
+      RecvRemovalFluSize[rank] = 5*GatherNNewPar[rank];
+   }
 
 #  ifdef MY_DEBUG
+   if (TotalNNewPar>0)
+   {
    fprintf( File, "TotalNNewPar = %d", TotalNNewPar);
    fprintf( File, "\n" );
+   }
 #  endif
 
    int      *disp                  = new int [MPI_NRank];
    disp[0] = 0;
    for (int rank=1; rank<MPI_NRank; rank++) disp[rank] = 5*(disp[rank-1] + GatherNNewPar[rank-1]);
 
-   int      RemovalFluSize     = NNewPar*5; // the number of information to be sent
+   int      SendRemovalFluSize     = NNewPar*5; // the number of information to be sent
    real    (*GatherRemovalFlu)[5]  = new real [TotalNNewPar][5]; // the array containing all the candidates
 
 #  ifdef FLOAT8
-   MPI_Allgatherv(RemovalFlu[0], RemovalFluSize, MPI_DOUBLE, 
-                  GatherRemovalFlu[0], GatherNNewPar, disp, MPI_DOUBLE, MPI_COMM_WORLD);
+   MPI_Allgatherv(RemovalFlu[0], SendRemovalFluSize, MPI_DOUBLE, 
+                  GatherRemovalFlu[0], RecvRemovalFluSize, disp, MPI_DOUBLE, MPI_COMM_WORLD);
 #  else
-   MPI_Allgatherv(RemovalFlu[0], RemovalFluSize, MPI_FLOAT, 
-                  GatherRemovalFlu[0], GatherNNewPar, disp, MPI_FLOAT, MPI_COMM_WORLD);
+   MPI_Allgatherv(RemovalFlu[0], SendRemovalFluSize, MPI_FLOAT, 
+                  GatherRemovalFlu[0], RecvRemovalFluSize, disp, MPI_FLOAT, MPI_COMM_WORLD);
 #  endif
    delete [] disp;
 
