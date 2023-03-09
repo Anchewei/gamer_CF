@@ -542,8 +542,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       ===========================================================================================================
 #        ifdef GAMER_DEBUG
          if ( NNewPar >= MaxNewPar )
-            Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewPar (%d) !!\n", NNewPar, MaxNewPar );
-#        error : Use higher MaxNewPar!
+            Aux_Error( ERROR_INFO, "NNewPar (%d) >= MaxNewPar (%d) !! Please try a larger MaxNewPar.\n", NNewPar, MaxNewPar );
 #        endif
 #        pragma omp critical
          {
@@ -632,22 +631,14 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    for (int rank=0; rank<MPI_NRank; rank++) 
    {
       TotalNNewPar += GatherNNewPar[rank];
-      RecvRemovalFluSize[rank] = 5*GatherNNewPar[rank];
+      RecvRemovalFluSize[rank] = 5*GatherNNewPar[rank]; // receive count for each MPI rank
    }
-
-#  ifdef MY_DEBUG
-   if (TotalNNewPar>0)
-   {
-   fprintf( File, "TotalNNewPar = %d", TotalNNewPar);
-   fprintf( File, "\n" );
-   }
-#  endif
 
    int      *disp                  = new int [MPI_NRank];
    disp[0] = 0;
    for (int rank=1; rank<MPI_NRank; rank++) disp[rank] = disp[rank-1] + RecvRemovalFluSize[rank-1];
 
-   int      SendRemovalFluSize     = NNewPar*5; // the number of information to be sent
+   int      SendRemovalFluSize     = NNewPar*5; // send count for the current MPI rank
    real    (*GatherRemovalFlu)[5]  = new real [TotalNNewPar][5]; // the array containing all the candidates
 
 #  ifdef FLOAT8
@@ -657,13 +648,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    MPI_Allgatherv(RemovalFlu[0], SendRemovalFluSize, MPI_FLOAT, 
                   GatherRemovalFlu[0], RecvRemovalFluSize, disp, MPI_FLOAT, MPI_COMM_WORLD);
 #  endif
-   delete [] disp;
-   delete [] RecvRemovalFluSize;
 
    long     *SelNewParPID          = new long [TotalNNewPar]; // PID of the selected paritcles
    real dxpp, dypp, dzpp, D2C;   // calculate the distance between the two cells
    int SelNNewPar = 0; // the number of selected particles after the following check
-   // int NNewParRank;
    for (int pi=0; pi<NNewPar; pi++)
    {  
       bool CreateHere = true;
@@ -683,29 +671,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             break;
          }
       } // for (int pj=0; pj<TotalNNewPar; pj++)
-      
-      // for (int rank=0; rank<MPI_NRank; rank++)
-      // {
-      //    NNewParRank = GatherNNewPar[rank]; // the number of candidated for each rank
-      //    for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
-      //    {
-      //       dxpp = RemovalFlu[pi][2] - GatherRemovalFlu[pj][2];
-      //       dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
-      //       dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
-      //       D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
-      //       if ( D2C > AccRadius )                       continue;
-
-      //       // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
-      //       // if (RemovalFlu[pi][1] != GatherRemovalFlu[pj][1])  continue;   // check whether there are other cells with the same potential
-      //       if ((dxpp<0) or (dypp<0) or (dzpp<0))
-      //       {
-      //          CreateHere = false;
-      //          break;
-      //       }
-      //    } // for (int pj=MaxNewPar*rank; pj<MaxNewPar*rank+NNewParRank; pj++)
-
-      //    if ( CreateHere == false )          break;
-      // } // for (int rank=0; rank<MPI_Rank, rank++)
 
       if ( CreateHere )
       {
@@ -726,8 +691,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       }
    } // for (int pi=0; pi<NNewPar; pi++)
 
-   delete[] GatherNNewPar;
-   delete[] GatherRemovalFlu;
+   delete [] GatherNNewPar;
+   delete [] RecvRemovalFluSize;
+   delete [] disp;
+   delete [] GatherRemovalFlu;
 
 // Add the selected particles
 // ===========================================================================================================
