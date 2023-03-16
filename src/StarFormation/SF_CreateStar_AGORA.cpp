@@ -418,7 +418,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             if ( phi000 != MIN( phi000, phiijk ) )
             {
                NotMiniPot = true;
-               break
+               break;
             }
          } // vi, vj, vk
 
@@ -596,7 +596,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalPos[NNewPar][2] = PGj - Disp_j;
             RemovalPos[NNewPar][3] = PGi - Disp_i;
             RemovalFlu[NNewPar][0] = GasMFracLeft;
-            RemovalFlu[NNewPar][1] = SelfPhi000;
+            RemovalFlu[NNewPar][1] = phi000;
             RemovalFlu[NNewPar][2] = x;
             RemovalFlu[NNewPar][3] = y;
             RemovalFlu[NNewPar][4] = z;
