@@ -142,7 +142,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
    real x, y, z, VelX, VelY, VelZ, vx, vy, vz;
    real GasDens, GasDensFreeFall, GasMFracLeft;
-   real fluid[FLU_NIN], dfluid[FLU_NIN], vfluid[FLU_NIN];
+   real fluid[FLU_NIN], dfluid[FLU_NIN], vfluid[FLU_NIN], vjfluid[FLU_NIN]; // fluid in the current cells, neighbor cells, control volume, control volume (j)
    real Corner_Array_F[3]; // the corner of the ghost zone
    real PCP[3], D2Par, PCV[3]; // particle-cell relative position, distance, relative velocity
    real D2CC; // distance to the center cell
@@ -266,85 +266,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       ===========================================================================================================
          GasDens = fluid[DENS];
          if ( GasDens < GasDensThres )    continue;
-
-//       Gravatational minimum check + calculating the COM velocity and the potential inside the control volume
-//       ===========================================================================================================
-         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
-         real phi000 = (real)0.0;
-         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
-         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
-         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         {
-            vx = Corner_Array_F[0] + vi*dh;
-            vy = Corner_Array_F[1] + vj*dh;
-            vz = Corner_Array_F[2] + vk*dh;
-
-            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
-            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
-
-            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
-            MVel[0] += vfluid[MOMX]*dv;
-            MVel[1] += vfluid[MOMY]*dv;
-            MVel[2] += vfluid[MOMZ]*dv;
-            Mtot += vfluid[DENS]*dv;
-
-            if ( D2CC != 0.0 )        phi000 += -NEWTON_G*vfluid[DENS]*dv/D2CC; // potential
-         } // vi, vj, vk
-
-         MWvel[0] = MVel[0]/Mtot;
-         MWvel[1] = MVel[1]/Mtot;
-         MWvel[2] = MVel[2]/Mtot; // COM velocity
-
-         // Calculate for the surrounding cells and totoal energy
-         real Egtot = (real)0.0;
-         real vifluid[FLU_NIN], vjfluid[FLU_NIN];
-         bool NotMiniPot      = false; // do the check during the process
-         for (int vki=pk-AccCellNum; vki<=pk+AccCellNum; vki++)
-         for (int vji=pj-AccCellNum; vji<=pj+AccCellNum; vji++)
-         for (int vii=pi-AccCellNum; vii<=pi+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         {
-            real vxi, vyi, vzi, vxj, vyj, vzj;
-            real phiijk = (real)0.0;
-            vxi = Corner_Array_F[0] + vii*dh;
-            vyi = Corner_Array_F[1] + vji*dh;
-            vzi = Corner_Array_F[2] + vki*dh;
-
-            real D2CCi = SQRT(SQR(vxi - x)+SQR(vyi - y)+SQR(vzi - z)); // distance to the center cell
-            if ( D2CCi > AccRadius )                 continue; // check whether it is inside the control volume
-            const int vti = IDX321( vii, vji, vki, Size_Flu, Size_Flu );
-            for (int v=0; v<FLU_NIN; v++)    vifluid[v] = Flu_Array_F_In[v][vti];
-
-            for (int vkj=pk-AccCellNum; vkj<=pk+AccCellNum; vkj++)
-            for (int vjj=pj-AccCellNum; vjj<=pj+AccCellNum; vjj++)
-            for (int vij=pi-AccCellNum; vij<=pi+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-            {
-               vxj = Corner_Array_F[0] + vij*dh;
-               vyj = Corner_Array_F[1] + vjj*dh;
-               vzj = Corner_Array_F[2] + vkj*dh;
-
-               real rij = SQRT(SQR(vxi - vxj)+SQR(vyi - vyj)+SQR(vzi - vzj));
-               if ( rij == 0.0 )                        continue;
-
-               real D2CCj = SQRT(SQR(vxj - x)+SQR(vyj - y)+SQR(vzj - z)); // distance to the center cell
-               if ( D2CCj > AccRadius )                 continue; // check whether it is inside the control volume
-               const int vtj = IDX321( vij, vjj, vkj, Size_Flu, Size_Flu );
-               for (int v=0; v<FLU_NIN; v++)    vjfluid[v] = Flu_Array_F_In[v][vtj];
-
-               phiijk += -NEWTON_G*vjfluid[DENS]*dv/rij; // potential
-            } // vij, vjj, vkj
-
-//          Gravitational Potential Minimum Check
-            if ( phi000 != MIN( phi000, phiijk ) )
-            {
-               NotMiniPot = true;
-               break;
-            }
-
-            Egtot += 0.5*vifluid[DENS]*dv*phiijk;
-         } // vii, vji, vki
-
-         if ( NotMiniPot )                                   continue;
 
 //       Proximity check + second density threshold
 //       ===========================================================================================================
@@ -474,6 +395,34 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( NotPassDen )                    continue;
 
          for (int v=0; v<PAR_NATT_TOTAL; v++)   delete [] ParAtt_Local[v];
+
+//       Gravatational minimum check inside the control volume
+//       ===========================================================================================================
+         real phi000 = Pot_Array_USG_F[t]; // the potential of the current cell
+         real phiijk;
+         bool NotMiniPot          = false;
+         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         {
+            vx = Corner_Array_F[0] + vi*dh;
+            vy = Corner_Array_F[1] + vj*dh;
+            vz = Corner_Array_F[2] + vk*dh;
+
+            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
+
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            phiijk = Pot_Array_USG_F[vt];
+
+            if ( phi000 != MIN( phi000, phiijk ) )
+            {
+               NotMiniPot = true;
+               break
+            }
+         } // vi, vj, vk
+
+         if ( NotMiniPot )                                   continue;
          
 //       Converging flow Check
 //       ===========================================================================================================
@@ -500,7 +449,32 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 //       Jeans instability check + check for bound state
 //       ===========================================================================================================
-         real Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
+         // calculate COM velocity
+         real Mtot = (real)0.0, MVel[3] = { (real)0.0, (real)0.0, (real)0.0}, MWvel[3]; // sum(mass_i), sum(mass_i*velocity_i), mass-weighted velocity
+         for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+         for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+         for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         {
+            vx = Corner_Array_F[0] + vi*dh;
+            vy = Corner_Array_F[1] + vj*dh;
+            vz = Corner_Array_F[2] + vk*dh;
+
+            D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+            if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
+
+            const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+            for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
+            MVel[0] += vfluid[MOMX]*dv;
+            MVel[1] += vfluid[MOMY]*dv;
+            MVel[2] += vfluid[MOMZ]*dv;
+            Mtot += vfluid[DENS]*dv;
+         } // vi, vj, vk
+
+         MWvel[0] = MVel[0]/Mtot;
+         MWvel[1] = MVel[1]/Mtot;
+         MWvel[2] = MVel[2]/Mtot; // COM velocity
+
+         real Egtot = (real)0.0, Ethtot = (real)0.0, Emagtot = (real)0.0, Ekintot = (real)0.0;
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
          for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
@@ -515,7 +489,31 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             for (int v=0; v<FLU_NIN; v++)    vfluid[v] = Flu_Array_F_In[v][vt];
 
-//          Storing Egtot, Ethtot, Emagtot, Ekintot
+//          Storing Egtot
+            real vxj, vyj, vzj;
+            real SelfPhiijk = (real)0.0; // self-potential
+            for (int vkj=pk-AccCellNum; vkj<=pk+AccCellNum; vkj++)
+            for (int vjj=pj-AccCellNum; vjj<=pj+AccCellNum; vjj++)
+            for (int vij=pi-AccCellNum; vij<=pi+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+            {
+               vxj = Corner_Array_F[0] + vij*dh;
+               vyj = Corner_Array_F[1] + vjj*dh;
+               vzj = Corner_Array_F[2] + vkj*dh;
+
+               real rij = SQRT(SQR(vx - vxj)+SQR(vy - vyj)+SQR(vz - vzj));
+               if ( rij == 0.0 )                        continue;
+
+               real D2CCj = SQRT(SQR(vxj - x)+SQR(vyj - y)+SQR(vzj - z)); // distance to the center cell
+               if ( D2CCj > AccRadius )                 continue; // check whether it is inside the control volume
+               const int vtj = IDX321( vij, vjj, vkj, Size_Flu, Size_Flu );
+               for (int v=0; v<FLU_NIN; v++)    vjfluid[v] = Flu_Array_F_In[v][vtj];
+
+               SelfPhiijk += -NEWTON_G*vjfluid[DENS]*dv/rij; // potential
+            } // vij, vjj, vkj
+
+            Egtot += 0.5*vfluid[DENS]*dv*SelfPhiijk;
+
+//          Storing Emagtot
             const bool CheckMinPres_No = false;
 
 #           ifdef MHD
@@ -526,6 +524,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Emagtot += vEmag*dv;
 #           endif
 
+//          Storing Ethtot and Ekintot
             Pres = Hydro_Con2Pres( vfluid[DENS], vfluid[MOMX], vfluid[MOMY], vfluid[MOMZ], vfluid[ENGY],
                                    vfluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
                                    EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
@@ -597,7 +596,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalPos[NNewPar][2] = PGj - Disp_j;
             RemovalPos[NNewPar][3] = PGi - Disp_i;
             RemovalFlu[NNewPar][0] = GasMFracLeft;
-            RemovalFlu[NNewPar][1] = phi000;
+            RemovalFlu[NNewPar][1] = SelfPhi000;
             RemovalFlu[NNewPar][2] = x;
             RemovalFlu[NNewPar][3] = y;
             RemovalFlu[NNewPar][4] = z;
