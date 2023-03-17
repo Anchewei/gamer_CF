@@ -399,7 +399,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       Gravatational minimum check inside the control volume
 //       ===========================================================================================================
          real phi000 = Pot_Array_USG_F[t]; // the potential of the current cell
-         real phiijk;
+         real phiijk = (real)0.0;
          bool NotMiniPot          = false;
          for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
          for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
