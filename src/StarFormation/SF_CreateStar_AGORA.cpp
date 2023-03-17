@@ -676,7 +676,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
 #  ifdef MY_DEBUG
          fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
-         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSX]);
+         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSY], NewParAtt[pi][PAR_POSZ]);
          fprintf( File, "\n" );
 #  endif
          
