@@ -357,13 +357,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                         ParAtt_Local[v][p] = amr->Par->Attribute[v][ ParList[p] ];
                }
             } // if ( UseParAttCopy ) ... else ...
-#  ifdef MY_DEBUG
-            if (NPar>0)
-            {
-               fprintf( File, "%13.7e %13.7e %13.7e", x, y, z);
-               fprintf( File, "\n" );
-            }
-#  endif
 
             for (int p=0; p<NPar; p++) // loop over all nearby particles
             {
@@ -371,10 +364,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                PCP[1] = y - ParAtt_Local[PAR_POSY][p];
                PCP[2] = z - ParAtt_Local[PAR_POSZ][p];
                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
-#  ifdef MY_DEBUG
-               fprintf( File, "%13.7e ", D2Par);
-               fprintf( File, "\n" );
-#  endif
+
                if ( D2Par < 2*AccRadius )
                {
                   InsideAccRadius = true;
@@ -613,6 +603,29 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalFlu[NNewPar][4] = z;
 
             NNewPar ++;
+#  ifdef MY_DEBUG
+            if ( NNnewPar == 1)
+            {
+               for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
+               for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
+               for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
+               {
+                  vx = Corner_Array_F[0] + vi*dh;
+                  vy = Corner_Array_F[1] + vj*dh;
+                  vz = Corner_Array_F[2] + vk*dh;
+
+                  D2CC = SQRT(SQR(vx - x)+SQR(vy - y)+SQR(vz - z)); // distance to the center cell
+                  if ( D2CC > AccRadius )                 continue; // check whether it is inside the control volume
+
+                  const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
+                  phiijk = Pot_Array_USG_F[vt];
+
+                  fprintf( File, "%13.7e ", phiijk);
+                  fprintf( File, "\n" );
+         } // vi, vj, vk
+            }
+#  endif
+
 // #  ifdef MY_DEBUG
 //             if (NNewPar>0)
 //             {
