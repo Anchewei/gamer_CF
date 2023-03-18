@@ -604,7 +604,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
             NNewPar ++;
 #  ifdef MY_DEBUG
-            if ( NNnewPar == 1)
+            if ( NNewPar == 1)
             {
                for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
                for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
