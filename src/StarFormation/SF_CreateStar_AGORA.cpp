@@ -357,6 +357,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                         ParAtt_Local[v][p] = amr->Par->Attribute[v][ ParList[p] ];
                }
             } // if ( UseParAttCopy ) ... else ...
+#  ifdef MY_DEBUG
+            if (NPar>0)
+            {
+               fprintf( File, "%13.7e %13.7e %13.7e", x, y, z);
+               fprintf( File, "\n" );
+            }
+#  endif
 
             for (int p=0; p<NPar; p++) // loop over all nearby particles
             {
@@ -364,6 +371,10 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                PCP[1] = y - ParAtt_Local[PAR_POSY][p];
                PCP[2] = z - ParAtt_Local[PAR_POSZ][p];
                D2Par = SQRT(SQR(PCP[0])+SQR(PCP[1])+SQR(PCP[2]));
+#  ifdef MY_DEBUG
+               fprintf( File, "%13.7e ", D2Par);
+               fprintf( File, "\n" );
+#  endif
                if ( D2Par < 2*AccRadius )
                {
                   InsideAccRadius = true;
@@ -602,13 +613,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalFlu[NNewPar][4] = z;
 
             NNewPar ++;
-#  ifdef MY_DEBUG
-            if (NNewPar>0)
-            {
-            fprintf( File, "NNewPar = %d", NNewPar);
-            fprintf( File, "\n" );
-            }
-#  endif
+// #  ifdef MY_DEBUG
+//             if (NNewPar>0)
+//             {
+//             fprintf( File, "NNewPar = %d", NNewPar);
+//             fprintf( File, "\n" );
+//             }
+// #  endif
          } // # pragma omp critical
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8) #  pragma omp for schedule( static )
@@ -674,11 +685,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       // add particles to the particle repository
          NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
 
-#  ifdef MY_DEBUG
-         fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
-         NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSY], NewParAtt[pi][PAR_POSZ]);
-         fprintf( File, "\n" );
-#  endif
+// #  ifdef MY_DEBUG
+//          fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
+//          NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSY], NewParAtt[pi][PAR_POSZ]);
+//          fprintf( File, "\n" );
+// #  endif
          
          SelNewParPID[SelNNewPar] = NewParPID[pi];
          SelNNewPar++;
