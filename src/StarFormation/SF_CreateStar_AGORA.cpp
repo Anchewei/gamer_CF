@@ -60,11 +60,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                           const real GasDensThres, const real Efficiency, const real MinStarMass, const real MaxStarMFrac,
                           const bool DetRandom, const bool UseMetal)
 {
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_debug";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
 // check
 #  if ( defined STORE_PAR_ACC  &&  !defined STORE_POT_GHOST )
 #     error : STAR_FORMATION + STORE_PAR_ACC must work with STORE_POT_GHOST !!
@@ -599,36 +594,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalFlu[NNewPar][4] = z;
 
             NNewPar ++;
-#  ifdef MY_DEBUG
-            if ( NNewPar == 1)
-            {
-               for (int vk=pk-AccCellNum; vk<=pk+AccCellNum; vk++)
-               for (int vj=pj-AccCellNum; vj<=pj+AccCellNum; vj++)
-               for (int vi=pi-AccCellNum; vi<=pi+AccCellNum; vi++) // loop the nearby cells, to find the cells inside the control volumne (v)
-               {
-                  ControlX = Corner_Array_F[0] + vi*dh;
-                  ControlY = Corner_Array_F[1] + vj*dh;
-                  ControlZ = Corner_Array_F[2] + vk*dh;
-
-                  Cell2Cell = SQRT(SQR(ControlX - x)+SQR(ControlY - y)+SQR(ControlZ - z)); // distance to the center cell
-                  if ( Cell2Cell > AccRadius )                 continue; // check whether it is inside the control volume
-
-                  const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
-                  phiijk = Pot_Array_USG_F[vt];
-
-                  fprintf( File, "%13.7e ", phiijk);
-                  fprintf( File, "\n" );
-         } // vi, vj, vk
-            }
-#  endif
-
-// #  ifdef MY_DEBUG
-//             if (NNewPar>0)
-//             {
-//             fprintf( File, "NNewPar = %d", NNewPar);
-//             fprintf( File, "\n" );
-//             }
-// #  endif
          } // # pragma omp critical
       } // pi, pj, pk
    } // for (int PID0=0; PID0<amr->NPatchComma[lv][1]; PID0+=8) #  pragma omp for schedule( static )
@@ -693,12 +658,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       // add particles to the particle repository
          NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
-
-// #  ifdef MY_DEBUG
-//          fprintf( File, "%13.7e %7.4e %7.4e %7.4e", NewParAtt[pi][PAR_TIME], 
-//          NewParAtt[pi][PAR_POSX], NewParAtt[pi][PAR_POSY], NewParAtt[pi][PAR_POSZ]);
-//          fprintf( File, "\n" );
-// #  endif
          
          SelNewParPID[SelNNewPar] = NewParPID[pi];
          SelNNewPar++;
@@ -774,15 +733,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParAtt;
    delete [] NewParID;
    delete [] NewParPID;
-
-#  ifdef MY_DEBUG
-   if (SelNNewPar>0)
-   {
-      fprintf( File, "###############################");
-      fprintf( File, "\n" );
-   }
-   fclose( File );
-#  endif
 
 // free memory
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
