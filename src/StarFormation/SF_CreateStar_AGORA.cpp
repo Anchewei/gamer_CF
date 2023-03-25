@@ -96,7 +96,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    const int    Size_Flu_P1    = Size_Flu + 1; // for face-centered B field
    const int    Size_Pot       = Size_Flu; // for potential
    const int    NPG            = 1;
-   const int    MaxNewPar      = 1000;
 
    const real   dv             = CUBE( dh );
    const real   AccRadius      = AccCellNum*dh;
