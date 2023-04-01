@@ -142,9 +142,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    real Pres, Cs2, vEmag=NULL_REAL;
    real PotNeighbor[6]; // record the neighboring cell potential [x+, x-, y+, y+, z+, z-]
 
-   real   (*Flu_Array_F_In)[CUBE(Size_Flu)]   = new real [FLU_NIN][CUBE(Size_Flu)];
-   real   (*Mag_Array_F_In)                   = new real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
-   real   (*Pot_Array_USG_F)                  = new real [CUBE(Size_Pot)];
+   real   (*Flu_Array_F_In)[CUBE(Size_Flu)]                = new real [FLU_NIN][CUBE(Size_Flu)];
+   real   (*Mag_Array_F_In)[Size_Flu_P1*SQR(Size_Flu)]     = new real [NCOMP_MAG][Size_Flu_P1*SQR(Size_Flu)];
+   real   (*Pot_Array_USG_F)                               = new real [CUBE(Size_Pot)];
 
    int LocalID, delta_t, PGi, PGj, PGk;
 
