@@ -177,7 +177,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       const real   MinDens             = ( OPT__OPTIMIZE_AGGRESSIVE ) ? MinDens_No : MIN_DENS;
 
 #     ifdef MHD
-      real *Mag_Array = Mag_Array_F_In[0];
+      real *Mag_Array = Mag_Array_F_In;
 #     else
       real *Mag_Array = NULL;
 #     endif
