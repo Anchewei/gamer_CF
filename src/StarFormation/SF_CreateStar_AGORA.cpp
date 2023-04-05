@@ -356,7 +356,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                Par2Cell[2] = z - ParAtt_Local[PAR_POSZ][p];
                Par2CellDist = SQRT(SQR(Par2Cell[0])+SQR(Par2Cell[1])+SQR(Par2Cell[2]));
 
-               if ( Par2CellDist < 2*AccRadius )
+               if ( Par2CellDist <= 2*AccRadius )
                {
                   InsideAccRadius = true;
                   break;
