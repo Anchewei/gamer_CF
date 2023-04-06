@@ -2,16 +2,7 @@
 
 #ifdef FEEDBACK
 
-extern bool   Plummer_FB_Exp;
-extern double Plummer_FB_ExpEMin;
-extern double Plummer_FB_ExpEMax;
-extern double Plummer_FB_ExpMMin;
-extern double Plummer_FB_ExpMMax;
-extern bool   Plummer_FB_Acc;
-extern double Plummer_FB_AccMMin;
-extern double Plummer_FB_AccMMax;
-extern double Plummer_FB_Like;
-
+extern double GasDensThres;
 
 // function pointers to be set by FB_Init_Plummer()
 extern int (*FB_User_Ptr)( const int lv, const double TimeNew, const double TimeOld, const double dt,
@@ -86,7 +77,7 @@ extern void (*FB_End_User_Ptr)();
 //
 // Return      :  Fluid, ParAtt
 //-------------------------------------------------------------------------------------------------------
-int FB_Plummer( const int lv, const double TimeNew, const double TimeOld, const double dt,
+int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, const double dt,
                 const int NPar, const int *ParSortID, real *ParAtt[PAR_NATT_TOTAL],
                 real (*Fluid)[FB_NXT][FB_NXT][FB_NXT], const double EdgeL[], const double dh, bool CoarseFine[],
                 const int TID, RandomNumber_t *RNG )
@@ -102,128 +93,200 @@ int FB_Plummer( const int lv, const double TimeNew, const double TimeOld, const 
    }
 #  endif // #ifdef GAMER_DEBUG
 
+   real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
+   real ControlPosi[3], ControlPosj[3], ControlPosk[3];
+   real Corner_Array[3]; // the corner of the ghost zone
+   real GasMFracLeft;
 
+   const int    AccCellNum     = 4;
+   const int    MaxRemovalGas  = 1000;
+
+   const double AccRadius      = AccCellNum*dh;
    const double _dh  = 1.0 / dh;
    const double dv   = CUBE( dh );
    const double _dv  = 1.0 / dv;
-   const int    MaxR = 1;
 
-   if ( Plummer_FB_Acc  &&  FB_GHOST_SIZE < MaxR )
-      Aux_Error( ERROR_INFO, "FB_GHOST_SIZE (%d) < MaxR (%d) for Plummer_FB_Acc !!\n", FB_GHOST_SIZE, MaxR );
+   int      NRemoval           = 0;
+   real   (*GasMFracLeftArr)   = new real [MaxNewPar];
+   real   (*GasRemovalIdx)[3]  = new real [MaxNewPar][3];
+   real   (*ParGain)[4]        = new real [NPar][4];
 
-   bool CheckCF = false;
-#  if ( FB_GHOST_SIZE > 0 )
-   for (int s=0; s<26; s++) {
-      if ( CoarseFine[s] ) {
-         CheckCF = true;
-         break;
-      }
-   }
-#  endif
+// prepare the corner array
+   for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
 
    for (int t=0; t<NPar; t++)
    {
       const int    p      = ParSortID[t];
-      const double xyz[3] = { ParAtt[PAR_POSX][p], ParAtt[PAR_POSY][p], ParAtt[PAR_POSZ][p] };
+      const double xyz[3] = { ParAtt[PAR_POSX][p], ParAtt[PAR_POSY][p], ParAtt[PAR_POSZ][p] }; // particle position
+      real DeltaMSum      = 0;
+      real DeltaMomSum[3] = { (real)0.0, (real)0.0, (real)0.0};
 
-      int idx[3];
+      int idx[3]; // cell idx in FB_NXT^3
       for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
 
 
-//    skip particles too close to coarse-fine boundaries
-      bool Skip = false;
-
-      if ( CheckCF )
+//    Check the control volume
+      for (int vki=idx[2]-AccCellNum; vki<=idx[2]+AccCellNum; vki++)
+      for (int vji=idx[1]-AccCellNum; vji<=idx[1]+AccCellNum; vji++)
+      for (int vii=idx[0]-AccCellNum; vii<=idx[0]+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
       {
-//       only need to check the 27 extreme cases
-         int ijk[3];
-         for (int dk=-1; dk<=1; dk++)  {  if ( Skip )  break;  ijk[2] = idx[2] + dk*MaxR;
-         for (int dj=-1; dj<=1; dj++)  {  if ( Skip )  break;  ijk[1] = idx[1] + dj*MaxR;
-         for (int di=-1; di<=1; di++)  {  if ( Skip )  break;  ijk[0] = idx[0] + di*MaxR;
+//       Inside the accretion radius
+//       ===========================================================================================================
+         ControlPosi[0] = Corner_Array[0] + vii*dh;
+         ControlPosi[1] = Corner_Array[1] + vji*dh;
+         ControlPosi[2] = Corner_Array[2] + vki*dh;
+         Cell2Sinki = SQRT(SQR(ControlPosi[0] - xyz[0])+SQR(ControlPosi[1] - xyz[1])+SQR(ControlPosi[2] - xyz[2])); // distance to the sink
+         if ( Cell2Sinki > AccRadius )                 continue; // check whether it is inside the control volume
 
-            const int CellPatchRelPos = FB_Aux_CellPatchRelPos( ijk );
-            if ( CellPatchRelPos != -1   &&  CoarseFine[CellPatchRelPos] )    Skip = true;   // cell is in a coarse patch
+//       Density threshold
+//       ===========================================================================================================
+         GasDens = Fluid[DENS][vki][vji][vii];
+         if ( GasDens < GasDensThres )                continue;
 
-         }}}
-      }
+         DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
 
+//       Central cell check
+//       ===========================================================================================================
+         bool NotCentralCell = true;
+         if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   NotCentralCell = false; // if pass, the following checks are skipped
 
-      if ( RNG->GetValue(TID,0.0,1.0) < Plummer_FB_Like )
-      {
-         const real ExpMassFac = 1.0 - RNG->GetValue( TID, Plummer_FB_ExpMMin, Plummer_FB_ExpMMax );
-         const real ExpEngyFac = 1.0 + RNG->GetValue( TID, Plummer_FB_ExpEMin, Plummer_FB_ExpEMax );
-         const real AccMassFac =       RNG->GetValue( TID, Plummer_FB_AccMMin, Plummer_FB_AccMMax );
-
-//       to ensure the consistency of random numbers, it's better to skip particles **after** generating all random numbers
-//       --> since the same particle may be skipped when updating one patch group but not skipped when updating another patch group
-//           (e.g., if we skip particles in nearby patch groups too far away from a target patch group)
-         if ( Skip )    continue;
-
-         if ( OPT__VERBOSE ) {
-            Aux_Message( stdout, "\n" );
-            Aux_Message( stdout, "---------------------------------------------------\n" );
-            Aux_Message( stdout, "Rank %d, Time %21.14e, ParID % 5d: ExpMassFac %13.7e, ExpEngyFac %13.7e, AccMassFac %13.7e\n",
-                         MPI_Rank, TimeNew, p, ExpMassFac, ExpEngyFac, AccMassFac );
-            Aux_Message( stdout, "---------------------------------------------------\n" );
-         }
-
-//       explosion
-         if ( Plummer_FB_Exp )
+         if ( NotCentralCell )
          {
-//          inject explosion energy to the nearby 27 cells including itself
-//          --> skip cells in the ghost zones
-            for (int dk=-1; dk<=1; dk++)  {  const int k = idx[2] + dk;  if ( k < FB_GHOST_SIZE || k >= FB_GHOST_SIZE+PS2 )   continue;
-            for (int dj=-1; dj<=1; dj++)  {  const int j = idx[1] + dj;  if ( j < FB_GHOST_SIZE || j >= FB_GHOST_SIZE+PS2 )   continue;
-            for (int di=-1; di<=1; di++)  {  const int i = idx[0] + di;  if ( i < FB_GHOST_SIZE || i >= FB_GHOST_SIZE+PS2 )   continue;
+//          Negative radial velocity
+//          ===========================================================================================================
+            GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
+            GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
+            GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
-               Fluid[ENGY][k][j][i] *= ExpEngyFac;
+            if ( GasRelVel[0] >= 0 )                       continue;
+            if ( GasRelVel[1] >= 0 )                       continue;
+            if ( GasRelVel[2] >= 0 )                       continue;
 
-            }}}
+//          Bound state check
+//          ===========================================================================================================
+            real SelfPhi = (real)0.0; // self-potential
+            for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
+            for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
+            for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+            {
+               ControlPosj[0] = Corner_Array[0] + vij*dh;
+               ControlPosj[1] = Corner_Array[1] + vjj*dh;
+               ControlPosj[2] = Corner_Array[2] + vkj*dh;
 
-//          reduce particle mass
-//          --> skip particles in the ghost zones
-            if ( idx[0] >= FB_GHOST_SIZE  &&  idx[0] < FB_GHOST_SIZE+PS2  &&
-                 idx[1] >= FB_GHOST_SIZE  &&  idx[1] < FB_GHOST_SIZE+PS2  &&
-                 idx[2] >= FB_GHOST_SIZE  &&  idx[2] < FB_GHOST_SIZE+PS2   )
-               ParAtt[PAR_MASS][p] *= ExpMassFac;
-         } // if ( Plummer_FB_Exp )
+               real rij = SQRT(SQR(ControlPosj[0] - ControlPosi[0])+SQR(ControlPosj[1] - ControlPosi[1])+SQR(ControlPosj[2] - ControlPosi[2]));
+               if ( rij == 0.0 )                        continue;
 
+               Cell2Sinkj = SQRT(SQR(ControlPosj[0] - xyz[0])+SQR(ControlPosj[1] - xyz[1])+SQR(ControlPosj[2] - xyz[2])); // distance to the center cell
+               if ( Cell2Sinkj > AccRadius )            continue; // check whether it is inside the control volume
 
-//       mass accretion
-         if ( Plummer_FB_Acc )
-         {
-            real   dM;
-            double dM_sum = 0.0;
+               SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
+            } // vij, vjj, vkj
 
-//          accrete mass from the nearby 27 cells including itself
-//          --> include cells in the ghost zones in order to
-//              (i) ensure the following particles see the updated gas density
-//              (ii) get the correct total accreted mass
-            for (int dk=-1; dk<=1; dk++)  {  const int k = idx[2] + dk;  if ( k < 0 || k >= FB_NXT )  continue;
-            for (int dj=-1; dj<=1; dj++)  {  const int j = idx[1] + dj;  if ( j < 0 || j >= FB_NXT )  continue;
-            for (int di=-1; di<=1; di++)  {  const int i = idx[0] + di;  if ( i < 0 || i >= FB_NXT )  continue;
+            SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/Cell2Sinki; // potential from the sink
 
-               dM                    = AccMassFac*Fluid[DENS][k][j][i]*dv;
-               dM_sum               += dM;
-               Fluid[DENS][k][j][i] -= dM*_dv;
+            Eg   = 0.5*Fluid[DENS][vki][vji][vii]*dv*SelfPhi;
+            Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
-            }}}
+            if (( Eg + Ekin ) >= 0)                     continue;
 
-//          increase particle mass
-//          --> skip particles in the ghost zones
-            if ( idx[0] >= FB_GHOST_SIZE  &&  idx[0] < FB_GHOST_SIZE+PS2  &&
-                 idx[1] >= FB_GHOST_SIZE  &&  idx[1] < FB_GHOST_SIZE+PS2  &&
-                 idx[2] >= FB_GHOST_SIZE  &&  idx[2] < FB_GHOST_SIZE+PS2   )
-               ParAtt[PAR_MASS][p] += dM_sum;
-         } // if ( Plummer_FB_Acc )
+//          Overlapped accretion radius check
+//          ===========================================================================================================
+            bool NotMinEg = false;
+            for (int tt=0; tt<NPar; tt++) // find the nearby sink
+            {
+               const int    pp      = ParSortID[tt];
+               if ( pp == p )              continue;
 
-      } // if ( RNG->GetValue(TID,0.0,1.0) < Plummer_FB_Like )
+               const double xxyyzz[3] = { ParAtt[PAR_POSX][pp], ParAtt[PAR_POSY][pp], ParAtt[PAR_POSZ][pp] }; // particle position
+               Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
+               if ( Cell2Sink2 > AccRadius )       continue;
+
+               int idxx[3]; // cell idx in FB_NXT^3
+               for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
+
+               real SelfPhi2 = (real)0.0; // self-potential
+               for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
+               for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
+               for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
+               {
+                  ControlPosk[0] = Corner_Array[0] + vik*dh;
+                  ControlPosk[1] = Corner_Array[1] + vjk*dh;
+                  ControlPosk[2] = Corner_Array[2] + vkk*dh;
+
+                  real rik = SQRT(SQR(ControlPosk[0] - ControlPosi[0])+SQR(ControlPosk[1] - ControlPosi[1])+SQR(ControlPosk[2] - ControlPosi[2]));
+                  if ( rik == 0.0 )                        continue;
+
+                  Cell2Sinkk = SQRT(SQR(ControlPosk[0] - xxyyzz[0])+SQR(ControlPosk[1] - xxyyzz[1])+SQR(ControlPosk[2] - xxyyzz[2])); // distance to the center cell
+                  if ( Cell2Sinkk > AccRadius )            continue; // check whether it is inside the control volume
+
+                  SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
+               } // vik, vjk, vkk
+
+               SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/Cell2Sink2; // potential from the sink
+
+               Eg2   = 0.5*Fluid[DENS][vki][vji][vii]*dv*SelfPhi2;
+               if ( Eg != MIN( Eg, Eg2 ) )
+               {
+                  NotMinEg = true;
+                  break;
+               }
+            } // for (int tt=0; tt<NPar; tt++)
+
+            if ( NotMinEg )                              continue; 
+         } // if ( CentralCell == false )
+
+         DeltaMSum += DeltaM;
+         GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+
+         DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii];
+         DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii];
+         DeltaMomSum[2] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii];
+
+         GasMFracLeftArr[NRemoval]  = GasMFracLeft;
+         GasRemovalIdx[NRemoval][0] = vii;
+         GasRemovalIdx[NRemoval][1] = vji;
+         GasRemovalIdx[NRemoval][2] = vki;
+
+         NRemoval ++;
+      } // vii, vji, vki
+
+      real NewParVel[3]; // COM velocity of the sink after accretion
+      NewParVel[0] = (DeltaMomSum[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+      NewParVel[1] = (DeltaMomSum[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+      NewParVel[2] = (DeltaMomSum[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+
+      ParGain[t][0] = DeltaMSum;
+      ParGain[t][1] = NewParVel[0];
+      ParGain[t][2] = NewParVel[1];
+      ParGain[t][3] = NewParVel[2];
    } // for (int t=0; t<NPar; t++)
 
+// Remove the gas from Fluid
+// ===========================================================================================================
+   for (int r=0; r<NRemoval; r++)
+   {
+      for (int v=0; v<NCOMP_TOTAL; v++)
+      Fluid[v][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]] *= GasMFracLeftArr[r];
+   } // for (int r=0; r<NRemoval; r++)
+
+//  Update particle mass and velocity
+//  ===========================================================================================================
+   for (int t=0; t<Npar; t++)
+   {
+      const int    p      =  ParSortID[t];
+      ParAtt[PAR_MASS][p] += ParGain[t][0];
+      ParAtt[PAR_VELX][p] =  ParGain[t][1];
+      ParAtt[PAR_VELY][p] =  ParGain[t][2];
+      ParAtt[PAR_VELZ][p] =  ParGain[t][3];
+   }
+
+   delete [] GasMFracLeftArr;
+   delete [] GasRemovalIdx;
+   delete [] ParGain;
 
    return GAMER_SUCCESS;
 
-} // FUNCTION : FB_Plummer
+} // FUNCTION : FB_SinkAccretion
 
 
 
@@ -238,11 +301,11 @@ int FB_Plummer( const int lv, const double TimeNew, const double TimeOld, const 
 //
 // Return      :  None
 //-------------------------------------------------------------------------------------------------------
-void FB_End_Plummer()
+void FB_End_SinkAccretion()
 {
 
 
-} // FUNCTION : FB_End_Plummer
+} // FUNCTION : FB_End_SinkAccretion
 
 
 
@@ -258,13 +321,13 @@ void FB_End_Plummer()
 //
 // Return      :  FB_User_Ptr and FB_End_User_Ptr
 //-------------------------------------------------------------------------------------------------------
-void FB_Init_Plummer()
+void FB_Init_SinkAccretion()
 {
 
-   FB_User_Ptr     = FB_Plummer;
-   FB_End_User_Ptr = FB_End_Plummer;
+   FB_User_Ptr     = FB_SinkAccretion;
+   FB_End_User_Ptr = FB_End_SinkAccretion;
 
-} // FUNCTION : FB_Init_Plummer
+} // FUNCTION : FB_Init_SinkAccretion
 
 
 
