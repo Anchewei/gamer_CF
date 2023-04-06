@@ -107,8 +107,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double _dv  = 1.0 / dv;
 
    int      NRemoval           = 0;
-   real   (*GasMFracLeftArr)   = new real [MaxNewPar];
-   real   (*GasRemovalIdx)[3]  = new real [MaxNewPar][3];
+   real   (*GasMFracLeftArr)   = new real [MaxRemovalGas];
+   long   (*GasRemovalIdx)[3]  = new real [MaxRemovalGas][3];
    real   (*ParGain)[4]        = new real [NPar][4];
 
 // prepare the corner array
@@ -271,7 +271,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //  Update particle mass and velocity
 //  ===========================================================================================================
-   for (int t=0; t<Npar; t++)
+   for (int t=0; t<NPar; t++)
    {
       const int    p      =  ParSortID[t];
       ParAtt[PAR_MASS][p] += ParGain[t][0];
