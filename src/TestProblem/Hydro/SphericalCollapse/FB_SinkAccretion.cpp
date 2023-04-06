@@ -93,6 +93,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 #  endif // #ifdef GAMER_DEBUG
 
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__Par_Acc";
+   FILE *File = fopen( FileName, "a" );
+#  endif
+
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3], ControlPosj[3], ControlPosk[3];
    real Corner_Array[3]; // the corner of the ghost zone
@@ -279,6 +284,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       ParAtt[PAR_VELY][p] =  ParGain[t][2];
       ParAtt[PAR_VELZ][p] =  ParGain[t][3];
    }
+
+#  ifdef MY_DEBUG
+   if ( NPar>0 )
+   {
+      fprintf( File, "Mass = %5.8e", arAtt[PAR_MASS][ParSortID[t]]);
+      fprintf( File, "\n" );
+   }
+   fclose( File );
+#  endif
 
    delete [] GasMFracLeftArr;
    delete [] GasRemovalIdx;
