@@ -44,7 +44,7 @@ static double     ISM_Delta_Dens;
 static double     ISM_Bg_Temp;
 static double     ISM_Dens_Contrast;
 #  ifdef FEEDBACK
-static double     AccGasDensThres;
+double     AccGasDensThres;
 #  endif
 
 static double     Rho0;
