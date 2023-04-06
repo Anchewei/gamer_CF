@@ -108,7 +108,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
    int      NRemoval           = 0;
    real   (*GasMFracLeftArr)   = new real [MaxRemovalGas];
-   long   (*GasRemovalIdx)[3]  = new real [MaxRemovalGas][3];
+   long   (*GasRemovalIdx)[3]  = new long [MaxRemovalGas][3];
    real   (*ParGain)[4]        = new real [NPar][4];
 
 // prepare the corner array
