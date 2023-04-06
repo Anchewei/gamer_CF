@@ -288,7 +288,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  ifdef MY_DEBUG
    if ( NPar>0 )
    {
-      fprintf( File, "Mass = %5.8e", arAtt[PAR_MASS][ParSortID[t]]);
+      fprintf( File, "Mass = %5.8e", ParAtt[PAR_MASS][ParSortID[0]]);
       fprintf( File, "\n" );
    }
    fclose( File );
