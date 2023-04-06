@@ -43,6 +43,9 @@ static double     ISM_Core_Mass;
 static double     ISM_Delta_Dens;
 static double     ISM_Bg_Temp;
 static double     ISM_Dens_Contrast;
+#  ifdef FEEDBACK
+static double     AccGasDensThres;
+#  endif
 
 static double     Rho0;
 static double     R0;
@@ -164,6 +167,9 @@ void SetParameter()
    ReadPara->Add( "ISM_Delta_Dens",    &ISM_Delta_Dens,        0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Bg_Temp",       &ISM_Bg_Temp,           0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Dens_Contrast", &ISM_Dens_Contrast,     0.0,           0.0,              NoMax_double      );
+#  ifdef FEEDBACK
+   ReadPara->Add( "AccGasDensThres",   &AccGasDensThres,       0.0,           0.0,              NoMax_double      );
+#  endif
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -199,6 +205,9 @@ void SetParameter()
    R0 = ISM_Alpha * 2 * Const_NewtonG * ISM_Core_Mass * MOLECULAR_WEIGHT * Const_amu / (5 * Const_kB * ISM_Bg_Temp) * UNIT_M / UNIT_L;
    Rho0 = 3.0 * ISM_Core_Mass / (4.0 * M_PI * CUBE(R0));
    Omega0 = SQRT( ISM_Beta * 4.0 * M_PI*Const_NewtonG* Rho0 );
+#  ifdef FEEDBACK
+   AccGasDensThres *= Const_mH / UNIT_D;
+#  endif
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -230,6 +239,9 @@ void SetParameter()
       Aux_Message( stdout, "  ISM_Core_Mass         = %13.7e \n",       ISM_Core_Mass                        );
       Aux_Message( stdout, "  ISM_Delta_Dens        = %13.7e \n",       ISM_Delta_Dens                       );
       Aux_Message( stdout, "  ISM_Bg_Temp           = %13.7e \n",       ISM_Bg_Temp                          );
+#  ifdef FEEDBACK
+      Aux_Message( stdout, "  AccGasDensThres       = %13.7e \n",       AccGasDensThres                      );
+#  endif
       Aux_Message( stdout, "  Density               = %13.7e \n",       Rho0                                 );
       Aux_Message( stdout, "  Radius                = %13.7e \n",       R0                                   );
       Aux_Message( stdout, "  Angular velocity      = %13.7e \n",       Omega0                               );

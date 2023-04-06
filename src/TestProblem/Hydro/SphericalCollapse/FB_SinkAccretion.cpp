@@ -2,7 +2,7 @@
 
 #ifdef FEEDBACK
 
-extern double GasDensThres;
+extern double AccGasDensThres;
 
 // function pointers to be set by FB_Init_Plummer()
 extern int (*FB_User_Ptr)( const int lv, const double TimeNew, const double TimeOld, const double dt,
@@ -141,9 +141,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Density threshold
 //       ===========================================================================================================
          GasDens = Fluid[DENS][vki][vji][vii];
-         if ( GasDens < GasDensThres )                continue;
+         if ( GasDens < AccGasDensThres )                continue;
 
-         DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
+         DeltaM = (GasDens - AccGasDensThres)*dv; // the mass to be accreted
 
 //       Central cell check
 //       ===========================================================================================================
@@ -236,7 +236,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          } // if ( CentralCell == false )
 
          DeltaMSum += DeltaM;
-         GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+         GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
 
          DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii];
          DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii];
