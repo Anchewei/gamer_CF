@@ -291,8 +291,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       fprintf( File,"%5.7e", GasMFracLeftArr[r]);
       fprintf( File, "\n" );
    }
-   fprintf( File, "#########################" );
-   fprintf( File, "\n" );
    fclose( File );
 #  endif
 
