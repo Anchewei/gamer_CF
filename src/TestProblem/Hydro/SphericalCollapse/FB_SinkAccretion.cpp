@@ -292,6 +292,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       fprintf( File, "\n" );
    }
    fprintf( File, "#########################" );
+   fprintf( File, "\n" );
    fclose( File );
 #  endif
 
