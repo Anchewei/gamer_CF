@@ -288,7 +288,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  ifdef MY_DEBUG
    for (int r=0; r<NRemoval; r++)
    {
-      fprintf( File,"%5.7e" GasMFracLeftArr[r]);
+      fprintf( File,"%5.7e", GasMFracLeftArr[r]);
       fprintf( File, "\n" );
    }
    fprintf( File, "#########################" );
