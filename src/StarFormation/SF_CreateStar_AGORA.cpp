@@ -582,7 +582,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             NewParAtt[NNewPar][Idx_ParCreTime  ] = TimeNew;
             NewParPID[NNewPar] = PID;
 
-            GasMFracLeft = (real) 1.0 - (GasDensThres/GasDens);
+            GasMFracLeft = GasDensThres/GasDens;
             RemovalPos[NNewPar][0] = PID;
             RemovalPos[NNewPar][1] = PGk - Disp_k;
             RemovalPos[NNewPar][2] = PGj - Disp_j;
