@@ -268,10 +268,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 // Remove the gas from Fluid
 // ===========================================================================================================
+   real Mrecord = 0.0;
    for (int r=0; r<NRemoval; r++)
    {
+      real M0 = Fluid[DENS][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]]*dv;
       for (int v=0; v<NCOMP_TOTAL; v++)
       Fluid[v][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]] *= GasMFracLeftArr[r];
+
+      real M1 = Fluid[DENS][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]]*dv;
+      Mrecord += M0-M1;
    } // for (int r=0; r<NRemoval; r++)
 
 //  Update particle mass and velocity
@@ -286,11 +291,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 
 #  ifdef MY_DEBUG
-   for (int r=0; r<NRemoval; r++)
-   {
-      fprintf( File,"%5.7e", GasMFracLeftArr[r]);
-      fprintf( File, "\n" );
-   }
+   fprintf( File,"%5.7e, %5.7e", ParGain[0][0], Mrecord);
+   fprintf( File, "\n" );
    fclose( File );
 #  endif
 
