@@ -243,7 +243,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaMSum += DeltaM;
          GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
 
-         DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii];
+         DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]; // the momentum density of DeltaM
          DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii];
          DeltaMomSum[2] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii];
 
@@ -256,9 +256,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       real NewParVel[3]; // COM velocity of the sink after accretion
-      NewParVel[0] = (DeltaMomSum[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
-      NewParVel[1] = (DeltaMomSum[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
-      NewParVel[2] = (DeltaMomSum[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+      NewParVel[0] = (DeltaMomSum[0]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+      NewParVel[1] = (DeltaMomSum[1]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+      NewParVel[2] = (DeltaMomSum[2]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
 
       ParGain[t][0] = DeltaMSum;
       ParGain[t][1] = NewParVel[0];
