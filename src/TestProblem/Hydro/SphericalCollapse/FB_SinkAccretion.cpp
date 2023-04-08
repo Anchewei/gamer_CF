@@ -241,7 +241,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //          } // if ( CentralCell == false )
 
          DeltaMSum += DeltaM;
-         GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
+         // GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
+         GasMFracLeft = AccGasDensThres/GasDens;
 
          DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]; // the momentum density of DeltaM
          DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii];
