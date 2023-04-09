@@ -155,17 +155,17 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          bool NotCentralCell = true;
          if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   NotCentralCell = false; // if pass, the following checks are skipped
 
-//          if ( NotCentralCell )
-//          {
-// //          Negative radial velocity
-// //          ===========================================================================================================
-//             GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
-//             GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
-//             GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
+         if ( NotCentralCell )
+         {
+//          Negative radial velocity
+//          ===========================================================================================================
+            GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
+            GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
+            GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
-//             if ( GasRelVel[0] >= 0 )                       continue;
-//             if ( GasRelVel[1] >= 0 )                       continue;
-//             if ( GasRelVel[2] >= 0 )                       continue;
+            if ( GasRelVel[0] >= 0 )                       continue;
+            if ( GasRelVel[1] >= 0 )                       continue;
+            if ( GasRelVel[2] >= 0 )                       continue;
 
 // //          Bound state check
 // //          ===========================================================================================================
@@ -238,7 +238,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //             } // for (int tt=0; tt<NPar; tt++)
 
 //             if ( NotMinEg )                              continue; 
-//          } // if ( CentralCell == false )
+         } // if ( CentralCell == false )
 
          DeltaMSum += DeltaM;
          // GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
