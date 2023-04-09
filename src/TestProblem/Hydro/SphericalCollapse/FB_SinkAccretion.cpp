@@ -289,7 +289,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  ifdef MY_DEBUG
    if ( NPar >= 1)
    {
-      fprintf( File,"NPar = %d", NPar);
+      fprintf( File,"TimeNew = %5.3f, NPar = %d", TimeNew, NPar);
       fprintf( File, "\n" );
    }
    fclose( File );
