@@ -360,12 +360,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                Par2Cell[2] = z - ParAtt_Local[PAR_POSZ][p];
                Par2CellDist = SQRT(SQR(Par2Cell[0])+SQR(Par2Cell[1])+SQR(Par2Cell[2]));
 
-               if ( Par2CellDist <= 2*AccRadius )
-               {
-                  InsideAccRadius = true;
-                  break;
-               }
-
                Par2CellVel[0] = VelX - ParAtt_Local[PAR_VELX][p];
                Par2CellVel[1] = VelY - ParAtt_Local[PAR_VELY][p];
                Par2CellVel[2] = VelZ - ParAtt_Local[PAR_VELZ][p];
@@ -381,6 +375,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   break;
                }
 
+               if ( Par2CellDist <= 2*AccRadius )
+               {
+                  InsideAccRadius = true;
+                  break;
+               }
             } // for (int p=0; p<NPar; p++) 
 
             if ( InsideAccRadius )           break;
