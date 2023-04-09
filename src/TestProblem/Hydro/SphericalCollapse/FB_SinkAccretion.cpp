@@ -177,8 +177,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                ControlPosj[0] = Corner_Array[0] + vij*dh;
                ControlPosj[1] = Corner_Array[1] + vjj*dh;
                ControlPosj[2] = Corner_Array[2] + vkj*dh;
-               
-               rij = ControlPosi[0])+SQR(ControlPosj[1] - ControlPosi[1])+SQR(ControlPosj[2] - ControlPosi[2]));
+
+               real rij = SQRT(SQR(ControlPosj[0] - ControlPosi[0])+SQR(ControlPosj[1] - ControlPosi[1])+SQR(ControlPosj[2] - ControlPosi[2]));
                if ( rij == 0.0 )                        continue;
 
                Cell2Sinkj = SQRT(SQR(ControlPosj[0] - xyz[0])+SQR(ControlPosj[1] - xyz[1])+SQR(ControlPosj[2] - xyz[2])); // distance to the center cell
