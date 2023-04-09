@@ -640,7 +640,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          dypp = RemovalFlu[pi][3] - GatherRemovalFlu[pj][3];
          dzpp = RemovalFlu[pi][4] - GatherRemovalFlu[pj][4];
          D2C = SQRT(SQR(dxpp)+SQR(dypp)+SQR(dzpp));
-         if ( D2C > AccRadius )                       continue;
+         if ( D2C > 2*AccRadius )                       continue;
 
          // assuming the potential minimum check is fine, the two particles meet the above conditions should have the same potential
          // if (RemovalFlu[pi][1] != GatherRemovalFlu[pj][1])  continue;   // check whether there are other cells with the same potential
