@@ -732,7 +732,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #  ifdef MY_DEBUG
    if ( SelNNewPar >= 1)
    {
-      fprintf( File,"TimeNew = %5.3e, SelNNewPar = %d", TimeNew, SelNNewPar);
+      fprintf( File,"TimeNew = %13.7e, SelNNewPar = %d", TimeNew, SelNNewPar);
       fprintf( File, "\n" );
    }
    fclose( File );
