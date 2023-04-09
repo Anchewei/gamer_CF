@@ -173,7 +173,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
             for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
             for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-            {   ControlPosi[0])+SQR(ControlPosj[1] - ControlPosi[1])+SQR(ControlPosj[2] - ControlPosi[2]));
+            {  
+               ControlPosj[0] = Corner_Array[0] + vij*dh;
+               ControlPosj[1] = Corner_Array[1] + vjj*dh;
+               ControlPosj[2] = Corner_Array[2] + vkj*dh;
+               
+               rij = ControlPosi[0])+SQR(ControlPosj[1] - ControlPosi[1])+SQR(ControlPosj[2] - ControlPosi[2]));
                if ( rij == 0.0 )                        continue;
 
                Cell2Sinkj = SQRT(SQR(ControlPosj[0] - xyz[0])+SQR(ControlPosj[1] - xyz[1])+SQR(ControlPosj[2] - xyz[2])); // distance to the center cell
