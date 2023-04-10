@@ -291,6 +291,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    {
       const int    p      =  ParSortID[t];
       const double xyz[3] = { ParAtt[PAR_POSX][p], ParAtt[PAR_POSY][p], ParAtt[PAR_POSZ][p] }; // particle position
+
+      int idx[3]; // cell idx in FB_NXT^3
       for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
 
       if ( idx[0] < FB_GHOST_SIZE  ||  idx[0] >= FB_GHOST_SIZE+PS2  ||
