@@ -263,7 +263,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasRemovalIdx[NRemoval][2] = vki;
 
 #  ifdef MY_DEBUG
-         fprintf( File,"%d %d %d %5.7e", vii, vji, vki, GasMFracLeft);
+         fprintf( File,"%d %d %d %5.7e %5.7e", vii, vji, vki, GasMFracLeft, DeltaM);
          fprintf( File, "\n" );
 #  endif
 
@@ -279,10 +279,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 // Remove the gas from Fluid
    for (int r=0; r<NRemoval; r++)
    {
-#  ifdef MY_DEBUG
-      fprintf( File,"%d %d %d %5.7e", GasRemovalIdx[r][0], GasRemovalIdx[r][1], GasRemovalIdx[r][2], GasMFracLeftArr[r]);
-      fprintf( File, "\n" );
-#  endif
       for (int v=0; v<NCOMP_TOTAL; v++)
       Fluid[v][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]] *= GasMFracLeftArr[r];
    } // for (int r=0; r<NRemoval; r++)
