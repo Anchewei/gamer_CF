@@ -380,8 +380,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
                GasDensFreeFall = SQR((1/Coeff_FreeFall)*(NorPar2Cell[0]*Par2CellVel[0] + NorPar2Cell[1]*Par2CellVel[1] + NorPar2Cell[2]*Par2CellVel[2])/Par2CellDist); // Clarke et al. 2017, eqn (5)
 #  ifdef MY_DEBUG
-               fprintf( File,"GasDensFreeFall = %d", GasDensFreeFall);
-               fprintf( File,"GasDensFreeFall_racc = %d", SQR((1/Coeff_FreeFall)*(NorPar2Cell[0]*Par2CellVel[0] + NorPar2Cell[1]*Par2CellVel[1] + NorPar2Cell[2]*Par2CellVel[2])/(Par2CellDist-2*AccRadius)));
+               fprintf( File,"GasDensFreeFall = %13.7e", GasDensFreeFall);
+               fprintf( File, "\n" );
+               fprintf( File,"GasDensFreeFall_racc = %13.7e", SQR((1/Coeff_FreeFall)*(NorPar2Cell[0]*Par2CellVel[0] + NorPar2Cell[1]*Par2CellVel[1] + NorPar2Cell[2]*Par2CellVel[2])/(Par2CellDist-2*AccRadius)));
                fprintf( File, "\n" );
 # endif
                if ( GasDens < GasDensFreeFall )
