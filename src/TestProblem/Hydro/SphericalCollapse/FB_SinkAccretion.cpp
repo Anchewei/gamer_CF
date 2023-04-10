@@ -303,12 +303,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    //    }
    // } // for (int i=0; i<NRemoval; i++)
 
-#  ifdef MY_DEBUG
-         fprintf( File,"#################");
-         fprintf( File, "\n" );
-         fprintf( File,"NRemoval = %5.7e", NRemoval);
-         fprintf( File, "\n" );
-#  endif
+// #  ifdef MY_DEBUG
+//          fprintf( File,"#################");
+//          fprintf( File, "\n" );
+//          fprintf( File,"NRemoval = %d", NRemoval);
+//          fprintf( File, "\n" );
+// #  endif
 
    for (int r=0; r<NRemoval; r++)
    {
