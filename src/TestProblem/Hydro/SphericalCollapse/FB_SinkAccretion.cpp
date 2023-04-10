@@ -129,18 +129,16 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       int idx[3]; // cell idx in FB_NXT^3
       for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
 
+      if ( idx[0] < FB_GHOST_SIZE-AccCellNum  ||  idx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+           idx[1] < FB_GHOST_SIZE-AccCellNum  ||  idx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+           idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want complete control volume
+         continue;
 
 //    Check the control volume
       for (int vki=idx[2]-AccCellNum; vki<=idx[2]+AccCellNum; vki++)
       for (int vji=idx[1]-AccCellNum; vji<=idx[1]+AccCellNum; vji++)
       for (int vii=idx[0]-AccCellNum; vii<=idx[0]+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
       {
-//       Only update the cells insdie
-//       ===========================================================================================================
-         if ( vki < FB_GHOST_SIZE || vki >= FB_GHOST_SIZE+PS2 )      continue;
-         if ( vji < FB_GHOST_SIZE || vji >= FB_GHOST_SIZE+PS2 )      continue;
-         if ( vii < FB_GHOST_SIZE || vii >= FB_GHOST_SIZE+PS2 )      continue;
-
 //       Inside the accretion radius
 //       ===========================================================================================================
          ControlPosi[0] = Corner_Array[0] + vii*dh;
@@ -292,6 +290,14 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    for (int t=0; t<NPar; t++)
    {
       const int    p      =  ParSortID[t];
+      const double xyz[3] = { ParAtt[PAR_POSX][p], ParAtt[PAR_POSY][p], ParAtt[PAR_POSZ][p] }; // particle position
+      for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
+
+      if ( idx[0] < FB_GHOST_SIZE  ||  idx[0] >= FB_GHOST_SIZE+PS2  ||
+           idx[1] < FB_GHOST_SIZE  ||  idx[1] >= FB_GHOST_SIZE+PS2  ||
+           idx[2] < FB_GHOST_SIZE  ||  idx[2] >= FB_GHOST_SIZE+PS2   )
+         continue;
+
       ParAtt[PAR_MASS][p] += ParGain[t][0];
       ParAtt[PAR_VELX][p] =  ParGain[t][1];
       ParAtt[PAR_VELY][p] =  ParGain[t][2];
