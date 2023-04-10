@@ -241,7 +241,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/Cell2Sink2; // potential from the sink
 
                Eg2   = DeltaM*SelfPhi2;
-               if ( Eg != MIN( Eg, Eg2 ) )
+               if ( Eg2 < Eg )
                {
                   NotMinEg = true;
                   break;
