@@ -414,7 +414,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             const int vt = IDX321( vi, vj, vk, Size_Flu, Size_Flu );
             phiijk = Pot_Array_USG_F[vt];
 
-            if ( phi000 != MIN( phi000, phiijk ) )
+            if ( phiijk < phi000 )
             {
                NotMiniPot = true;
                break;
