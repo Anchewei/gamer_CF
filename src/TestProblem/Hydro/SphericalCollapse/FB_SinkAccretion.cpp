@@ -242,16 +242,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                   break;
                }
             } // for (int tt=0; tt<NPar; tt++)
+
+            if ( NotMinEg )                              continue; 
+
          } // if ( CentralCell == false )
 
-         if ( NotMinEg )                              continue; 
 
 #  ifdef MY_DEBUG
-         if ( Inside2 == false)
-         {
-            fprintf( File,"DeltaM = %5.7e", DeltaM);
-            fprintf( File, "\n" );
-         }
+         fprintf( File,"DeltaM = %5.7e", DeltaM);
+         fprintf( File, "\n" );
 #  endif
 
          DeltaMSum += DeltaM;
