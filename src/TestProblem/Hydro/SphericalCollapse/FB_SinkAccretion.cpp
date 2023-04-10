@@ -151,14 +151,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Density threshold
 //       ===========================================================================================================
          GasDens = Fluid[DENS][vki][vji][vii];
-         if ( GasDens < AccGasDensThres )                continue;
+         if ( GasDens <= AccGasDensThres )                continue;
 
          DeltaM = (GasDens - AccGasDensThres)*dv; // the mass to be accreted
 
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
-         if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   NotCentralCell = false; // if pass, the following checks are skipped
+         if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   
+         NotCentralCell = false; // if pass, the following checks are skipped
 
          if ( NotCentralCell )
          {
