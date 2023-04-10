@@ -203,6 +203,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //          Overlapped accretion radius check
 //          ===========================================================================================================
             bool NotMinEg = false;
+            bool Inside2  = false;
             for (int tt=0; tt<NPar; tt++) // find the nearby sink
             {
                const int    pp      = ParSortID[tt];
@@ -210,45 +211,61 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
                const double xxyyzz[3] = { ParAtt[PAR_POSX][pp], ParAtt[PAR_POSY][pp], ParAtt[PAR_POSZ][pp] }; // particle position
                Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
-               if ( Cell2Sink2 > AccRadius )       continue;
+               // if ( Cell2Sink2 > AccRadius )       continue;
 
-               int idxx[3]; // cell idx in FB_NXT^3
-               for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
-
-               real SelfPhi2 = (real)0.0; // self-potential
-               for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
-               for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
-               for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
-               {
-                  ControlPosk[0] = Corner_Array[0] + vik*dh;
-                  ControlPosk[1] = Corner_Array[1] + vjk*dh;
-                  ControlPosk[2] = Corner_Array[2] + vkk*dh;
-
-                  real rik = SQRT(SQR(ControlPosk[0] - ControlPosi[0])+SQR(ControlPosk[1] - ControlPosi[1])+SQR(ControlPosk[2] - ControlPosi[2]));
-                  if ( rik == 0.0 )                        continue;
-
-                  Cell2Sinkk = SQRT(SQR(ControlPosk[0] - xxyyzz[0])+SQR(ControlPosk[1] - xxyyzz[1])+SQR(ControlPosk[2] - xxyyzz[2])); // distance to the center cell
-                  if ( Cell2Sinkk > AccRadius )            continue; // check whether it is inside the control volume
-
-                  SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
-               } // vik, vjk, vkk
-
-               SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/Cell2Sink2; // potential from the sink
-
-               Eg2   = DeltaM*SelfPhi2;
 #  ifdef MY_DEBUG
-               fprintf( File,"%d", Cell2Sink2 < Cell2Sinki);
+               fprintf( File,"Inside? = %d", Cell2Sink2 < AccRadius);
                fprintf( File, "\n" );
 #  endif
-               if ( Cell2Sink2 < Cell2Sinki )
+
+               if ( Cell2Sink2 < AccRadius )
                {
-                  NotMinEg = true;
+                  Inside2 = true;
                   break;
                }
+               
+               // int idxx[3]; // cell idx in FB_NXT^3
+               // for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
+
+//                real SelfPhi2 = (real)0.0; // self-potential
+//                for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
+//                for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
+//                for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
+//                {
+//                   ControlPosk[0] = Corner_Array[0] + vik*dh;
+//                   ControlPosk[1] = Corner_Array[1] + vjk*dh;
+//                   ControlPosk[2] = Corner_Array[2] + vkk*dh;
+
+//                   real rik = SQRT(SQR(ControlPosk[0] - ControlPosi[0])+SQR(ControlPosk[1] - ControlPosi[1])+SQR(ControlPosk[2] - ControlPosi[2]));
+//                   if ( rik == 0.0 )                        continue;
+
+//                   Cell2Sinkk = SQRT(SQR(ControlPosk[0] - xxyyzz[0])+SQR(ControlPosk[1] - xxyyzz[1])+SQR(ControlPosk[2] - xxyyzz[2])); // distance to the center cell
+//                   if ( Cell2Sinkk > AccRadius )            continue; // check whether it is inside the control volume
+
+//                   SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
+//                } // vik, vjk, vkk
+
+//                SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/Cell2Sink2; // potential from the sink
+
+//                Eg2   = DeltaM*SelfPhi2;
+//                if ( Eg2 < Eg )
+//                {
+//                   NotMinEg = true;
+//                   break;
+//                }
             } // for (int tt=0; tt<NPar; tt++)
 
-            if ( NotMinEg )                              continue; 
+            // if ( NotMinEg )                              continue; 
+            if ( Inside2 )                              continue; 
          } // if ( CentralCell == false )
+
+#  ifdef MY_DEBUG
+         if ( Inside2 == false)
+         {
+            fprintf( File,"DeltaM = %5.7e", DeltaM);
+            fprintf( File, "\n" );
+         }
+#  endif
 
          DeltaMSum += DeltaM;
          // GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
