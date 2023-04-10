@@ -135,11 +135,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       for (int vji=idx[1]-AccCellNum; vji<=idx[1]+AccCellNum; vji++)
       for (int vii=idx[0]-AccCellNum; vii<=idx[0]+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
       {
-//       Only update the cells insdie
-//       ===========================================================================================================
-         if ( vki < FB_GHOST_SIZE || vki >= FB_GHOST_SIZE+PS2 )      continue;
-         if ( vji < FB_GHOST_SIZE || vji >= FB_GHOST_SIZE+PS2 )      continue;
-         if ( vii < FB_GHOST_SIZE || vii >= FB_GHOST_SIZE+PS2 )      continue;
+// //       Only update the cells insdie
+// //       ===========================================================================================================
+//          if ( vki < FB_GHOST_SIZE || vki >= FB_GHOST_SIZE+PS2 )      continue;
+//          if ( vji < FB_GHOST_SIZE || vji >= FB_GHOST_SIZE+PS2 )      continue;
+//          if ( vii < FB_GHOST_SIZE || vii >= FB_GHOST_SIZE+PS2 )      continue;
 
 //       Inside the accretion radius
 //       ===========================================================================================================
