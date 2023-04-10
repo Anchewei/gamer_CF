@@ -216,10 +216,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
                fprintf( File,"Inside? = %d", Cell2Sink2 < AccRadius);
+               fprintf( File,"DeltaM = %5.7e", DeltaM);
                fprintf( File, "\n" );
 #  endif
 
-               if ( Cell2Sink2 < AccRadius )
+               if ( Cell2Sink2 <= AccRadius )
                {
                   Inside2 = true;
                   break;
@@ -257,8 +258,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             } // for (int tt=0; tt<NPar; tt++)
 
             // if ( NotMinEg )                              continue; 
-            if ( Inside2 )                              continue; 
          } // if ( CentralCell == false )
+
+         if ( Inside2 )                              continue; 
 
 #  ifdef MY_DEBUG
          if ( Inside2 == false)
