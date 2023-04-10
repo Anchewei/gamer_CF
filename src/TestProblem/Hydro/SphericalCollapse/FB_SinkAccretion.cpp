@@ -104,7 +104,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    real GasMFracLeft;
 
    const int    AccCellNum     = 4;
-   const int    MaxRemovalGas  = 1000;
+   const int    MaxRemovalGas  = 100000;
 
    const double AccRadius      = AccCellNum*dh;
    const double _dh     = 1.0 / dh;
@@ -250,42 +250,72 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          // } // if ( CentralCell == false )
 
-#  ifdef MY_DEBUG
-         fprintf( File,"DeltaM = %5.7e", DeltaM);
-         fprintf( File, "\n" );
-#  endif
-
          DeltaMSum += DeltaM;
          // GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
          GasMFracLeft = AccGasDensThres/GasDens;
 
-         DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]; // the momentum density of DeltaM
-         DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii];
-         DeltaMomSum[2] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii];
+         DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
+         DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
+         DeltaMomSum[2] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
 
          GasMFracLeftArr[NRemoval]  = GasMFracLeft;
          GasRemovalIdx[NRemoval][0] = vii;
          GasRemovalIdx[NRemoval][1] = vji;
          GasRemovalIdx[NRemoval][2] = vki;
 
+#  ifdef MY_DEBUG
+         fprintf( File,"%d %d %d %5.7e", vii, vji, vki, GasMFracLeft);
+         fprintf( File, "\n" );
+#  endif
+
          NRemoval ++;
       } // vii, vji, vki
 
-      real NewParVel[3]; // COM velocity of the sink after accretion
-      NewParVel[0] = (DeltaMomSum[0]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
-      NewParVel[1] = (DeltaMomSum[1]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
-      NewParVel[2] = (DeltaMomSum[2]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
-
       ParGain[t][0] = DeltaMSum;
-      ParGain[t][1] = NewParVel[0];
-      ParGain[t][2] = NewParVel[1];
-      ParGain[t][3] = NewParVel[2];
+      ParGain[t][1] = (DeltaMomSum[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
+      ParGain[t][2] = (DeltaMomSum[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
+      ParGain[t][3] = (DeltaMomSum[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
    } // for (int t=0; t<NPar; t++)
 
 // Remove the gas from Fluid
 // ===========================================================================================================
+   // long   (*UniqueGasRemovalIdx)[3]  = new long [MaxRemovalGas][3]; // Record the non-repeating Idx
+   // real   (*UniqueGasMFracLeftArr)   = new real [MaxRemovalGas];
+   // // int UniqueCount = 0;
+   // int UniqueNRemoval = 0
+   // for (int i=0; i<NRemoval; i++)
+   // {
+   //    int j;
+   //    for (j=0; j<i; j++)
+   //    {
+   //       if ( GasRemovalIdx[i][2] == GasRemovalIdx[j][2] && 
+   //            GasRemovalIdx[i][1] == GasRemovalIdx[j][1] && 
+   //            GasRemovalIdx[i][0] == GasRemovalIdx[j][0]  )
+   //             break;
+   //    }
+   //    if (i==j)
+   //    {
+   //       UniqueGasRemovalIdx[UniqueNRemoval][0] = UniqueNRemoval[i][0];
+   //       UniqueGasRemovalIdx[UniqueNRemoval][1] = UniqueNRemoval[i][1];
+   //       UniqueGasRemovalIdx[UniqueNRemoval][2] = UniqueNRemoval[i][2];
+   //       UniqueGasMFracLeftArr[UniqueNRemoval]  = GasMFracLeftArr[i];
+   //       UniqueNRemoval ++;
+   //    }
+   // } // for (int i=0; i<NRemoval; i++)
+
+#  ifdef MY_DEBUG
+         fprintf( File,"#################");
+         fprintf( File, "\n" );
+         fprintf( File,"NRemoval = %5.7e", NRemoval);
+         fprintf( File, "\n" );
+#  endif
+
    for (int r=0; r<NRemoval; r++)
    {
+#  ifdef MY_DEBUG
+      fprintf( File,"%d %d %d %5.7e", GasRemovalIdx[r][0], GasRemovalIdx[r][1], GasRemovalIdx[r][2], GasMFracLeftArr[r]);
+      fprintf( File, "\n" );
+#  endif
       for (int v=0; v<NCOMP_TOTAL; v++)
       Fluid[v][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]] *= GasMFracLeftArr[r];
    } // for (int r=0; r<NRemoval; r++)
