@@ -236,17 +236,16 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/Cell2Sink2; // potential from the sink
 
                Eg2   = DeltaM*SelfPhi2;
+#  ifdef MY_DEBUG
+               fprintf( File,"%d", Eg2 < Eg);
+               fprintf( File, "\n" );
+#  endif
                if ( Eg2 < Eg )
                {
                   NotMinEg = true;
                   break;
                }
             } // for (int tt=0; tt<NPar; tt++)
-
-#  ifdef MY_DEBUG
-            fprintf( File,"%d", NotMinEg);
-            fprintf( File, "\n" );
-#  endif
 
             if ( NotMinEg )                              continue; 
          } // if ( CentralCell == false )
