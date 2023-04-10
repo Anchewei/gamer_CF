@@ -155,13 +155,13 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          DeltaM = (GasDens - AccGasDensThres)*dv; // the mass to be accreted
 
-//       Central cell check
-//       ===========================================================================================================
-         bool NotCentralCell = true;
-         if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   NotCentralCell = false; // if pass, the following checks are skipped
+// //       Central cell check
+// //       ===========================================================================================================
+//          bool NotCentralCell = true;
+//          if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   NotCentralCell = false; // if pass, the following checks are skipped
 
-         // if ( NotCentralCell )
-         // {
+//          if ( NotCentralCell )
+//          {
 //       Negative radial velocity
 //       ===========================================================================================================
          GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
@@ -214,8 +214,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
 
             if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-               idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-               idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
+                 idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+                 idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
                continue;
 
             real SelfPhi2 = (real)0.0; // self-potential
@@ -251,6 +251,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          // } // if ( CentralCell == false )
 
          DeltaMSum += DeltaM;
+         // GasMFracLeft = (real) 1.0 - (AccGasDensThres/GasDens);
          GasMFracLeft = AccGasDensThres/GasDens;
 
          DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
@@ -268,9 +269,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  endif
 
          NRemoval ++;
-         // checking the value of accretion radius
-         if (NRemoval > MaxRemovalGas)
-            Aux_Error( ERROR_INFO, "MaxRemovalGas is too small!!" );
       } // vii, vji, vki
 
       ParGain[t][0] = DeltaMSum;
@@ -281,14 +279,37 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 // Remove the gas from Fluid
 // ===========================================================================================================
-#  ifdef MY_DEBUG
-      if ( NRemoval >= 1) 
-      {
-         fprintf( File,"%d", NRemoval);
-         fprintf( File, "\n" );
-      }
+   // long   (*UniqueGasRemovalIdx)[3]  = new long [MaxRemovalGas][3]; // Record the non-repeating Idx
+   // real   (*UniqueGasMFracLeftArr)   = new real [MaxRemovalGas];
+   // // int UniqueCount = 0;
+   // int UniqueNRemoval = 0
+   // for (int i=0; i<NRemoval; i++)
+   // {
+   //    int j;
+   //    for (j=0; j<i; j++)
+   //    {
+   //       if ( GasRemovalIdx[i][2] == GasRemovalIdx[j][2] && 
+   //            GasRemovalIdx[i][1] == GasRemovalIdx[j][1] && 
+   //            GasRemovalIdx[i][0] == GasRemovalIdx[j][0]  )
+   //             break;
+   //    }
+   //    if (i==j)
+   //    {
+   //       UniqueGasRemovalIdx[UniqueNRemoval][0] = UniqueNRemoval[i][0];
+   //       UniqueGasRemovalIdx[UniqueNRemoval][1] = UniqueNRemoval[i][1];
+   //       UniqueGasRemovalIdx[UniqueNRemoval][2] = UniqueNRemoval[i][2];
+   //       UniqueGasMFracLeftArr[UniqueNRemoval]  = GasMFracLeftArr[i];
+   //       UniqueNRemoval ++;
+   //    }
+   // } // for (int i=0; i<NRemoval; i++)
 
-#  endif
+// #  ifdef MY_DEBUG
+//          fprintf( File,"#################");
+//          fprintf( File, "\n" );
+//          fprintf( File,"NRemoval = %d", NRemoval);
+//          fprintf( File, "\n" );
+// #  endif
+
    for (int r=0; r<NRemoval; r++)
    {
 #  ifdef MY_DEBUG
