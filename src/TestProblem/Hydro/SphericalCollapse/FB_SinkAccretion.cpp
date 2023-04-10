@@ -237,10 +237,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
                Eg2   = DeltaM*SelfPhi2;
 #  ifdef MY_DEBUG
-               fprintf( File,"%d", Eg2 < Eg);
+               fprintf( File,"%d", Cell2Sink2 < Cell2Sinki);
                fprintf( File, "\n" );
 #  endif
-               if ( Eg2 < Eg )
+               if ( Cell2Sink2 < Cell2Sinki )
                {
                   NotMinEg = true;
                   break;
