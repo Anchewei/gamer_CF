@@ -198,11 +198,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             Eg   = DeltaM*SelfPhi; // no double counting here, since i is fixed
             Ekin = 0.5*DeltaM*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
-#  ifdef MY_DEBUG
-            fprintf( File,"%d", (( Eg + Ekin ) <= 0));
-            fprintf( File, "\n" );
-#  endif
-
             if (( Eg + Ekin ) >= 0)                     continue;
 
 //          Overlapped accretion radius check
@@ -247,6 +242,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                   break;
                }
             } // for (int tt=0; tt<NPar; tt++)
+
+#  ifdef MY_DEBUG
+            fprintf( File,"%d", NotMinEg);
+            fprintf( File, "\n" );
+#  endif
 
             if ( NotMinEg )                              continue; 
          } // if ( CentralCell == false )
