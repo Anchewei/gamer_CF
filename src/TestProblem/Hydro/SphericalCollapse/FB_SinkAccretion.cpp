@@ -161,6 +161,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          bool NotCentralCell = true;
          if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   NotCentralCell = false; // if pass, the following checks are skipped
 
+         bool Inside2;
          if ( NotCentralCell )
          {
 //          Negative radial velocity
@@ -203,7 +204,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //          Overlapped accretion radius check
 //          ===========================================================================================================
             bool NotMinEg = false;
-            bool Inside2  = false;
+            Inside2  = false;
             for (int tt=0; tt<NPar; tt++) // find the nearby sink
             {
                const int    pp      = ParSortID[tt];
