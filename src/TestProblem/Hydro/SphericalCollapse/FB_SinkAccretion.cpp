@@ -169,7 +169,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
          GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
-         if ( GasRelVel[0] >= 0 ||  GasRelVel[1] >= 0 || GasRelVel[2] >= 0 )
+         if ( (GasRelVel[0] >= 0 ||  GasRelVel[1] >= 0 || GasRelVel[2] >= 0) && NotCentralCell )
          continue;
 
 //       Bound state check
