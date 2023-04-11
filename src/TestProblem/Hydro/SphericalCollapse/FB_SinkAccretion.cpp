@@ -159,8 +159,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool CentralCell = false;
-         if ( Cell2Sinki <= dh )   
-         CentralCell = true; // if pass, the following checks are skipped
+         if ( Cell2Sinki < dh )      CentralCell = true; // if pass, the following checks are skipped
 
          if ( CentralCell )
          {  
@@ -173,11 +172,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                const double xxyyzz[3] = { ParAtt[PAR_POSX][pp], ParAtt[PAR_POSY][pp], ParAtt[PAR_POSZ][pp] }; // particle position
                Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
                if ( Cell2Sink2 > AccRadius )       continue;
-               
-               int idxx[3]; // cell idx in FB_NXT^3
-               for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
 
-               if ( Cell2Sink2 <= dh && Cell2Sink2 < Cell2Sink )
+               if ( Cell2Sink2 < dh && Cell2Sink2 <= Cell2Sink )
                {
                   NotCloseCell = true;
                   break
@@ -239,9 +235,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
 
                if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-                     idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-                     idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
-                     continue;
+                    idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+                    idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
+                  continue;
 
                real SelfPhi2 = (real)0.0; // self-potential
                for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
@@ -273,7 +269,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
             if ( NotMinEg )                              continue; 
 
-         } // if ( CentralCell == false )
+         } // if ( CentralCell ) else
 
          DeltaMSum += DeltaM;
          GasMFracLeft = GasDensThres/GasDens;
