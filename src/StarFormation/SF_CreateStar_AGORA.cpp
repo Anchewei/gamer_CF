@@ -260,7 +260,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 //       First density threshold
 //       ===========================================================================================================
          GasDens = fluid[DENS];
-         if ( GasDens < GasDensThres )    continue;
+         if ( GasDens <= GasDensThres )    continue;
 
 //       Proximity check + second density threshold
 //       ===========================================================================================================
