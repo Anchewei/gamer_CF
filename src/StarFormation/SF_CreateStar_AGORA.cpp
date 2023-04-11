@@ -544,8 +544,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        endif
 #        pragma omp critical
          {
-            // NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
-            NewParAtt[NNewPar][PAR_MASS] = 0.0;
+            NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
             NewParAtt[NNewPar][PAR_POSX] = x;
             NewParAtt[NNewPar][PAR_POSY] = y;
             NewParAtt[NNewPar][PAR_POSZ] = z;
@@ -595,8 +594,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             RemovalPos[NNewPar][1] = PGk - Disp_k;
             RemovalPos[NNewPar][2] = PGj - Disp_j;
             RemovalPos[NNewPar][3] = PGi - Disp_i;
-            // RemovalFlu[NNewPar][0] = GasMFracLeft;
-            RemovalFlu[NNewPar][0] = 1.0;
+            RemovalFlu[NNewPar][0] = GasMFracLeft;
             RemovalFlu[NNewPar][1] = phi000;
             RemovalFlu[NNewPar][2] = x;
             RemovalFlu[NNewPar][3] = y;
