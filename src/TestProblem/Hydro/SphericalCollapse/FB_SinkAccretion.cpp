@@ -159,7 +159,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool CentralCell = false;
-         if ( Cell2Sinki < 0.5*dh )      CentralCell = true; // if pass, the following checks are skipped
+         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )       CentralCell = true; // if pass, the following checks are skipped
 
          if ( CentralCell )
          {  
@@ -173,7 +173,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
                if ( Cell2Sink2 > AccRadius )       continue;
 
-               if ( Cell2Sink2 < 0.5*dh && Cell2Sink2 <= Cell2Sinki )
+               int idxx[3]; // cell idx in FB_NXT^3
+               for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
+
+               if ( idxx[0] == vii && idxx[1] == vji && idxx[2] == vki && Cell2Sink2 <= Cell2Sinki )
                {
                   NotCloseCell = true;
                   break;
