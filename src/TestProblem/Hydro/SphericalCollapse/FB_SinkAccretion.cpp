@@ -159,8 +159,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
-         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )       NotCentralCell = false; // if pass, the following checks are skipped
-
+         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )       
+         {
+            NotCentralCell = false; // if pass, the following checks are skipped
+            continue;
+         }
          // if ( NotCentralCell )
          // {
 //       Negative radial velocity
