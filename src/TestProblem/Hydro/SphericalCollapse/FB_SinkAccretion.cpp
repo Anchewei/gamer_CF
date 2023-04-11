@@ -176,7 +176,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                if ( Cell2Sink2 < dh && Cell2Sink2 <= Cell2Sinki )
                {
                   NotCloseCell = true;
-                  break
+                  break;
                }
             }
 
