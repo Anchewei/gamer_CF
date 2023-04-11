@@ -99,7 +99,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  endif
 
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-   real ControlPosi[3], ControlPosj[3], ControlPosk[3];
+   real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
    real Corner_Array[3]; // the corner of the ghost zone
    real GasMFracLeft;
 
@@ -113,11 +113,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double _dv     = 1.0 / dv;
    const double epsilon = 0.001*dh;
 
-   int      NRemoval           = 0;
-   real   (*GasMFracLeftArr)   = new real [MaxRemovalGas];
-   long   (*GasRemovalIdx)[3]  = new long [MaxRemovalGas][3];
-   real   (*ParGain)[4]        = new real [NPar][4];
-
 // prepare the corner array
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
 
@@ -125,8 +120,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    {
       const int    p      = ParSortID[t];
       const double xyz[3] = { ParAtt[PAR_POSX][p], ParAtt[PAR_POSY][p], ParAtt[PAR_POSZ][p] }; // particle position
-      real DeltaMSum      = 0;
-      real DeltaMomSum[3] = { (real)0.0, (real)0.0, (real)0.0};
 
       int idx[3]; // cell idx in FB_NXT^3
       for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
@@ -159,11 +152,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
-         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )       
-         {
-            NotCentralCell = false; // if pass, the following checks are skipped
-            continue;
-         }
+         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )        NotCentralCell = false; // if pass, the following checks are skipped
+
          // if ( NotCentralCell )
          // {
 //       Negative radial velocity
@@ -218,8 +208,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
 
             if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-                  idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-                  idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
+                 idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+                 idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
                continue;
 
             real SelfPhi2 = (real)0.0; // self-potential
@@ -254,59 +244,25 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          // } // if ( NotCentralCell )
 
-         DeltaMSum += DeltaM;
-         GasMFracLeft = GasDensThres/GasDens;
-
-         DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
-         DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
-         DeltaMomSum[2] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
-
-         GasMFracLeftArr[NRemoval]  = GasMFracLeft;
-         GasRemovalIdx[NRemoval][0] = vii;
-         GasRemovalIdx[NRemoval][1] = vji;
-         GasRemovalIdx[NRemoval][2] = vki;
-
 #  ifdef MY_DEBUG
          fprintf( File,"%13.7e %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
          fprintf( File, "\n" );
 #  endif
 
-         NRemoval ++;
+//       Update particle mass and velocity
+//       ===========================================================================================================
+         ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
+         ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
+         ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
+         ParAtt[PAR_MASS][p] +=  DeltaM;
+
+//       Update the cells
+//       ===========================================================================================================
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         Fluid[v][vki][vji][vii] *= GasMFracLeft;
+
       } // vii, vji, vki
-
-      ParGain[t][0] = DeltaMSum;
-      ParGain[t][1] = (DeltaMomSum[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
-      ParGain[t][2] = (DeltaMomSum[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
-      ParGain[t][3] = (DeltaMomSum[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMSum + ParAtt[PAR_MASS][p]);
    } // for (int t=0; t<NPar; t++)
-
-// Remove the gas from Fluid
-   for (int r=0; r<NRemoval; r++)
-   {
-      for (int v=0; v<NCOMP_TOTAL; v++)
-      Fluid[v][GasRemovalIdx[r][2]][GasRemovalIdx[r][1]][GasRemovalIdx[r][0]] *= GasMFracLeftArr[r];
-   } // for (int r=0; r<NRemoval; r++)
-
-//  Update particle mass and velocity
-//  ===========================================================================================================
-   for (int t=0; t<NPar; t++)
-   {
-      const int    p      =  ParSortID[t];
-      const double xyz[3] = { ParAtt[PAR_POSX][p], ParAtt[PAR_POSY][p], ParAtt[PAR_POSZ][p] }; // particle position
-
-      int idx[3]; // cell idx in FB_NXT^3
-      for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
-
-      if ( idx[0] < FB_GHOST_SIZE  ||  idx[0] >= FB_GHOST_SIZE+PS2  ||
-           idx[1] < FB_GHOST_SIZE  ||  idx[1] >= FB_GHOST_SIZE+PS2  ||
-           idx[2] < FB_GHOST_SIZE  ||  idx[2] >= FB_GHOST_SIZE+PS2   )
-         continue;
-
-      ParAtt[PAR_MASS][p] += ParGain[t][0];
-      ParAtt[PAR_VELX][p] =  ParGain[t][1];
-      ParAtt[PAR_VELY][p] =  ParGain[t][2];
-      ParAtt[PAR_VELZ][p] =  ParGain[t][3];
-   }
 
 #  ifdef MY_DEBUG
    // if ( NPar >= 1)
@@ -316,10 +272,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    // }
    fclose( File );
 #  endif
-
-   delete [] GasMFracLeftArr;
-   delete [] GasRemovalIdx;
-   delete [] ParGain;
 
    return GAMER_SUCCESS;
 
