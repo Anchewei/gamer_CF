@@ -173,7 +173,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
                if ( Cell2Sink2 > AccRadius )       continue;
 
-               if ( Cell2Sink2 < dh && Cell2Sink2 <= Cell2Sink )
+               if ( Cell2Sink2 < dh && Cell2Sink2 <= Cell2Sinki )
                {
                   NotCloseCell = true;
                   break
@@ -182,7 +182,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
             if ( NotCloseCell )           continue;
          }
-         else {
+         else 
+         {
 //       Negative radial velocity
 //       ===========================================================================================================
             GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
