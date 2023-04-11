@@ -264,7 +264,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasRemovalIdx[NRemoval][2] = vki;
 
 #  ifdef MY_DEBUG
-         fprintf( File,"%d %d %d %d %5.7e %5.7e", NotCentralCell, vii, vji, vki, GasMFracLeft*Fluid[DENS][vki][vji][vii], DeltaM);
+         fprintf( File,"%d %d %d %d %5.7e %5.7e", NotCentralCell, vii, vji, vki, GasMFracLeft*Fluid[DENS][vki][vji][vii]*dv, DeltaM);
          fprintf( File, "\n" );
 #  endif
 
