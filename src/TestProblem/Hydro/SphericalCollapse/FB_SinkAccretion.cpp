@@ -246,6 +246,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          GasMFracLeft = GasDensThres/GasDens;
 
+         DeltaMom[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
+         DeltaMom[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
+         DeltaMom[2] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
+
 #  ifdef MY_DEBUG
          fprintf( File,"%13.7e %d %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, p, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
          fprintf( File, "\n" );
