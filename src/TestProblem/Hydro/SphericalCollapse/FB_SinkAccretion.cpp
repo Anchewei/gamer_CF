@@ -197,7 +197,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          Eg   = DeltaM*SelfPhi; // no double counting here, since i is fixed
          Ekin = 0.5*DeltaM*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
-         if (( Eg + Ekin ) >= 0)                     continue;
+         if ( ( Eg + Ekin ) >= 0  && NotCentralCell )                     continue;
 
 //       Overlapped accretion radius check
 //       ===========================================================================================================
