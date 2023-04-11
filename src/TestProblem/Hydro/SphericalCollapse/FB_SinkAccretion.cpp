@@ -158,9 +158,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Central cell check
 //       ===========================================================================================================
-         // bool NotCentralCell = true;
-         // if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   
-         // NotCentralCell = false; // if pass, the following checks are skipped
+         bool NotCentralCell = true;
+         if (( idx[0] == vii ) && ( idx[1] == vji ) && ( idx[2] == vki ))   
+         NotCentralCell = false; // if pass, the following checks are skipped
 
       // if ( NotCentralCell )
       // {
@@ -265,7 +265,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasRemovalIdx[NRemoval][2] = vki;
 
 #  ifdef MY_DEBUG
-         fprintf( File,"%13.7e %d %d %d %13.7e %13.7e %13.7e", TimeNew, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
+         fprintf( File,"%13.7e %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
          fprintf( File, "\n" );
 #  endif
 
