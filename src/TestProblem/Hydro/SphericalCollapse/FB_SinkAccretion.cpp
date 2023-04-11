@@ -245,9 +245,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          // } // if ( NotCentralCell )
 
          GasMFracLeft = GasDensThres/GasDens;
-         
+
 #  ifdef MY_DEBUG
-         fprintf( File,"%13.7e %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
+         fprintf( File,"%13.7e %d %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, p, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
          fprintf( File, "\n" );
 #  endif
 
