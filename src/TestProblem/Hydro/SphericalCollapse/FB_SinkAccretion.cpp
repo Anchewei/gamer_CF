@@ -105,6 +105,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
    const int    AccCellNum     = 4;
    const int    MaxRemovalGas  = 100000;
+   const double GasDensThres   = SF_CREATE_STAR_MIN_GAS_DENS;
 
    const double AccRadius      = AccCellNum*dh;
    const double _dh     = 1.0 / dh;
@@ -151,9 +152,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Density threshold
 //       ===========================================================================================================
          GasDens = Fluid[DENS][vki][vji][vii];
-         if ( GasDens <= AccGasDensThres )                continue;
+         if ( GasDens <= GasDensThres )                continue;
 
-         DeltaM = (GasDens - AccGasDensThres)*dv; // the mass to be accreted
+         DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
 
 //       Central cell check
 //       ===========================================================================================================
@@ -252,7 +253,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          } // if ( NotCentralCell == false )
 
          DeltaMSum += DeltaM;
-         GasMFracLeft = AccGasDensThres/GasDens;
+         GasMFracLeft = GasDensThres/GasDens;
 
          DeltaMomSum[0] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
          DeltaMomSum[1] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
@@ -264,7 +265,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasRemovalIdx[NRemoval][2] = vki;
 
 #  ifdef MY_DEBUG
-         fprintf( File,"%d %d %d %d %13.7e %13.7e %13.7e", NotCentralCell, vii, vji, vki, GasMFracLeft, GasMFracLeft*GasDens*dv, DeltaM);
+         fprintf( File,"%d %d %d %d %13.7e %13.7e %13.7e", NotCentralCell, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
          fprintf( File, "\n" );
 #  endif
 
