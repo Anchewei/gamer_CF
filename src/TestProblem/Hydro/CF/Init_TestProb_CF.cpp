@@ -42,7 +42,9 @@ static double     CF_theta_B;
 static char       CF_Tur_Table[MAX_STRING];
 // =======================================================================================
 
-
+#ifdef FEEDBACK
+void FB_Init_SinkAccretion();
+#endif
 
 
 //-------------------------------------------------------------------------------------------------------
@@ -441,6 +443,9 @@ void Init_TestProb_Hydro_CF()
 #  ifdef PARTICLE
    Par_Init_ByFunction_Ptr           = Par_Init_ByFunction; // option: PAR_INIT=1;              example: Particle/Par_Init_ByFunction.cpp
    Par_Init_Attribute_User_Ptr       = NULL; // set PAR_NATT_USER;               example: TestProblem/Hydro/AGORA_IsolatedGalaxy/Init_TestProb_Hydro_AGORA_IsolatedGalaxy.cpp --> AddNewParticleAttribute()
+#  endif
+#  ifdef FEEDBACK
+   FB_Init_User_Ptr                  = FB_Init_SinkAccretion;
 #  endif
 #  if ( EOS == EOS_USER )
    EoS_Init_Ptr                      = NULL; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
