@@ -181,7 +181,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             Aux_Error( ERROR_INFO, "Negative density !!\n" );
 
          GasMFracLeft = GasDensThres/GasDens;
-         if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
+         // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
 
          DeltaM = (1 - GasMFracLeft)*GasDens*dv; // the mass to be accreted
 
