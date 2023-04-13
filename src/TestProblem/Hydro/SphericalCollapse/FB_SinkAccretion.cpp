@@ -183,7 +183,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
          GasMFracLeft = GasDensThres/GasDens;
 
-         if ( GasMFracLeft < 0.5 )                    continue;
+         if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
 
 //       Central cell check
 //       ===========================================================================================================
