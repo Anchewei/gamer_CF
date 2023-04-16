@@ -97,6 +97,7 @@ void Init_Parallelization()
 
 #  ifdef FEEDBACK
    FB_ParaBuf  = MAX( FB_GHOST_SIZE,  IntGhostSize_FB );
+   Flu_ParaBuf = MAX( Flu_ParaBuf,    FB_ParaBuf );
 #  endif
 
 
