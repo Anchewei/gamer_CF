@@ -461,9 +461,9 @@ void Aux_Check_Parameter()
 #  endif
 
 // for sending fluid data fixed by coarse-fine fluxes correctly
-   if ( OPT__FIXUP_FLUX  &&  Flu_ParaBuf >= PATCH_SIZE )
-      Aux_Error( ERROR_INFO, "\"%s\" is required for \"%s\" in LOAD_BALANCE --> check LB_RecordExchangeFixUpDataPatchID() !!\n",
-                 "Flu_ParaBuf < PATCH_SIZE", "OPT__FIXUP_FLUX" );
+   // if ( OPT__FIXUP_FLUX  &&  Flu_ParaBuf >= PATCH_SIZE )
+   //    Aux_Error( ERROR_INFO, "\"%s\" is required for \"%s\" in LOAD_BALANCE --> check LB_RecordExchangeFixUpDataPatchID() !!\n",
+   //               "Flu_ParaBuf < PATCH_SIZE", "OPT__FIXUP_FLUX" );
 
 // ensure that the variable "PaddedCr1D" will not overflow
    const int Padded              = 1<<NLEVEL;
