@@ -177,9 +177,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasDens = Fluid[DENS][vki][vji][vii];
          if ( GasDens <= GasDensThres )                continue;
 
-         if ( GasDens < 0 )
-            Aux_Error( ERROR_INFO, "Negative density !!\n" );
-
          GasMFracLeft = GasDensThres/GasDens;
          // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
 
@@ -300,9 +297,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       ===========================================================================================================
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][vki][vji][vii] *= GasMFracLeft;
-
-         if ( Fluid[DENS][vki][vji][vii] < 0 )
-            Aux_Error( ERROR_INFO, "Negative density !!\n" );
 
       } // vii, vji, vki
    } // for (int t=0; t<NPar; t++)
