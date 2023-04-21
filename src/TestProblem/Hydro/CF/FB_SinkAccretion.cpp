@@ -177,7 +177,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasDens = Fluid[DENS][vki][vji][vii];
          if ( GasDens <= GasDensThres )                continue;
 
-         DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
+         GasMFracLeft = GasDensThres/GasDens;
+         // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
+
+         DeltaM = (1 - GasMFracLeft)*GasDens*dv; // the mass to be accreted
 
 //       Central cell check
 //       ===========================================================================================================
@@ -273,8 +276,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          if ( NotMinEg )                              continue; 
 
          // } // if ( NotCentralCell )
-
-         GasMFracLeft = GasDensThres/GasDens;
 
          DeltaMom[0] = (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
          DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
