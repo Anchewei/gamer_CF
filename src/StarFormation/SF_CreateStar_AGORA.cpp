@@ -78,11 +78,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       Aux_Error( ERROR_INFO, "Idx_ParCreTime is undefined !!\n" );
 #  endif // #ifdef GAMER_DEBUG
 
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_debug";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
 // constant parameters
    const double dh             = amr->dh[lv];
 
@@ -110,9 +105,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    long    *NewParID                         = new long [MaxNewPar];
    long    *NewParPID                        = new long [MaxNewPar];
 
-// checking the value of accretion radius
+// Some check
    if (AccCellNum > 0.5*PS1)
       Aux_Error( ERROR_INFO, "AccCellNum should be smaller than half of PATCH_SIZE !!" );
+
+   if (OPT__MINIMIZE_MPI_BARRIER)
+      Aux_Error( ERROR_INFO, "Please disable OPT__MINIMIZE_MPI_BARRIER !!" );
 
    const bool TimingSendPar_Yes = true;
    const bool JustCountNPar_No  = false;
@@ -731,15 +729,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       delete [] ParIDInPatch;
    } // for (int i=0; i<UniqueCount; i++)
-
-#  ifdef MY_DEBUG
-   // if ( SelNNewPar >= 1)
-   // {
-   //    fprintf( File,"TimeNew = %13.7e, SelNNewPar = %d", TimeNew, SelNNewPar);
-   //    fprintf( File, "\n" );
-   // }
-   fclose( File );
-#  endif
    
    delete [] SelNewParPID;
    delete [] UniqueParPID;

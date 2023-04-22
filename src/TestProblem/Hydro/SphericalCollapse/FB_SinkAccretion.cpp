@@ -93,11 +93,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 #  endif // #ifdef GAMER_DEBUG
 
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_Acc";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
    real Corner_Array[3]; // the corner of the ghost zone
@@ -281,11 +276,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
          DeltaMom[2] = (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
 
-// #  ifdef MY_DEBUG
-//          fprintf( File,"%13.7e %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
-//          fprintf( File, "\n" );
-// #  endif
-
 //       Update particle mass and velocity
 //       ===========================================================================================================
          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
@@ -300,15 +290,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
       } // vii, vji, vki
    } // for (int t=0; t<NPar; t++)
-
-#  ifdef MY_DEBUG
-   // if ( NPar >= 1)
-   // {
-   //    fprintf( File,"TimeNew = %5.3e, NPar = %d", TimeNew, NPar);
-   //    fprintf( File, "\n" );
-   // }
-   fclose( File );
-#  endif
 
    return GAMER_SUCCESS;
 
