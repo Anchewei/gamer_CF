@@ -733,11 +733,11 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    } // for (int i=0; i<UniqueCount; i++)
 
 #  ifdef MY_DEBUG
-   if ( SelNNewPar >= 1)
-   {
-      fprintf( File,"TimeNew = %13.7e, SelNNewPar = %d", TimeNew, SelNNewPar);
-      fprintf( File, "\n" );
-   }
+   // if ( SelNNewPar >= 1)
+   // {
+   //    fprintf( File,"TimeNew = %13.7e, SelNNewPar = %d", TimeNew, SelNNewPar);
+   //    fprintf( File, "\n" );
+   // }
    fclose( File );
 #  endif
    
