@@ -15,10 +15,8 @@ extern void (*FB_End_User_Ptr)();
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  FB_Plummer
-// Description :  Example of explosion and mass accretion feedbacks
-//                --> Just an example and is by no means to be physically correct
-//
+// Function    :  FB_SinkAccretion
+// Description :  Accretion for sink particle, Ref: Federrath et al. 2010.
 // Note        :  1. Input and output fluid and particle data are stored in Fluid[] and ParAtt[], respectively
 //                   --> This function is responsible for updating gas and particles within
 //                       ** FB_GHOST_SIZE <= cell indices i,j,k < FB_GHOST_SIZE+PS2 **
@@ -298,11 +296,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  FB_End_Plummer
+// Function    :  FB_End_SinkAccretion
 // Description :  Free the resources used by the user-specified feedback
 //
 // Note        :  1. Invoked by FB_End()
-//                2. Linked to FB_End_User_Ptr in FB_Init_Plummer()
+//                2. Linked to FB_End_User_Ptr in FB_Init_SinkAccretion()
 //
 // Parameter   :  None
 //
@@ -317,7 +315,7 @@ void FB_End_SinkAccretion()
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  FB_Init_Plummer
+// Function    :  FB_Init_SinkAccretion
 // Description :  Initialize the user-specified feedback
 //
 // Note        :  1. Invoked by FB_Init()
