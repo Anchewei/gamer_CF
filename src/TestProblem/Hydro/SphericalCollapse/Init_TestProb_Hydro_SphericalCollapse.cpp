@@ -43,7 +43,7 @@ static double     ISM_Core_Mass;
 static double     ISM_Delta_Dens;
 static double     ISM_Bg_Temp;
 static double     ISM_Dens_Contrast;
-static double     rho_AD; // adiabatic density thresheld
+double            rho_AD; // adiabatic density thresheld
 
 static double     Rho0;
 static double     R0;
