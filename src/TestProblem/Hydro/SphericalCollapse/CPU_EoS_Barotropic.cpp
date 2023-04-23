@@ -232,11 +232,13 @@ static real EoS_DensPres2CSqr_Barotropic( const real Dens, const real Pres, cons
 
    const real Gamma     = (real)AuxArray_Flt[0];
    const real Gamma_m1  = (real)AuxArray_Flt[1];
-   const real _Gamma_m1 = (real)AuxArray_Flt[2];
-   real Eint, Cs2;
+   const real _m_kB     = (real)AuxArray_Flt[4];
+   const real T0        = (real)AuxArray_Flt[5];
+   const real rho_AD    = (real)AuxArray_Flt[6];
+   real Temp, Cs2;
 
-   Eint = Pres * _Gamma_m1;
-   Cs2 = SQRT( Gamma*Gamma_m1*Eint/Dens );
+   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
+   Cs2 = Gamma*_m_kB*Temp;
 
 
 // check
@@ -347,10 +349,12 @@ static real EoS_DensTemp2Pres_Barotropic( const real Dens, const real Temp, cons
 
    const real Gamma_m1  = (real)AuxArray_Flt[1];
    const real _m_kB     = (real)AuxArray_Flt[4];
-   real Pres, Eint;
+   const real T0        = (real)AuxArray_Flt[5];
+   const real rho_AD    = (real)AuxArray_Flt[6];
+   real Temp, Pres;
 
-   Eint = Dens*Temp*_m_kB;
-   Pres = Gamma_m1*Eint;
+   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
+   Pres = _m_kB*Temp*Dens;
 
 
 // check
