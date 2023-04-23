@@ -55,10 +55,12 @@ void EoS_SetAuxArray_Barotropic( double AuxArray_Flt[], int AuxArray_Int[] )
    AuxArray_Flt[0] = GAMMA;
    AuxArray_Flt[1] = GAMMA - 1.0;
    AuxArray_Flt[2] = 1.0 / ( GAMMA - 1.0 );
-   AuxArray_Flt[3] = MOLECULAR_WEIGHT * Const_amu / Const_kB * (UNIT_E/UNIT_M);
-   AuxArray_Flt[4] = 1.0 / ( MOLECULAR_WEIGHT * Const_amu / Const_kB * (UNIT_E/UNIT_M) );
-   AuxArray_Flt[5] = ISO_TEMP;
-   AuxArray_Flt[6] = rho_AD;
+   AuxArray_Flt[3] = 1.0 / GAMMA;
+   AuxArray_Flt[4] = ( OPT__UNIT ) ? MOLECULAR_WEIGHT * Const_amu / Const_kB * (UNIT_E/UNIT_M)
+                                   : MOLECULAR_WEIGHT;
+   AuxArray_Flt[5] = 1.0 / AuxArray_Flt[4];
+   AuxArray_Flt[6] = ISO_TEMP;
+   AuxArray_Flt[7] = rho_AD;
 
 } // FUNCTION : EoS_SetAuxArray_Barotropic
 #endif // #ifndef __CUDACC__
@@ -229,17 +231,10 @@ static real EoS_DensPres2CSqr_Barotropic( const real Dens, const real Pres, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Pres, "input pressure", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
+   const real Gamma = (real)AuxArray_Flt[0];
+   real Cs2;
 
-   const real Gamma     = (real)AuxArray_Flt[0];
-   const real Gamma_m1  = (real)AuxArray_Flt[1];
-   const real _m_kB     = (real)AuxArray_Flt[4];
-   const real T0        = (real)AuxArray_Flt[5];
-   const real rho_AD    = (real)AuxArray_Flt[6];
-   real Temp, Cs2;
-
-   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
-   Cs2 = Gamma*_m_kB*Temp;
-
+   Cs2 = Gamma * Pres / Dens;
 
 // check
 #  ifdef GAMER_DEBUG
@@ -292,8 +287,8 @@ static real EoS_DensEint2Temp_Barotropic( const real Dens, const real Eint, cons
 #  endif // GAMER_DEBUG
 
    const real Gamma_m1  = (real)AuxArray_Flt[1];
-   const real T0        = (real)AuxArray_Flt[5];
-   const real rho_AD    = (real)AuxArray_Flt[6];
+   const real T0        = (real)AuxArray_Flt[6];
+   const real rho_AD    = (real)AuxArray_Flt[7];
    real Temp;
 
    Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
@@ -347,10 +342,10 @@ static real EoS_DensTemp2Pres_Barotropic( const real Dens, const real Temp, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Temp, "input temperature", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
-   const real _m_kB     = (real)AuxArray_Flt[4];
+   const real _m_kB = (real)AuxArray_Flt[5];
    real Pres;
 
-   Pres = _m_kB*Temp*Dens;
+   Pres = Temp * Dens * _m_kB;
 
 
 // check
