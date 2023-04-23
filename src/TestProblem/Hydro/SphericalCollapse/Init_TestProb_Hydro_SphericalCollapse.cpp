@@ -43,9 +43,7 @@ static double     ISM_Core_Mass;
 static double     ISM_Delta_Dens;
 static double     ISM_Bg_Temp;
 static double     ISM_Dens_Contrast;
-#  ifdef FEEDBACK
-double     AccGasDensThres;
-#  endif
+static double     rho_AD; // adiabatic density thresheld
 
 static double     Rho0;
 static double     R0;
@@ -55,6 +53,7 @@ static double     Omega0;
 #ifdef FEEDBACK
 void FB_Init_SinkAccretion();
 #endif
+void EoS_Init_Barotropic();
 
 
 //-------------------------------------------------------------------------------------------------------
@@ -172,9 +171,7 @@ void SetParameter()
    ReadPara->Add( "ISM_Delta_Dens",    &ISM_Delta_Dens,        0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Bg_Temp",       &ISM_Bg_Temp,           0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "ISM_Dens_Contrast", &ISM_Dens_Contrast,     0.0,           0.0,              NoMax_double      );
-#  ifdef FEEDBACK
-   ReadPara->Add( "AccGasDensThres",   &AccGasDensThres,       0.0,           0.0,              NoMax_double      );
-#  endif
+   ReadPara->Add( "rho_AD",            &rho_AD,                0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -210,9 +207,7 @@ void SetParameter()
    R0 = ISM_Alpha * 2 * Const_NewtonG * ISM_Core_Mass * MOLECULAR_WEIGHT * Const_amu / (5 * Const_kB * ISM_Bg_Temp) * UNIT_M / UNIT_L;
    Rho0 = 3.0 * ISM_Core_Mass / (4.0 * M_PI * CUBE(R0));
    Omega0 = SQRT( ISM_Beta * 4.0 * M_PI*Const_NewtonG* Rho0 );
-#  ifdef FEEDBACK
-   AccGasDensThres *= Const_mH / UNIT_D;
-#  endif
+   rho_AD /= UNIT_D;
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -244,9 +239,7 @@ void SetParameter()
       Aux_Message( stdout, "  ISM_Core_Mass         = %13.7e \n",       ISM_Core_Mass                        );
       Aux_Message( stdout, "  ISM_Delta_Dens        = %13.7e \n",       ISM_Delta_Dens                       );
       Aux_Message( stdout, "  ISM_Bg_Temp           = %13.7e \n",       ISM_Bg_Temp                          );
-#  ifdef FEEDBACK
-      Aux_Message( stdout, "  AccGasDensThres       = %13.7e \n",       AccGasDensThres                      );
-#  endif
+      Aux_Message( stdout, "  rho_AD                = %13.7e \n",       rho_AD                               );
       Aux_Message( stdout, "  Density               = %13.7e \n",       Rho0                                 );
       Aux_Message( stdout, "  Radius                = %13.7e \n",       R0                                   );
       Aux_Message( stdout, "  Angular velocity      = %13.7e \n",       Omega0                               );
@@ -359,8 +352,12 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
       Dens = Rho0 / ISM_Dens_Contrast;
    }
 
-   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
+   Pres = EoS_DensTemp2Pres_CPUPtr( Dens, ISO_TEMP, NULL, EoS_AuxArray_Flt,
                                     EoS_AuxArray_Int, h_EoS_Table );
+   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Pres, NULL, EoS_AuxArray_Flt,
+                                    EoS_AuxArray_Int, h_EoS_Table );
+   // Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
+   //                                  EoS_AuxArray_Int, h_EoS_Table );
    MomX = Dens * VelX;
    MomY = Dens * VelY;
    MomZ = Dens * VelZ;
@@ -423,6 +420,7 @@ void Init_TestProb_Hydro_SphericalCollapse()
 #  ifdef FEEDBACK
    FB_Init_User_Ptr        = FB_Init_SinkAccretion;
 #  endif
+   EoS_Init_Ptr            = EoS_Init_Barotropic;
 
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ... done\n", __FUNCTION__ );
