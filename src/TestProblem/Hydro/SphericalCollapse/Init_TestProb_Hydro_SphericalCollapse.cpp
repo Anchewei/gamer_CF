@@ -420,7 +420,7 @@ void Init_TestProb_Hydro_SphericalCollapse()
 #  ifdef FEEDBACK
    FB_Init_User_Ptr        = FB_Init_SinkAccretion;
 #  endif
-   EoS_Init_Ptr            = EoS_Init_Barotropic;
+   // EoS_Init_Ptr            = EoS_Init_Barotropic;
 
 
    if ( MPI_Rank == 0 )    Aux_Message( stdout, "%s ... done\n", __FUNCTION__ );
