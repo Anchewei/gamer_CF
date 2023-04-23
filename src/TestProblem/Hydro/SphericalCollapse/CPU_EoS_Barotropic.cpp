@@ -286,19 +286,12 @@ static real EoS_DensEint2Temp_Barotropic( const real Dens, const real Eint, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
-   // const real Gamma_m1  = (real)AuxArray_Flt[1];
-   // const real T0        = (real)AuxArray_Flt[6];
-   // const real rho_AD    = (real)AuxArray_Flt[7];
-   // real Temp;
+   const real Gamma_m1  = (real)AuxArray_Flt[1];
+   const real T0        = (real)AuxArray_Flt[6];
+   const real rho_AD    = (real)AuxArray_Flt[7];
+   real Temp;
 
-   // Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
-
-   const real Gamma_m1 = (real)AuxArray_Flt[1];
-   const real m_kB     = (real)AuxArray_Flt[4];
-   real Pres, Temp;
-
-   Pres = Eint * Gamma_m1;
-   Temp = m_kB * Pres / Dens;
+   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
 
 
 // check
