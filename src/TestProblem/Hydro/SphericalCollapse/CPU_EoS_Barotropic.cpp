@@ -64,8 +64,8 @@ void EoS_SetAuxArray_Barotropic( double AuxArray_Flt[], int AuxArray_Int[] )
 
    if ( MPI_Rank == 0 )
    {
-      Aux_Message( stdout, "   Background temperature       = %13.7e K\n",    ISO_TEMP );
-      Aux_Message( stdout, "   Adiabatic density            = %13.7e\n",      rho_AD );
+      Aux_Message( stdout, "   Background temperature       = %13.7e K\n"    ,    ISO_TEMP      );
+      Aux_Message( stdout, "   Adiabatic density            = %13.7e g/cm3\n",    rho_AD*UNIT_D );
    }
 
 } // FUNCTION : EoS_SetAuxArray_Barotropic
