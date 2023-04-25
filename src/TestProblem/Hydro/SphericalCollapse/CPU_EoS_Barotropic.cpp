@@ -119,10 +119,15 @@ static real EoS_DensEint2Pres_Barotropic( const real Dens, const real Eint, cons
 #  endif // GAMER_DEBUG
 
 
-   const real Gamma_m1 = (real)AuxArray_Flt[1];
-   real Pres;
+   const real Gamma_m1  = (real)AuxArray_Flt[1];
+   const real _m_kB     = (real)AuxArray_Flt[5];
+   const real T0        = (real)AuxArray_Flt[6];
+   const real rho_AD    = (real)AuxArray_Flt[7];
+   real Temp, Cs2, Pres;
 
-   Pres = Eint * Gamma_m1;
+   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
+   Cs2  = Temp*_m_kB;
+   Pres = Cs2*Dens;
 
 
 // check
@@ -237,14 +242,14 @@ static real EoS_DensPres2CSqr_Barotropic( const real Dens, const real Pres, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Pres, "input pressure", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
-   const real Gamma     = (real)AuxArray_Flt[0];
    const real Gamma_m1  = (real)AuxArray_Flt[1];
-   const real _Gamma_m1 = (real)AuxArray_Flt[2];
-   real Eint, Cs2;
+   const real _m_kB     = (real)AuxArray_Flt[5];
+   const real T0        = (real)AuxArray_Flt[6];
+   const real rho_AD    = (real)AuxArray_Flt[7];
+   real Temp, Cs2;
 
-   // Cs2 = Gamma * Pres / Dens;
-   Eint = Pres * _Gamma_m1;
-   Cs2 = Gamma*Gamma_m1*Eint/Dens;
+   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
+   Cs2  = Temp*_m_kB;
 
 // check
 #  ifdef GAMER_DEBUG
@@ -354,11 +359,14 @@ static real EoS_DensTemp2Pres_Barotropic( const real Dens, const real Temp, cons
 #  endif // GAMER_DEBUG
 
    const real Gamma_m1  = (real)AuxArray_Flt[1];
-   const real _m_kB = (real)AuxArray_Flt[5];
-   real Eint, Pres;
+   const real _m_kB     = (real)AuxArray_Flt[5];
+   const real T0        = (real)AuxArray_Flt[6];
+   const real rho_AD    = (real)AuxArray_Flt[7];
+   real Temp, Cs2, Pres;
 
-   Eint = Dens * Temp * _m_kB;
-   Pres = Eint * Gamma_m1;
+   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
+   Cs2  = Temp*_m_kB;
+   Pres = Cs2*Dens;
 
 
 // check
@@ -410,7 +418,7 @@ static real EoS_DensEint2Entr_Barotropic( const real Dens, const real Eint, cons
 #  endif // GAMER_DEBUG
 
 
-   real Entr = -1.0;
+   // real Entr = -1.0;
 
    /*
    Entr = ...;
@@ -431,7 +439,7 @@ static real EoS_DensEint2Entr_Barotropic( const real Dens, const real Eint, cons
 #  endif // GAMER_DEBUG
 
 
-   return Entr;
+    return NULL_REAL;
 
 } // FUNCTION : EoS_DensEint2Entr_Barotropic
 
