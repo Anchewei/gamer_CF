@@ -358,13 +358,9 @@ static real EoS_DensTemp2Pres_Barotropic( const real Dens, const real Temp, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Temp, "input temperature", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
-   const real Gamma_m1  = (real)AuxArray_Flt[1];
    const real _m_kB     = (real)AuxArray_Flt[5];
-   const real T0        = (real)AuxArray_Flt[6];
-   const real rho_AD    = (real)AuxArray_Flt[7];
-   real Temp, Cs2, Pres;
+   real Cs2, Pres;
 
-   Temp = T0*( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
    Cs2  = Temp*_m_kB;
    Pres = Cs2*Dens;
 
