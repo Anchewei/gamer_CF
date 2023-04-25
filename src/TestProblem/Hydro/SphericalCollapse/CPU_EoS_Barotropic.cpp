@@ -314,7 +314,7 @@ static real EoS_DensEint2Temp_Barotropic( const real Dens, const real Eint, cons
 #  endif // GAMER_DEBUG
 
 
-   return T0;
+   return Temp;
 
 } // FUNCTION : EoS_DensEint2Temp_Barotropic
 
