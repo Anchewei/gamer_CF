@@ -2,8 +2,6 @@
 
 #ifdef FEEDBACK
 
-extern double AccGasDensThres;
-
 // function pointers to be set by FB_Init_Plummer()
 extern int (*FB_User_Ptr)( const int lv, const double TimeNew, const double TimeOld, const double dt,
                            const int NPar, const int *ParSortID, real *ParAtt[PAR_NATT_TOTAL],
@@ -15,10 +13,8 @@ extern void (*FB_End_User_Ptr)();
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  FB_Plummer
-// Description :  Example of explosion and mass accretion feedbacks
-//                --> Just an example and is by no means to be physically correct
-//
+// Function    :  FB_SinkAccretion
+// Description :  Accretion for sink particle, Ref: Federrath et al. 2010.
 // Note        :  1. Input and output fluid and particle data are stored in Fluid[] and ParAtt[], respectively
 //                   --> This function is responsible for updating gas and particles within
 //                       ** FB_GHOST_SIZE <= cell indices i,j,k < FB_GHOST_SIZE+PS2 **
@@ -92,11 +88,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       if ( ParAtt == NULL )      Aux_Error( ERROR_INFO, "ParAtt == NULL for NPar = %d !!\n", NPar );
    }
 #  endif // #ifdef GAMER_DEBUG
-
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_Acc";
-   FILE *File = fopen( FileName, "a" );
-#  endif
 
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
@@ -281,11 +272,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
          DeltaMom[2] = (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
 
-#  ifdef MY_DEBUG
-         fprintf( File,"%13.7e %d %d %d %d %13.7e %13.7e %13.7e", TimeNew, NotCentralCell, vii, vji, vki, GasMFracLeft, (1.0-GasMFracLeft)*GasDens*dv, DeltaM);
-         fprintf( File, "\n" );
-#  endif
-
 //       Update particle mass and velocity
 //       ===========================================================================================================
          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
@@ -301,15 +287,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
    } // for (int t=0; t<NPar; t++)
 
-#  ifdef MY_DEBUG
-   // if ( NPar >= 1)
-   // {
-   //    fprintf( File,"TimeNew = %5.3e, NPar = %d", TimeNew, NPar);
-   //    fprintf( File, "\n" );
-   // }
-   fclose( File );
-#  endif
-
    return GAMER_SUCCESS;
 
 } // FUNCTION : FB_SinkAccretion
@@ -317,11 +294,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  FB_End_Plummer
+// Function    :  FB_End_SinkAccretion
 // Description :  Free the resources used by the user-specified feedback
 //
 // Note        :  1. Invoked by FB_End()
-//                2. Linked to FB_End_User_Ptr in FB_Init_Plummer()
+//                2. Linked to FB_End_User_Ptr in FB_Init_SinkAccretion()
 //
 // Parameter   :  None
 //
@@ -336,7 +313,7 @@ void FB_End_SinkAccretion()
 
 
 //-------------------------------------------------------------------------------------------------------
-// Function    :  FB_Init_Plummer
+// Function    :  FB_Init_SinkAccretion
 // Description :  Initialize the user-specified feedback
 //
 // Note        :  1. Invoked by FB_Init()
