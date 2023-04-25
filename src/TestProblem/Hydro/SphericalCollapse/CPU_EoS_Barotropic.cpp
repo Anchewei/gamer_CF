@@ -240,6 +240,7 @@ static real EoS_DensPres2CSqr_Barotropic( const real Dens, const real Pres, cons
    const real Gamma_m1  = (real)AuxArray_Flt[1];
    const real _m_kB     = (real)AuxArray_Flt[5];
    const real T0        = (real)AuxArray_Flt[6];
+   const real rho_AD    = (real)AuxArray_Flt[7];
    real Cs2;
 
    // Cs2 = Gamma * Pres / Dens;
