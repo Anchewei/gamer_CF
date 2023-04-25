@@ -240,7 +240,7 @@ static real EoS_DensPres2CSqr_Barotropic( const real Dens, const real Pres, cons
    const real Gamma = (real)AuxArray_Flt[0];
    real Cs2;
 
-   Cs2 = Pres / Dens;
+   Cs2 = Gamma * Pres / Dens;
 
 // check
 #  ifdef GAMER_DEBUG
