@@ -237,14 +237,14 @@ static real EoS_DensPres2CSqr_Barotropic( const real Dens, const real Pres, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Pres, "input pressure", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
+   const real Gamma     = (real)AuxArray_Flt[0];
    const real Gamma_m1  = (real)AuxArray_Flt[1];
-   const real _m_kB     = (real)AuxArray_Flt[5];
-   const real T0        = (real)AuxArray_Flt[6];
-   const real rho_AD    = (real)AuxArray_Flt[7];
-   real Cs2;
+   const real _Gamma_m1 = (real)AuxArray_Flt[2];
+   real Eint, Cs2;
 
    // Cs2 = Gamma * Pres / Dens;
-   Cs2 = T0 * _m_kB * ( 1+ POW( Dens / rho_AD, Gamma_m1 ) );
+   Eint = Pres * _Gamma_m1;
+   Cs2 = Gamma*Gamma_m1*Eint/Dens;
 
 // check
 #  ifdef GAMER_DEBUG
@@ -353,10 +353,12 @@ static real EoS_DensTemp2Pres_Barotropic( const real Dens, const real Temp, cons
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Temp, "input temperature", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
+   const real Gamma_m1  = (real)AuxArray_Flt[1];
    const real _m_kB = (real)AuxArray_Flt[5];
-   real Pres;
+   real Eint, Pres;
 
-   Pres = Temp * Dens * _m_kB;
+   Eint = Dens * Temp * _m_kB;
+   Pres = Eint * Gamma_m1;
 
 
 // check
