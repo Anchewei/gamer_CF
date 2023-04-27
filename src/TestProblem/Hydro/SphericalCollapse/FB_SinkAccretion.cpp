@@ -107,7 +107,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
 #  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Acc_debug";
+   const char  FileName[] = "Record__Par_Acc";
    FILE *File = fopen( FileName, "a" );
 #  endif
 
@@ -285,12 +285,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          k = RemovalIdx[N][2];
 
          GasDens = Fluid[DENS][k][j][i];
-         GasMFracLeft = GasDensThres/GasDens;
+         // GasMFracLeft = GasDensThres/GasDens;
          DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
 
-         DeltaMom[0] = (1.0 - GasMFracLeft)*Fluid[MOMX][k][j][i]*dv; // the momentum of DeltaM
-         DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][k][j][i]*dv;
-         DeltaMom[2] = (1.0 - GasMFracLeft)*Fluid[MOMZ][k][j][i]*dv;
+         DeltaMom[0] = DeltaM*Fluid[MOMX][k][j][i]/GasDens; // the momentum of DeltaM
+         DeltaMom[1] = DeltaM*Fluid[MOMY][k][j][i]/GasDens;
+         DeltaMom[2] = DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
 
 //       Update particle mass and velocity
 //       ===========================================================================================================
@@ -302,16 +302,16 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Update the cells
 //       ===========================================================================================================
          real M_old, M_new;
-         M_old = GasDens*dv;
+         M_old = Fluid[DENS][k][j][i]*dv;
 
          for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][k][j][i] *= GasMFracLeft;
+         Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
 
          M_new = Fluid[DENS][k][j][i]*dv;
 
 #        ifdef MY_DEBUG
-         fprintf( File,"ijk = %d%d%d, GasMFracLeft = %13.7e, DeltaM_par = %13.7e, DeltaM_gas = %13.7e", 
-                        i, j, k, GasMFracLeft, DeltaM, M_new-M_old);
+         fprintf( File,"ijk = %d%d%d, DeltaM_par = %13.7e, DeltaM_gas = %13.7e", 
+                        i, j, k, DeltaM, M_new-M_old);
          fprintf( File, "\n" );
 #        endif
 
