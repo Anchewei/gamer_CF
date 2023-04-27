@@ -203,7 +203,7 @@ void SetParameter()
    Core_Mass *= Const_Msun;
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
    R0 /= UNIT_L;
-   Rho0 = Core_Mass/(4/3*M_PI*CUBE(R0));
+   Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
    Omega0 /= 1/UNIT_T;
    rho_AD /= UNIT_D;
 
