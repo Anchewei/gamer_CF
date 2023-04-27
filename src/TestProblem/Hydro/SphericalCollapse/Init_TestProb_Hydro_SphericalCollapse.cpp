@@ -165,7 +165,7 @@ void SetParameter()
    ReadPara->Add( "Mach",              &Mach,                  0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "R0",                &R0,                    0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "Omege0",            &Omege0,                0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Omega0",            &Omega0,                0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Core Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Delta Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Dens contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
