@@ -36,18 +36,15 @@ static double     Cs;                             // sound spped
 
 static char       CF_Tur_Table[MAX_STRING];
 static double     CF_vflow;
-static double     CF_Mach;
-static double     ISM_Alpha;
-static double     ISM_Beta;
-static double     ISM_Core_Mass;
-static double     ISM_Delta_Dens;
-static double     ISM_Bg_Temp;
-static double     ISM_Dens_Contrast;
 double            rho_AD; // adiabatic density thresheld
 
+static double     Mach;
 static double     Rho0;
 static double     R0;
 static double     Omega0;
+static double     Core_Mass;
+static double     Delta_Dens;
+static double     Dens_Contrast;
 // =======================================================================================
 
 #ifdef FEEDBACK
@@ -165,14 +162,13 @@ void SetParameter()
 // ReadPara->Add( "KEY_IN_THE_FILE",   &VARIABLE,              DEFAULT,       MIN,              MAX               );
 // ********************************************************************************************************************************
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
-   ReadPara->Add( "CF_Mach",           &CF_Mach,               0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Mach",              &Mach,                  0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Alpha",         &ISM_Alpha,             0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Beta",          &ISM_Beta,              0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Core_Mass",     &ISM_Core_Mass,         0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Delta_Dens",    &ISM_Delta_Dens,        0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Bg_Temp",       &ISM_Bg_Temp,           0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "ISM_Dens_Contrast", &ISM_Dens_Contrast,     0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "R0",                &R0,                    0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Omege0",            &Omege0,                0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Core Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Delta Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Dens contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "rho_AD",            &rho_AD,                0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
@@ -204,11 +200,11 @@ void SetParameter()
    Total_Vrms_Count = 0;
    size = 129;
 
-   ISM_Core_Mass *= Const_Msun;
+   Core_Mass *= Const_Msun;
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
-   R0 = ISM_Alpha * 2 * Const_NewtonG * ISM_Core_Mass * MOLECULAR_WEIGHT * Const_amu / (5 * Const_kB * ISM_Bg_Temp) * UNIT_M / UNIT_L;
-   Rho0 = 3.0 * ISM_Core_Mass / (4.0 * M_PI * CUBE(R0));
-   Omega0 = SQRT( ISM_Beta * 4.0 * M_PI*Const_NewtonG* Rho0 );
+   R0 /= UNIT_L;
+   Rho0 = Core_Mass/(4/3*M_PI*CUBE(R0));
+   Omega0 /= 1/UNIT_T;
    rho_AD /= UNIT_D;
 
 // (3) reset other general-purpose parameters
@@ -232,19 +228,15 @@ void SetParameter()
    {
       Aux_Message( stdout, "=============================================================================\n" );
       Aux_Message( stdout, "  test problem ID           = %d\n",     TESTPROB_ID       );
-      Aux_Message( stdout, "  Mach number           = %13.7e \n",       CF_Mach                              );
+      Aux_Message( stdout, "  Mach number           = %13.7e \n",       Mach                              );
       Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
-      Aux_Message( stdout, "  ISM_Alpha             = %13.7e \n",       ISM_Alpha                            );
-      Aux_Message( stdout, "  ISM_Beta              = %13.7e\n",        ISM_Beta                             );
-      Aux_Message( stdout, "  ISM_Core_Mass         = %13.7e \n",       ISM_Core_Mass                        );
-      Aux_Message( stdout, "  ISM_Delta_Dens        = %13.7e \n",       ISM_Delta_Dens                       );
-      Aux_Message( stdout, "  ISM_Bg_Temp           = %13.7e \n",       ISM_Bg_Temp                          );
+      Aux_Message( stdout, "  R0                    = %13.7e cm\n",     R0*UNIT_L                            );
+      Aux_Message( stdout, "  Rho0                  = %13.7e g/cm3\n",  Rho0*UNIT_D                          );
+      Aux_Message( stdout, "  Omega0                = %13.7e /s\n",     Omega0*UNIT_T                        );
+      Aux_Message( stdout, "  Core Mass             = %13.7e M_sun\n",  Core_Mass/Const_Msun                 );
       Aux_Message( stdout, "  rho_AD                = %13.7e \n",       rho_AD                               );
-      Aux_Message( stdout, "  Density               = %13.7e \n",       Rho0                                 );
-      Aux_Message( stdout, "  Radius                = %13.7e \n",       R0                                   );
-      Aux_Message( stdout, "  Angular velocity      = %13.7e \n",       Omega0                               );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -292,7 +284,7 @@ void Load_Turbulence_SC()
    // Vrms = SQRT( ( Vx^2 + Vy^2 + Vz^2 ) / N + ( Vx + Vy + Vz / N) ^ 2 )
    Vrms = SQRT( (Total_VelX_SQR + Total_VelY_SQR + Total_VelZ_SQR) / Total_Vrms_Count - 
                 SQR( (Total_VelX + Total_VelY + Total_VelZ) / Total_Vrms_Count ) );
-   Vrms_Scale = CF_Mach * Cs / Vrms;
+   Vrms_Scale = Mach * Cs / Vrms;
 } // Function : Load_Turbulence
 
 //-------------------------------------------------------------------------------------------------------
@@ -328,7 +320,7 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    double Dens, MomX, MomY, MomZ, Pres, Eint, Etot;
    double VelX, VelY, VelZ;
 
-   if ( CF_Mach != 0.0 )
+   if ( Mach != 0.0 )
    {
       int i = (int) ( ( x / BoxSize[0] ) * size );
       int j = (int) ( ( y / BoxSize[0] ) * size );
@@ -345,13 +337,13 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    if ( Rs < R0 )
    {
-      Dens = Rho0 * (1 + ISM_Delta_Dens * COS(2 * ATAN(dy/dx)));
+      Dens = Rho0 * (1 + Delta_Dens * COS(2 * ATAN(dy/dx)));
       VelX -= Omega0 * dy;
       VelY += Omega0 * dx;
    }
    else
    {
-      Dens = Rho0 / ISM_Dens_Contrast;
+      Dens = Rho0 / Dens_Contrast;
    }
 
    Pres = EoS_DensTemp2Pres_CPUPtr( Dens, ISO_TEMP, NULL, EoS_AuxArray_Flt,
