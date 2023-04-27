@@ -277,8 +277,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Record the information
 //       ===========================================================================================================
          RemovalIdx[NRemove][0] = vii;
-         RemovalIdx[NRemove][1] = vij;
-         RemovalIdx[NRemove][2] = vik;
+         RemovalIdx[NRemove][1] = vji;
+         RemovalIdx[NRemove][2] = vki;
       
          GasMFracLeftArr[NRemove] = GasMFracLeft;
 
