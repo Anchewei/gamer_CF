@@ -106,11 +106,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_Acc";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
 // prepare the corner array
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
 
@@ -268,7 +263,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          if ( NotMinEg )                              continue; 
 
-//       Record the information
+//       Record the index
 //       ===========================================================================================================
          RemovalIdx[NRemove][0] = vii;
          RemovalIdx[NRemove][1] = vji;
@@ -285,7 +280,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          k = RemovalIdx[N][2];
 
          GasDens = Fluid[DENS][k][j][i];
-         // GasMFracLeft = GasDensThres/GasDens;
+
          DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
 
          DeltaMom[0] = DeltaM*Fluid[MOMX][k][j][i]/GasDens; // the momentum of DeltaM
@@ -301,28 +296,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Update the cells
 //       ===========================================================================================================
-         real M_old, M_new;
-         M_old = Fluid[DENS][k][j][i]*dv;
-
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
-
-         M_new = Fluid[DENS][k][j][i]*dv;
-
-#        ifdef MY_DEBUG
-         fprintf( File,"ijk = %d%d%d, DeltaM_par = %13.7e, DeltaM_gas = %13.7e", 
-                        i, j, k, DeltaM, M_new-M_old);
-         fprintf( File, "\n" );
-#        endif
-
       } // for (int N=0; N<NRemove; N++)
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
-
-#  ifdef MY_DEBUG
-   fclose( File );
-#  endif
 
    return GAMER_SUCCESS;
 
