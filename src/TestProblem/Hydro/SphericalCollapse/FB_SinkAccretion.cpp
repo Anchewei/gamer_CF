@@ -303,14 +303,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       ===========================================================================================================
          real M_old, M_new;
          M_old = GasDens*dv;
+
          for (int v=0; v<NCOMP_TOTAL; v++)
-         {
-            Fluid[v][k][i][j] *= GasMFracLeft;
-         }
+         Fluid[v][k][i][j] *= GasMFracLeft;
+
          M_new = Fluid[DENS][k][j][i]*dv;
 
 #        ifdef MY_DEBUG
-         fprintf( File,"ijk = %d%d%d, DeltaM_par = %13.7e, DeltaM_gas = %13.7e", i, j, k, DeltaM, M_new-M_old);
+         fprintf( File,"ijk = %d%d%d, GasMFracLeft = %13.7e, DeltaM_par = %13.7e, DeltaM_gas = %13.7e", 
+                        i, j, k, GasMFracLeft, DeltaM, M_new-M_old);
          fprintf( File, "\n" );
 #        endif
 
@@ -320,11 +321,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    delete [] RemovalIdx;
 
 #  ifdef MY_DEBUG
-   // if ( SelNNewPar >= 1)
-   // {
-   //    fprintf( File,"TimeNew = %13.7e, SelNNewPar = %d", TimeNew, SelNNewPar);
-   //    fprintf( File, "\n" );
-   // }
    fclose( File );
 #  endif
 
