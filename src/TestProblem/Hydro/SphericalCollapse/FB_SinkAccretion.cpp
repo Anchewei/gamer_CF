@@ -107,7 +107,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
 #  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_debug";
+   const char  FileName[] = "Record__Acc_debug";
    FILE *File = fopen( FileName, "a" );
 #  endif
 
@@ -288,11 +288,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasMFracLeft = GasDensThres/GasDens;
          DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
 
-#        ifdef MY_DEBUG
-         fprintf( File,"ijk = %d%d%d, GasMFracLeft = %13.7e", i, j, k, GasMFracLeft);
-         fprintf( File, "\n" );
-#        endif
-
          DeltaMom[0] = (1.0 - GasMFracLeft)*Fluid[MOMX][k][j][i]*dv; // the momentum of DeltaM
          DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][k][j][i]*dv;
          DeltaMom[2] = (1.0 - GasMFracLeft)*Fluid[MOMZ][k][j][i]*dv;
@@ -306,8 +301,19 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Update the cells
 //       ===========================================================================================================
+         real M_old, M_new;
+         M_old = GasDens*dv;
          for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][k][i][j] *= GasMFracLeft;
+         {
+            Fluid[v][k][i][j] *= GasMFracLeft;
+         }
+         M_new = Fluid[DENS][k][j][i]*dv;
+
+#        ifdef MY_DEBUG
+         fprintf( File,"ijk = %d%d%d, DeltaM_par = %13.7e, DeltaM_gas = %13.7e", i, j, k, DeltaM, M_new-M_old);
+         fprintf( File, "\n" );
+#        endif
+
       } // for (int N=0; N<NRemove; N++)
    } // for (int t=0; t<NPar; t++)
 
