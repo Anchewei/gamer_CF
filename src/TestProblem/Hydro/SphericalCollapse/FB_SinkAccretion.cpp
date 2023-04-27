@@ -106,6 +106,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__Par_debug";
+   FILE *File = fopen( FileName, "a" );
+#  endif
+
 // prepare the corner array
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
 
@@ -265,33 +270,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Record the information
 //       ===========================================================================================================
-         // GasMFracLeft = GasDensThres/GasDens;
-         // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
-
-         // DeltaM = (1 - GasMFracLeft)*GasDens*dv; // the mass to be accreted
-         
          RemovalIdx[NRemove][0] = vii;
          RemovalIdx[NRemove][1] = vji;
          RemovalIdx[NRemove][2] = vki;
 
          NRemove ++;
-   
-//          DeltaMom[0] = (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // the momentum density of DeltaM
-//          DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
-//          DeltaMom[2] = (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
-
-// //       Update particle mass and velocity
-// //       ===========================================================================================================
-//          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
-//          ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
-//          ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
-//          ParAtt[PAR_MASS][p] +=  DeltaM;
-
-// //       Update the cells
-// //       ===========================================================================================================
-//          for (int v=0; v<NCOMP_TOTAL; v++)
-//          Fluid[v][vki][vji][vii] *= GasMFracLeft;
-
       } // vii, vji, vki
 
       int i, j, k;
@@ -304,6 +287,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasDens = Fluid[DENS][k][j][i];
          GasMFracLeft = GasDensThres/GasDens;
          DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
+
+#        ifdef MY_DEBUG
+         fprintf( File,"ijk = %d%d%d, GasMFracLeft = %13.7e", i, j, k, GasMFracLeft);
+         fprintf( File, "\n" );
+#        endif
 
          DeltaMom[0] = (1.0 - GasMFracLeft)*Fluid[MOMX][k][j][i]*dv; // the momentum of DeltaM
          DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][k][j][i]*dv;
@@ -324,6 +312,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
+
+#  ifdef MY_DEBUG
+   // if ( SelNNewPar >= 1)
+   // {
+   //    fprintf( File,"TimeNew = %13.7e, SelNNewPar = %d", TimeNew, SelNNewPar);
+   //    fprintf( File, "\n" );
+   // }
+   fclose( File );
+#  endif
 
    return GAMER_SUCCESS;
 
