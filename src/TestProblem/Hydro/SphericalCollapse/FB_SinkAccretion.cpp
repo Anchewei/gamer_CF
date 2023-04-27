@@ -105,8 +105,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double epsilon = 0.001*dh;
 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
-   real   (*LeftMArr)              = new real [MaxRemovalGas];
-   real   (*RemovalMassMom)        = new real [4];
 
 // prepare the corner array
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
@@ -271,18 +269,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
 
          // DeltaM = (1 - GasMFracLeft)*GasDens*dv; // the mass to be accreted
-         DeltaM = (GasDens - GasDensThres)*dv;  // the mass to be accreted
          
          RemovalIdx[NRemove][0] = vii;
          RemovalIdx[NRemove][1] = vji;
          RemovalIdx[NRemove][2] = vki;
-      
-         LeftMArr[NRemove] = GasDensThres*dv;
-
-         RemovalMassMom[0] += DeltaM; // total accreted mass
-         RemovalMassMom[1] += DeltaM*Fluid[MOMX][vki][vji][vii]/GasDens; // transfered momentum
-         RemovalMassMom[2] += DeltaM*Fluid[MOMY][vki][vji][vii]/GasDens;
-         RemovalMassMom[3] += DeltaM*Fluid[MOMZ][vki][vji][vii]/GasDens;
 
          NRemove ++;
    
@@ -304,22 +294,36 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
       } // vii, vji, vki
 
-      ParAtt[PAR_VELX][p] =  (RemovalMassMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(RemovalMassMom[0] + ParAtt[PAR_MASS][p]);
-      ParAtt[PAR_VELY][p] =  (RemovalMassMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(RemovalMassMom[0] + ParAtt[PAR_MASS][p]);
-      ParAtt[PAR_VELZ][p] =  (RemovalMassMom[3] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(RemovalMassMom[0] + ParAtt[PAR_MASS][p]);
-      ParAtt[PAR_MASS][p] +=  RemovalMassMom[0];
-
+      int i, j, k;
       for (int N=0; N<NRemove; N++)
       {
-         for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]] *= LeftMArr[N]*_dv/Fluid[DENS][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]];
-      }
+         i = RemovalIdx[N][0];
+         j = RemovalIdx[N][1];
+         k = RemovalIdx[N][2];
 
+         GasDens = Fluid[DENS][k][j][i];
+         GasMFracLeft = GasDensThres/GasDens;
+         DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
+
+         DeltaMom[0] = (1.0 - GasMFracLeft)*Fluid[MOMX][k][j][i]*dv; // the momentum of DeltaM
+         DeltaMom[1] = (1.0 - GasMFracLeft)*Fluid[MOMY][k][j][i]*dv;
+         DeltaMom[2] = (1.0 - GasMFracLeft)*Fluid[MOMZ][k][j][i]*dv;
+
+//       Update particle mass and velocity
+//       ===========================================================================================================
+         ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
+         ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
+         ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
+         ParAtt[PAR_MASS][p] +=  DeltaM;
+
+//       Update the cells
+//       ===========================================================================================================
+         for (int v=0; v<NCOMP_TOTAL; v++)
+         Fluid[v][k][i][j] *= GasMFracLeft;
+      } // for (int N=0; N<NRemove; N++)
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
-   delete [] LeftMArr;
-   delete [] RemovalMassMom;
 
    return GAMER_SUCCESS;
 
