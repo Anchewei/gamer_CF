@@ -304,8 +304,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          real M_old, M_new;
          M_old = GasDens*dv;
 
-         for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][k][i][j] *= GasMFracLeft;
+         // for (int v=0; v<NCOMP_TOTAL; v++)
+         Fluid[DENS][k][i][j] *= GasMFracLeft;
 
          M_new = Fluid[DENS][k][j][i]*dv;
 
