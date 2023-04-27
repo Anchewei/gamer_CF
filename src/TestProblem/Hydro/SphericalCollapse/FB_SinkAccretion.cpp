@@ -312,7 +312,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       for (int N=0; N<NRemove; N++)
       {
          for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]] /= Fluid[DENS][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]]*LeftMArr[N]*_dv;
+         Fluid[v][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]] *= LeftMArr[N]*_dv/Fluid[DENS][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]];
       }
 
    } // for (int t=0; t<NPar; t++)
