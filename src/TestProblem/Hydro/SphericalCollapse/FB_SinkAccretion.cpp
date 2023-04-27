@@ -312,7 +312,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       ParAtt[PAR_VELZ][p] =  (RemovalMassMom[3] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(RemovalMassMom[0] + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_MASS][p] +=  RemovalMassMom[0];
 
-      for (int N=0; N<=NRemove; N++)
+      for (int N=0; N<NRemove; N++)
       {
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]] *= GasMFracLeftArr[N];
