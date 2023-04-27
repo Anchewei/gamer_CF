@@ -166,9 +166,9 @@ void SetParameter()
    ReadPara->Add( "CF_vflow",          &CF_vflow,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "R0",                &R0,                    0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Omega0",            &Omega0,                0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "Core Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "Delta Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "Dens contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Core_Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Delta_Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Dens_Contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "rho_AD",            &rho_AD,                0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
