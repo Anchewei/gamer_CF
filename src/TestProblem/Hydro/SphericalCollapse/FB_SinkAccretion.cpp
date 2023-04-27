@@ -105,7 +105,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double epsilon = 0.001*dh;
 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
-   real   (*GasMFracLeftArr)       = new real [MaxRemovalGas];
+   real   (*LeftMArr)              = new real [MaxRemovalGas];
    real   (*RemovalMassMom)        = new real [4];
 
 // prepare the corner array
@@ -174,18 +174,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasDens = Fluid[DENS][vki][vji][vii];
          if ( GasDens <= GasDensThres )                continue;
 
-         GasMFracLeft = GasDensThres/GasDens;
-         // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
-
-         DeltaM = (1 - GasMFracLeft)*GasDens*dv; // the mass to be accreted
-
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
          if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )        NotCentralCell = false; // if pass, the following checks are skipped
 
-         // if ( NotCentralCell )
-         // {
 //       Negative radial velocity
 //       ===========================================================================================================
          GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
@@ -217,8 +210,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
 
-         Eg   = DeltaM*SelfPhi; // no double counting here, since i is fixed
-         Ekin = 0.5*DeltaM*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
+         Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
+         Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
          if ( ( Eg + Ekin ) >= 0  && NotCentralCell )                     continue;
 
@@ -262,7 +255,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
             SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/(Cell2Sink2+epsilon); // potential from the sink
 
-            Eg2   = DeltaM*SelfPhi2;
+            Eg2   = GasDens*dv*SelfPhi2;
             if ( Eg2 <= Eg )
             {
                NotMinEg = true;
@@ -272,20 +265,24 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          if ( NotMinEg )                              continue; 
 
-         // } // if ( NotCentralCell )
-
 //       Record the information
 //       ===========================================================================================================
+         // GasMFracLeft = GasDensThres/GasDens;
+         // if ( GasMFracLeft < 0.5 )           GasMFracLeft = 0.5;
+
+         // DeltaM = (1 - GasMFracLeft)*GasDens*dv; // the mass to be accreted
+         DeltaM = (GasDens - GasDensThres)*dv;  // the mass to be accreted
+         
          RemovalIdx[NRemove][0] = vii;
          RemovalIdx[NRemove][1] = vji;
          RemovalIdx[NRemove][2] = vki;
       
-         GasMFracLeftArr[NRemove] = GasMFracLeft;
+         LeftMArr[NRemove] = GasDensThres*dv;
 
-         RemovalMassMom[0] +=  DeltaM; // accreted mass
-         RemovalMassMom[1] += (1.0 - GasMFracLeft)*Fluid[MOMX][vki][vji][vii]*dv; // transfered momentum
-         RemovalMassMom[2] += (1.0 - GasMFracLeft)*Fluid[MOMY][vki][vji][vii]*dv;
-         RemovalMassMom[3] += (1.0 - GasMFracLeft)*Fluid[MOMZ][vki][vji][vii]*dv;
+         RemovalMassMom[0] += DeltaM; // total accreted mass
+         RemovalMassMom[1] += DeltaM*Fluid[MOMX][vki][vji][vii]/GasDens; // transfered momentum
+         RemovalMassMom[2] += DeltaM*Fluid[MOMY][vki][vji][vii]/GasDens;
+         RemovalMassMom[3] += DeltaM*Fluid[MOMZ][vki][vji][vii]/GasDens;
 
          NRemove ++;
    
@@ -315,13 +312,13 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       for (int N=0; N<NRemove; N++)
       {
          for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]] *= GasMFracLeftArr[N];
+         Fluid[v][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]] /= Fluid[DENS][RemovalIdx[N][2]][RemovalIdx[N][1]][RemovalIdx[N][0]]*LeftMArr[N]*_dv;
       }
 
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
-   delete [] GasMFracLeftArr;
+   delete [] LeftMArr;
    delete [] RemovalMassMom;
 
    return GAMER_SUCCESS;
