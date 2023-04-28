@@ -581,7 +581,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          }
          else{
             fprintf( File,"0");
-            // fprintf( File, "\n" );
+            fprintf( File, "\n" );
          }
 #        endif
 
