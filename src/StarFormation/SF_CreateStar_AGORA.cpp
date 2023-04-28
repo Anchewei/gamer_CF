@@ -424,17 +424,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             }
          } // vi, vj, vk
 
-#        ifdef MY_DEBUG
-         if ( NotMiniPot )
-         {
-            fprintf( File,"1");
-            fprintf( File, "\n" );
-         }
-         else{
-            fprintf( File,"0");
-            // fprintf( File, "\n" );
-         }
-#        endif
+// #        ifdef MY_DEBUG
+//          if ( NotMiniPot )
+//          {
+//             fprintf( File,"1");
+//             fprintf( File, "\n" );
+//          }
+//          else{
+//             fprintf( File,"0");
+//             // fprintf( File, "\n" );
+//          }
+// #        endif
 
          if ( NotMiniPot )                                   continue;
          
@@ -457,19 +457,19 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = NeighborFluid[MOMZ]/NeighborFluid[DENS];
          } // for (int NeighborID=0; NeighborID<6; NeighborID++)
 
-#        ifdef MY_DEBUG
-         if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 || 
-              (VelNeighbor[2] - VelNeighbor[3]) >= 0 || 
-              (VelNeighbor[4] - VelNeighbor[5]) >= 0 )   
-         {
-            fprintf( File,"1");
-            fprintf( File, "\n" );
-         }
-         else{
-            fprintf( File,"0");
-            // fprintf( File, "\n" );
-         }
-#        endif
+// #        ifdef MY_DEBUG
+//          if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 || 
+//               (VelNeighbor[2] - VelNeighbor[3]) >= 0 || 
+//               (VelNeighbor[4] - VelNeighbor[5]) >= 0 )   
+//          {
+//             fprintf( File,"1");
+//             fprintf( File, "\n" );
+//          }
+//          else{
+//             fprintf( File,"0");
+//             // fprintf( File, "\n" );
+//          }
+// #        endif
 
          if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 || 
               (VelNeighbor[2] - VelNeighbor[3]) >= 0 || 
@@ -566,7 +566,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        ifdef MY_DEBUG
          if ( FABS(Egtot) <= 2*Ethtot )  
          {
-            fprintf( File,"1");
+            fprintf( File,"1, Egtot = %13.7e, 2*Ethtot = %13.7e", FABS(Egtot), 2*Ethtot);
             fprintf( File, "\n" );
          }
          else{
