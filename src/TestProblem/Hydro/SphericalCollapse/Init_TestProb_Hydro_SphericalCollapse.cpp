@@ -36,7 +36,7 @@ static double     Cs;                             // sound spped
 
 static char       CF_Tur_Table[MAX_STRING];
 static double     CF_vflow;
-double            rho_AD; // adiabatic density thresheld
+// double            rho_AD; // adiabatic density thresheld
 
 static double     Mach;
 static double     Rho0;
