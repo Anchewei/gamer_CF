@@ -205,7 +205,7 @@ void SetParameter()
    R0 /= UNIT_L;
    Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
    Omega0 /= 1/UNIT_T;
-   rho_AD_SC =/ UNIT_D;
+   rho_AD_SC /= UNIT_D;
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
