@@ -36,7 +36,7 @@ static double     Cs;                             // sound spped
 
 static char       CF_Tur_Table[MAX_STRING];
 static double     CF_vflow;
-// double            rho_AD; // adiabatic density thresheld
+double            rho_AD_SC; // adiabatic density thresheld
 
 static double     Mach;
 static double     Rho0;
@@ -169,7 +169,7 @@ void SetParameter()
    ReadPara->Add( "Core_Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Delta_Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Dens_Contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "rho_AD",            &rho_AD,                0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "rho_AD",            &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -205,7 +205,7 @@ void SetParameter()
    R0 /= UNIT_L;
    Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
    Omega0 /= 1/UNIT_T;
-   rho_AD /= UNIT_D;
+   rho_AD = rho_AD_SC/UNIT_D;
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
