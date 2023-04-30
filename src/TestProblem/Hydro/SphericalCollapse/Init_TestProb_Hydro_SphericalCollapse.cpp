@@ -51,7 +51,7 @@ static double     Dens_Contrast;
 void FB_Init_SinkAccretion();
 #endif
 #  if ( EOS == EOS_USER )
-void EoS_Init_Barotropic();
+void EoS_Init_Barotropic_SC();
 #  endif
 
 
@@ -169,7 +169,7 @@ void SetParameter()
    ReadPara->Add( "Core_Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Delta_Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Dens_Contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
-   ReadPara->Add( "rho_AD",            &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "rho_AD_SC",         &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -205,7 +205,7 @@ void SetParameter()
    R0 /= UNIT_L;
    Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
    Omega0 /= 1/UNIT_T;
-   rho_AD = rho_AD_SC/UNIT_D;
+   rho_AD_SC =/ UNIT_D;
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -236,7 +236,7 @@ void SetParameter()
       Aux_Message( stdout, "  Rho0                  = %13.7e g/cm3\n",  Rho0*UNIT_D                          );
       Aux_Message( stdout, "  Omega0                = %13.7e /s\n",     Omega0*UNIT_T                        );
       Aux_Message( stdout, "  Core Mass             = %13.7e M_sun\n",  Core_Mass/Const_Msun                 );
-      Aux_Message( stdout, "  rho_AD                = %13.7e \n",       rho_AD                               );
+      Aux_Message( stdout, "  rho_AD_SC                = %13.7e \n",       rho_AD_SC                               );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -415,7 +415,7 @@ void Init_TestProb_Hydro_SphericalCollapse()
    FB_Init_User_Ptr        = FB_Init_SinkAccretion;
 #  endif
 #  if ( EOS == EOS_USER )
-   EoS_Init_Ptr                      = EoS_Init_Barotropic; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
+   EoS_Init_Ptr                      = EoS_Init_Barotropic_SC; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
    EoS_End_Ptr                       = NULL;
 #  endif
 
