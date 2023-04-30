@@ -33,6 +33,7 @@ static double     Vrms_Scale;                     // used to rescale velocity
 static int        Total_Vrms_Count;
 
 static double     Cs;                             // sound spped
+double            rho_AD;                         // adiabatic density thresheld
 
 static double     CF_n0;
 static double     CF_vflow;
@@ -45,6 +46,9 @@ static char       CF_Tur_Table[MAX_STRING];
 #ifdef FEEDBACK
 void FB_Init_SinkAccretion();
 #endif
+#  if ( EOS == EOS_USER )
+void EoS_Init_Barotropic();
+#  endif
 
 
 //-------------------------------------------------------------------------------------------------------
@@ -122,6 +126,7 @@ void SetParameter()
    ReadPara->Add( "CF_B",              &CF_B,                  0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_theta_B",        &CF_theta_B,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
+   ReadPara->Add( "rho_AD",            &rho_AD,                0.0,           0.0,              NoMax_double      );
 
    ReadPara->Read( FileName );
 
@@ -157,6 +162,7 @@ void SetParameter()
 
 // (2) set the problem-specific derived parameters
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
+   rho_AD /= UNIT_D;
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -186,6 +192,7 @@ void SetParameter()
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Magnetic field        = %13.7e G\n",      CF_B                                 );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
+      Aux_Message( stdout, "  rho_AD                = %13.7e g/cm3\n",  rho_AD                               );
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -448,7 +455,7 @@ void Init_TestProb_Hydro_CF()
    FB_Init_User_Ptr                  = FB_Init_SinkAccretion;
 #  endif
 #  if ( EOS == EOS_USER )
-   EoS_Init_Ptr                      = NULL; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
+   EoS_Init_Ptr                      = EoS_Init_Barotropic; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
    EoS_End_Ptr                       = NULL;
 #  endif
 #  endif // #if ( MODEL == HYDRO )
