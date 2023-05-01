@@ -142,7 +142,7 @@ int FB_Plummer( const int lv, const double TimeNew, const double TimeOld, const 
          for (int di=-1; di<=1; di++)  {  if ( Skip )  break;  ijk[0] = idx[0] + di*MaxR;
 
             const int CellPatchRelPos = FB_Aux_CellPatchRelPos( ijk );
-            if ( CellPatchRelPos != -1   &&  CoarseFine[CellPatchRelPos] )    Skip = true;   // cell is in a coarse patch
+            if ( CellPatchRelPos != -1  &&  CoarseFine[CellPatchRelPos] )  Skip = true;   // cell is in a coarse patch
 
          }}}
       }
@@ -198,6 +198,7 @@ int FB_Plummer( const int lv, const double TimeNew, const double TimeOld, const 
 //          accrete mass from the nearby 27 cells including itself
 //          --> include cells in the ghost zones in order to
 //              (i) ensure the following particles see the updated gas density
+//                  (since particles in the ghost zones may affect particles inside the patch group)
 //              (ii) get the correct total accreted mass
             for (int dk=-1; dk<=1; dk++)  {  const int k = idx[2] + dk;  if ( k < 0 || k >= FB_NXT )  continue;
             for (int dj=-1; dj<=1; dj++)  {  const int j = idx[1] + dj;  if ( j < 0 || j >= FB_NXT )  continue;

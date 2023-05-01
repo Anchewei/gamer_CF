@@ -364,25 +364,32 @@ void Aux_TakeNote()
       fprintf( Note, "SUPPORT_GSL                     OFF\n" );
 #     endif
 
-#     ifdef SUPPORT_FFTW
-      fprintf( Note, "SUPPORT_FFTW                    ON\n" );
+#     if   ( SUPPORT_FFTW == FFTW3 )
+      fprintf( Note, "SUPPORT_FFTW                    FFTW3\n" );
+#     elif ( SUPPORT_FFTW == FFTW2 )
+      fprintf( Note, "SUPPORT_FFTW                    FFTW2\n" );
 #     else
       fprintf( Note, "SUPPORT_FFTW                    OFF\n" );
 #     endif
 
 #     ifdef SUPPORT_LIBYT
       fprintf( Note, "SUPPORT_LIBYT                   ON\n" );
-#     else
-      fprintf( Note, "SUPPORT_LIBYT                   OFF\n" );
-#     endif
 
-#     ifdef SUPPORT_LIBYT
 #     ifdef LIBYT_USE_PATCH_GROUP
       fprintf( Note, "LIBYT_USE_PATCH_GROUP           ON\n" );
 #     else
       fprintf( Note, "LIBYT_USE_PATCH_GROUP           OFF\n" );
 #     endif
-#     endif // #ifdef SUPPORT_LIBYT
+
+#     ifdef LIBYT_INTERACTIVE
+      fprintf( Note, "LIBYT_INTERACTIVE               ON\n" );
+#     else
+      fprintf( Note, "LIBYT_INTERACTIVE               OFF\n" );
+#     endif
+
+#     else  // #ifdef SUPPORT_LIBYT
+      fprintf( Note, "SUPPORT_LIBYT                   OFF\n" );
+#     endif // #ifdef SUPPORT_LIBYT ... else ...
 
 #     if   ( RANDOM_NUMBER == RNG_GNU_EXT )
       fprintf( Note, "RANDOM_NUMBER                   RNG_GNU_EXT\n" );
@@ -990,6 +997,7 @@ void Aux_TakeNote()
 #     if   ( MODEL == HYDRO )
       fprintf( Note, "GAMMA                           %13.7e\n",  GAMMA                   );
       fprintf( Note, "MOLECULAR_WEIGHT                %13.7e\n",  MOLECULAR_WEIGHT        );
+      fprintf( Note, "MU_NORM                         %13.7e\n",  MU_NORM                 );
       fprintf( Note, "ISO_TEMP                        %13.7e\n",  ISO_TEMP                );
       fprintf( Note, "MINMOD_COEFF                    %13.7e\n",  MINMOD_COEFF            );
       fprintf( Note, "MINMOD_MAX_ITER                 %d\n",      MINMOD_MAX_ITER         );
@@ -1125,6 +1133,10 @@ void Aux_TakeNote()
 
          default:                      fprintf( Note, "UNKNOWN\n" );
       }
+#     endif
+#     if ( SUPPORT_FFTW == FFTW3 )
+      fprintf( Note, "FFTW3_Double_OMP_Enabled        %d\n",      FFTW3_Double_OMP_Enabled );
+      fprintf( Note, "FFTW3_Single_OMP_Enabled        %d\n",      FFTW3_Single_OMP_Enabled );
 #     endif
       fprintf( Note, "***********************************************************************************\n" );
       fprintf( Note, "\n\n");
