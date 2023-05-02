@@ -307,7 +307,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
          MomX1 = ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"DeltaMomX = %13.7e", MomX1-MomX0);
+         fprintf( File,"%d%d%d, DeltaMomX = %13.7e", i, j, k, MomX1-MomX0);
          fprintf( File, "\n" );
 #  endif
 
