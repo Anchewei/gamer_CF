@@ -301,9 +301,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Update particle mass and velocity
 //       ===========================================================================================================
          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
-#  ifdef MY_DEBUG
-         Mtot = DeltaM + ParAtt[PAR_MASS][p];
-#  endif
          ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_MASS][p] +=  DeltaM;
