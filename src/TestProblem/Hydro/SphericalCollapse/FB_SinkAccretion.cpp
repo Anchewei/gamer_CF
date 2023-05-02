@@ -94,11 +94,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    FILE *File = fopen( FileName, "a" );
 #  endif
 
-   real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-   real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
-   real Corner_Array[3]; // the corner of the ghost zone
-   real GasMFracLeft;
-
    const int    AccCellNum     = 4;
    const int    MaxRemovalGas  = 10000;
    const double GasDensThres   = SF_CREATE_STAR_MIN_GAS_DENS;
@@ -108,8 +103,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double dv      = CUBE( dh );
    const double _dv     = 1.0 / dv;
    const double epsilon = 0.001*dh;
-
-   long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
 // prepare the corner array
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
@@ -156,6 +149,13 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
            idx[1] < FB_GHOST_SIZE-AccCellNum  ||  idx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
            idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
          continue;
+
+      real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
+      real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
+      real Corner_Array[3]; // the corner of the ghost zone
+      real GasMFracLeft;
+
+      long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
       int NRemove = 0;
 
@@ -322,9 +322,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
       } // for (int N=0; N<NRemove; N++)
-   } // for (int t=0; t<NPar; t++)
 
-   delete [] RemovalIdx;
+      delete [] RemovalIdx;
+   } // for (int t=0; t<NPar; t++)
 
 #  ifdef MY_DEBUG
    fclose( File );
