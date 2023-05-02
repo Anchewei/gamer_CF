@@ -94,6 +94,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    FILE *File = fopen( FileName, "a" );
 #  endif
 
+   real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
+   real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
+   real Corner_Array[3]; // the corner of the ghost zone
+   real GasMFracLeft;
+
    const int    AccCellNum     = 4;
    const int    MaxRemovalGas  = 10000;
    const double GasDensThres   = SF_CREATE_STAR_MIN_GAS_DENS;
@@ -104,8 +109,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double _dv     = 1.0 / dv;
    const double epsilon = 0.001*dh;
 
+   long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
+
 // prepare the corner array
-   real Corner_Array[3]; // the corner of the ghost zone
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
 
    bool CheckCF = false;
@@ -150,12 +156,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
            idx[1] < FB_GHOST_SIZE-AccCellNum  ||  idx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
            idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
          continue;
-
-      real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-      real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
-      real GasMFracLeft;
-
-      long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
       int NRemove = 0;
 
@@ -278,7 +278,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       int i, j, k;
-      real MomX0, MomX1;
+      real M0, Mtot, MomX0, MomX1;
       for (int N=0; N<NRemove; N++)
       {
          i = RemovalIdx[N][0];
@@ -295,12 +295,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
          MomX0 = DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+         M0 = ParAtt[PAR_MASS][p];
 #  endif
-
 
 //       Update particle mass and velocity
 //       ===========================================================================================================
          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
+#  ifdef MY_DEBUG
+         Mtot = DeltaM + ParAtt[PAR_MASS][p];
+#  endif
          ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_MASS][p] +=  DeltaM;
@@ -310,9 +313,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          fprintf( File,"(%d, %d, %d), (%d, %d, %d), DeltaMomX = %13.7e", idx[0], idx[1], idx[2], 
                         i, j, k, MomX1-MomX0);
          fprintf( File, "\n" );
-         if ( (MomX1-MomX0)>=1.0e10 )
+         if ( ABS(MomX1-MomX0)>=1.0e10 )
          {
-            fprintf( File, "DeltaMom[0] = %13.7e, %13.7e",  DeltaMom[0], DeltaM*Fluid[MOMX][k][j][i]/GasDens);
+            fprintf( File, "DeltaM = %13.7e, %13.7e",  ParAtt[PAR_MASS][p]-M0, DeltaM);
+            fprintf( File, "\n" );
+            fprintf( File, "Mtot = %13.7e, %13.7e",  Mtot, ParAtt[PAR_MASS][p];
+            fprintf( File, "\n" );
+            fprintf( File, "up = %13.7e",  DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p]);
+            fprintf( File, "\n" );
+            fprintf( File, "down = %13.7e",  Mtot;
             fprintf( File, "\n" );
          }
 #  endif
@@ -322,9 +331,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
       } // for (int N=0; N<NRemove; N++)
-
-      delete [] RemovalIdx;
    } // for (int t=0; t<NPar; t++)
+
+   delete [] RemovalIdx;
 
 #  ifdef MY_DEBUG
    fclose( File );
