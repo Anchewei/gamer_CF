@@ -105,6 +105,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double epsilon = 0.001*dh;
 
 // prepare the corner array
+   real Corner_Array[3]; // the corner of the ghost zone
    for (int d=0; d<3; d++)    Corner_Array[d] = EdgeL[d] + 0.5*dh ;
 
    bool CheckCF = false;
@@ -152,7 +153,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
       real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
       real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
-      real Corner_Array[3]; // the corner of the ghost zone
       real GasMFracLeft;
 
       long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
