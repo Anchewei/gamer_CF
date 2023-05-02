@@ -36,7 +36,8 @@ static double     Cs;                             // sound spped
 
 static char       CF_Tur_Table[MAX_STRING];
 static double     CF_vflow;
-double            rho_AD_SC; // adiabatic density thresheld
+double            rho_AD_SC;                      // adiabatic density thresheld
+static int        Plummer_like;                   // use Plummer like density profile
 
 static double     Mach;
 static double     Rho0;
@@ -45,6 +46,7 @@ static double     Omega0;
 static double     Core_Mass;
 static double     Delta_Dens;
 static double     Dens_Contrast;
+static double     Inner_R0;                      // for Plummer_like
 // =======================================================================================
 
 #ifdef FEEDBACK
@@ -170,6 +172,8 @@ void SetParameter()
    ReadPara->Add( "Delta_Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Dens_Contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "rho_AD_SC",         &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Plummer_like",      &Plummer_like,            0,             0,              NoMax_int         );
+   ReadPara->Add( "Inner_R0",          &Inner_R0,              0.0,           0.0,              NoMax_double      );
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -232,11 +236,16 @@ void SetParameter()
       Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
+      Aux_Message( stdout, "  Plummer_like          = %d \n",           Plummer_like                         );
       Aux_Message( stdout, "  R0                    = %13.7e cm\n",     R0*UNIT_L                            );
       Aux_Message( stdout, "  Rho0                  = %13.7e g/cm3\n",  Rho0*UNIT_D                          );
       Aux_Message( stdout, "  Omega0                = %13.7e /s\n",     Omega0*UNIT_T                        );
       Aux_Message( stdout, "  Core Mass             = %13.7e M_sun\n",  Core_Mass/Const_Msun                 );
-      Aux_Message( stdout, "  rho_AD_SC                = %13.7e \n",       rho_AD_SC                               );
+      Aux_Message( stdout, "  rho_AD_SC             = %13.7e \n",       rho_AD_SC                            );
+      
+      if (Plummer_like)
+      Aux_Message( stdout, "  Inner_R0              = %13.7e \n",       Inner_R0                             );
+
       Aux_Message( stdout, "=============================================================================\n" );
    }
 
@@ -337,13 +346,27 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
 
    if ( Rs < R0 )
    {
-      Dens = Rho0 * (1 + Delta_Dens * COS(2 * ATAN(dy/dx)));
+      if ( Plummer_like )
+      {
+         Dens = Rho0 / ( SQR(Rs/Inner_R0) + 1 );
+      }
+      else
+      {
+         Dens = Rho0 * (1 + Delta_Dens * COS(2 * ATAN(dy/dx)));
+      }
       VelX -= Omega0 * dy;
       VelY += Omega0 * dx;
    }
    else
    {
-      Dens = Rho0 / Dens_Contrast;
+      if ( Plummer_like )
+      {
+         Dens = (Rho0 / ( SQR(R0/Inner_R0) + 1 )) / Dens_Contrast;
+      }
+      else
+      {
+         Dens = Rho0 / Dens_Contrast;
+      }
    }
 
    Pres = EoS_DensTemp2Pres_CPUPtr( Dens, ISO_TEMP, NULL, EoS_AuxArray_Flt,
