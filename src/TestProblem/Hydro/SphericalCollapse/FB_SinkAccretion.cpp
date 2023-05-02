@@ -317,11 +317,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          {
             fprintf( File, "DeltaM = %13.7e, %13.7e",  ParAtt[PAR_MASS][p]-M0, DeltaM);
             fprintf( File, "\n" );
-            fprintf( File, "Mtot = %13.7e, %13.7e",  Mtot, ParAtt[PAR_MASS][p];
+            fprintf( File, "Mtot = %13.7e, %13.7e",  Mtot, ParAtt[PAR_MASS][p]);
             fprintf( File, "\n" );
             fprintf( File, "up = %13.7e",  DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p]);
             fprintf( File, "\n" );
-            fprintf( File, "down = %13.7e",  Mtot;
+            fprintf( File, "down = %13.7e",  Mtot);
             fprintf( File, "\n" );
          }
 #  endif
