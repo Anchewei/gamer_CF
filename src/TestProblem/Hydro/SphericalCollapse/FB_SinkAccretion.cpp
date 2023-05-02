@@ -89,6 +89,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 #  endif // #ifdef GAMER_DEBUG
 
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__Par_Acc";
+   FILE *File = fopen( FileName, "a" );
+#  endif
+
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
    real Corner_Array[3]; // the corner of the ghost zone
@@ -273,6 +278,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       int i, j, k;
+      real MomX0, MomX1;
       for (int N=0; N<NRemove; N++)
       {
          i = RemovalIdx[N][0];
@@ -287,12 +293,23 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaMom[1] = DeltaM*Fluid[MOMY][k][j][i]/GasDens;
          DeltaMom[2] = DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
 
+#  ifdef MY_DEBUG
+         MomX0 = DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+#  endif
+
+
 //       Update particle mass and velocity
 //       ===========================================================================================================
          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
          ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_MASS][p] +=  DeltaM;
+
+#  ifdef MY_DEBUG
+         MomX1 = ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+         fprintf( File,"DeltaMomX = %13.7e", MomX1-MomX0);
+         fprintf( File, "\n" );
+#  endif
 
 //       Update the cells
 //       ===========================================================================================================
@@ -302,6 +319,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
+
+#  ifdef MY_DEBUG
+   fclose( File );
+#  endif
 
    return GAMER_SUCCESS;
 

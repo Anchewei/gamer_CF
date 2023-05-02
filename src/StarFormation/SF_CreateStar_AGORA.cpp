@@ -424,18 +424,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             }
          } // vi, vj, vk
 
-// #        ifdef MY_DEBUG
-//          if ( NotMiniPot )
-//          {
-//             fprintf( File,"1");
-//             fprintf( File, "\n" );
-//          }
-//          else{
-//             fprintf( File,"0");
-//             // fprintf( File, "\n" );
-//          }
-// #        endif
-
          if ( NotMiniPot )                                   continue;
          
 //       Converging flow Check
@@ -456,20 +444,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             else if ((NeighborID == 2) || (NeighborID == 3)) VelNeighbor[NeighborID] = NeighborFluid[MOMY]/NeighborFluid[DENS];
             else if ((NeighborID == 4) || (NeighborID == 5)) VelNeighbor[NeighborID] = NeighborFluid[MOMZ]/NeighborFluid[DENS];
          } // for (int NeighborID=0; NeighborID<6; NeighborID++)
-
-// #        ifdef MY_DEBUG
-//          if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 || 
-//               (VelNeighbor[2] - VelNeighbor[3]) >= 0 || 
-//               (VelNeighbor[4] - VelNeighbor[5]) >= 0 )   
-//          {
-//             fprintf( File,"1");
-//             fprintf( File, "\n" );
-//          }
-//          else{
-//             fprintf( File,"0");
-//             // fprintf( File, "\n" );
-//          }
-// #        endif
 
          if ( (VelNeighbor[0] - VelNeighbor[1]) >= 0 || 
               (VelNeighbor[2] - VelNeighbor[3]) >= 0 || 
@@ -565,30 +539,13 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
             Ekintot += 0.5*ControlFluid[DENS]*dv*( SQR(ControlFluid[MOMX]/ControlFluid[DENS] - COMVel[0]) + SQR(ControlFluid[MOMY]/ControlFluid[DENS] - COMVel[1]) + SQR(ControlFluid[MOMZ]/ControlFluid[DENS] - COMVel[2]));
          } // vi, vj, vk
 
-#        ifdef MY_DEBUG
-         if ( FABS(Egtot) <= 2*Ethtot )  
-         {
-            fprintf( File,"1, Egtot = %13.7e, 2*Ethtot = %13.7e", FABS(Egtot), 2*Ethtot);
-            fprintf( File, "\n" );
-         }
-         else{
-            fprintf( File,"0");
-            // fprintf( File, "\n" );
-         }
-
-         if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)  
-         {
-            fprintf( File,"1");
-            fprintf( File, "\n" );
-         }
-         else{
-            fprintf( File,"0");
-            fprintf( File, "\n" );
-         }
-#        endif
-
          if ( FABS(Egtot) <= 2*Ethtot )                      continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
+
+#        ifdef MY_DEBUG
+         fprintf( File,"Par_mass = %13.7e", (GasDens - GasDensThres)*dv);
+         fprintf( File, "\n" );
+#        endif
 
 //       Store the information of new star particles
 //       ===========================================================================================================
