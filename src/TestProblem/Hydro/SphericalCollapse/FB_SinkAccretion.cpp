@@ -95,7 +95,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  endif
 
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-   real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
+   real ControlPosi[3], ControlPosj[3], ControlPosk[3];
    real Corner_Array[3]; // the corner of the ghost zone
    real GasMFracLeft;
 
@@ -281,6 +281,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       real MomX0, MomX1;
       for (int N=0; N<NRemove; N++)
       {
+         real DeltaMom[3];
+         
          i = RemovalIdx[N][0];
          j = RemovalIdx[N][1];
          k = RemovalIdx[N][2];
