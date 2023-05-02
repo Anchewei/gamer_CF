@@ -278,7 +278,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       int i, j, k;
-      real M0, Mtot, MomX0, MomX1, up;
+      real M0, MomX0, MomX1;
       for (int N=0; N<NRemove; N++)
       {
          i = RemovalIdx[N][0];
@@ -303,7 +303,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
 #  ifdef MY_DEBUG
          Mtot = DeltaM + ParAtt[PAR_MASS][p];
-         up = DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
 #  endif
          ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
          ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
@@ -316,13 +315,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          fprintf( File, "\n" );
          if ( FABS(MomX1-MomX0)>=1.0e10 )
          {
-            fprintf( File, "DeltaM = %13.7e, %13.7e",  ParAtt[PAR_MASS][p]-M0, DeltaM);
-            fprintf( File, "\n" );
-            fprintf( File, "Mtot = %13.7e, %13.7e",  Mtot, ParAtt[PAR_MASS][p]);
-            fprintf( File, "\n" );
-            fprintf( File, "up = %13.7e",  up);
-            fprintf( File, "\n" );
-            fprintf( File, "down = %13.7e",  Mtot);
+            fprintf( File, "DeltaDeltaM = %13.7e",  ParAtt[PAR_MASS][p]-M0-DeltaM);
             fprintf( File, "\n" );
          }
 #  endif
