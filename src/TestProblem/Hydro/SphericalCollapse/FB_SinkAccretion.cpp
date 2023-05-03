@@ -152,9 +152,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
       if ( Skip )    continue;
 
-      if ( idx[0] < FB_GHOST_SIZE-AccCellNum  ||  idx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-           idx[1] < FB_GHOST_SIZE-AccCellNum  ||  idx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-           idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
+      if ( idx[0]-AccCellNum < FB_GHOST_SIZE  ||  idx[0]+AccCellNum >= FB_GHOST_SIZE+PS2  ||
+           idx[1]-AccCellNum < FB_GHOST_SIZE  ||  idx[1]+AccCellNum >= FB_GHOST_SIZE+PS2  ||
+           idx[2]-AccCellNum < FB_GHOST_SIZE  ||  idx[2]+AccCellNum >= FB_GHOST_SIZE+PS2   ) // we want completed control volume
          continue;
 
       int NRemove = 0;
