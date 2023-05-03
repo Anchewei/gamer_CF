@@ -152,9 +152,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
       if ( Skip )    continue;
 
-      if ( idx[0]-AccCellNum < FB_GHOST_SIZE  ||  idx[0]+AccCellNum >= FB_GHOST_SIZE+PS2  ||
-           idx[1]-AccCellNum < FB_GHOST_SIZE  ||  idx[1]+AccCellNum >= FB_GHOST_SIZE+PS2  ||
-           idx[2]-AccCellNum < FB_GHOST_SIZE  ||  idx[2]+AccCellNum >= FB_GHOST_SIZE+PS2   ) // we want completed control volume
+      if ( idx[0] < FB_GHOST_SIZE-AccCellNum  ||  idx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+           idx[1] < FB_GHOST_SIZE-AccCellNum  ||  idx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+           idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
          continue;
 
       int NRemove = 0;
@@ -308,7 +308,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
          MomX1 = ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"(%d, %d, %d), (%d, %d, %d), DeltaMomX = %13.7e, MomX1 = %13.7e", idx[0], idx[1], idx[2], 
+         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomX = %13.7e, MomX1 = %13.7e", N, idx[0], idx[1], idx[2], 
                         i, j, k, MomX1-MomX0, MomX1);
          fprintf( File, "\n" );
          if ( FABS(MomX1-MomX0)>=1.0e10 )
@@ -325,7 +325,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
          MomTotX1 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"(%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", idx[0], idx[1], idx[2], 
+         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", N, idx[0], idx[1], idx[2], 
                         i, j, k, MomTotX1-MomTotX0, MomTotX1);
          fprintf( File, "\n" );
 #  endif
