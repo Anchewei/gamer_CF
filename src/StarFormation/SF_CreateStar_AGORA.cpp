@@ -555,13 +555,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        endif
 #        pragma omp critical
          {
+            // NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
             NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
             NewParAtt[NNewPar][PAR_POSX] = x;
             NewParAtt[NNewPar][PAR_POSY] = y;
             NewParAtt[NNewPar][PAR_POSZ] = z;
-            NewParAtt[NNewPar][PAR_VELX] = VelX;
-            NewParAtt[NNewPar][PAR_VELY] = VelY;
-            NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+            // NewParAtt[NNewPar][PAR_VELX] = VelX;
+            // NewParAtt[NNewPar][PAR_VELY] = VelY;
+            // NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+            NewParAtt[NNewPar][PAR_VELX] = 0.0;
+            NewParAtt[NNewPar][PAR_VELY] = 0.0;
+            NewParAtt[NNewPar][PAR_VELZ] = 0.0;
             NewParAtt[NNewPar][PAR_TIME] = TimeNew;
             NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
@@ -671,8 +675,8 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 
       if ( CreateHere )
       {
-         for (int v=0; v<NCOMP_TOTAL; v++)
-         amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
+         // for (int v=0; v<NCOMP_TOTAL; v++)
+         // amr->patch[FluSg][lv][RemovalPos[pi][0]]->fluid[v][RemovalPos[pi][1]][RemovalPos[pi][2]][RemovalPos[pi][3]] *= RemovalFlu[pi][0];
 
       // add particles to the particle repository
          NewParID[SelNNewPar] = amr->Par->AddOneParticle( NewParAtt[pi] );
