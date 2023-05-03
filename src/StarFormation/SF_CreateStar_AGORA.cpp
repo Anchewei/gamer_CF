@@ -528,12 +528,12 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #           endif
 
 //          Storing Ethtot and Ekintot
-            Pres = Hydro_Con2Pres( ControlFluid[DENS], ControlFluid[MOMX], ControlFluid[MOMY], ControlFluid[MOMZ], ControlFluid[ENGY],
-                                   ControlFluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
-                                   EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
-            Cs2  = EoS_DensPres2CSqr_CPUPtr( ControlFluid[DENS], Pres, ControlFluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
+            // Pres = Hydro_Con2Pres( ControlFluid[DENS], ControlFluid[MOMX], ControlFluid[MOMY], ControlFluid[MOMZ], ControlFluid[ENGY],
+            //                        ControlFluid+NCOMP_FLUID, CheckMinPres_No, NULL_REAL, vEmag,
+            //                        EoS_DensEint2Pres_CPUPtr, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table, NULL );
+            // Cs2  = EoS_DensPres2CSqr_CPUPtr( ControlFluid[DENS], Pres, ControlFluid+NCOMP_FLUID, EoS_AuxArray_Flt, EoS_AuxArray_Int, h_EoS_Table );
             
-            // Cs2 = ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M );
+            Cs2 = ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M );
             Ethtot += 0.5*ControlFluid[DENS]*dv*Cs2;
 
             Ekintot += 0.5*ControlFluid[DENS]*dv*( SQR(ControlFluid[MOMX]/ControlFluid[DENS] - COMVel[0]) + SQR(ControlFluid[MOMY]/ControlFluid[DENS] - COMVel[1]) + SQR(ControlFluid[MOMZ]/ControlFluid[DENS] - COMVel[2]));
