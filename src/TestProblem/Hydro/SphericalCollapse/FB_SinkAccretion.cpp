@@ -278,7 +278,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       int i, j, k;
-      real M0, MomX0, MomX1;
+      real M0, MomX0, MomX1, MomTotX0, MomTotX1;
       for (int N=0; N<NRemove; N++)
       {
          i = RemovalIdx[N][0];
@@ -294,6 +294,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaMom[2] = DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
 
 #  ifdef MY_DEBUG
+         MomTotX0 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
          MomX0 = DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
          M0 = ParAtt[PAR_MASS][p];
 #  endif
@@ -321,6 +322,14 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       ===========================================================================================================
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
+
+#  ifdef MY_DEBUG
+         MomTotX1 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+         fprintf( File,"(%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", idx[0], idx[1], idx[2], 
+                        i, j, k, MomTotX1-MomTotX0, MomTotX1);
+         fprintf( File, "\n" );
+#  endif
+
       } // for (int N=0; N<NRemove; N++)
    } // for (int t=0; t<NPar; t++)
 
