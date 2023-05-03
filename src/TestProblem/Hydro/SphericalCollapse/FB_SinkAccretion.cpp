@@ -308,14 +308,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
          MomX1 = ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomX = %13.7e, MomX1 = %13.7e", N, idx[0], idx[1], idx[2], 
+         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomX = %13.7e, MomX1 = %13.7e", NRemove, idx[0], idx[1], idx[2], 
                         i, j, k, MomX1-MomX0, MomX1);
          fprintf( File, "\n" );
-         if ( FABS(MomX1-MomX0)>=1.0e10 )
-         {
-            fprintf( File, "DeltaDeltaM = %13.7e",  ParAtt[PAR_MASS][p]-M0-DeltaM);
-            fprintf( File, "\n" );
-         }
 #  endif
 
 //       Update the cells
@@ -325,7 +320,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 #  ifdef MY_DEBUG
          MomTotX1 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", N, idx[0], idx[1], idx[2], 
+         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", NRemove, idx[0], idx[1], idx[2], 
                         i, j, k, MomTotX1-MomTotX0, MomTotX1);
          fprintf( File, "\n" );
 #  endif
