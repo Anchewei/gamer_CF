@@ -556,7 +556,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        pragma omp critical
          {
             // NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
-            NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
+            NewParAtt[NNewPar][PAR_MASS] = 0.0;
             NewParAtt[NNewPar][PAR_POSX] = x;
             NewParAtt[NNewPar][PAR_POSY] = y;
             NewParAtt[NNewPar][PAR_POSZ] = z;
