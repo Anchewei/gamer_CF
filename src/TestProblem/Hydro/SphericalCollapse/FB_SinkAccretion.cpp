@@ -184,9 +184,13 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Negative radial velocity
 //       ===========================================================================================================
-         GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
-         GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
-         GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
+         // GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
+         // GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
+         // GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
+
+         GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - Fluid[MOMX][idx[2]][idx[1]][idx[0]]/Fluid[DENS][idx[2]][idx[1]][idx[0]];
+         GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - Fluid[MOMY][idx[2]][idx[1]][idx[0]]/Fluid[DENS][idx[2]][idx[1]][idx[0]];
+         GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - Fluid[MOMZ][idx[2]][idx[1]][idx[0]]/Fluid[DENS][idx[2]][idx[1]][idx[0]];
 
          // if ( (GasRelVel[0] >= 0 ||  GasRelVel[1] >= 0 || GasRelVel[2] >= 0) && NotCentralCell )
          // continue;
