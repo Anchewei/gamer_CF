@@ -94,8 +94,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    FILE *File = fopen( FileName, "a" );
 #  endif
 
-   real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-   real ParCellPos[3], ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
+   real GasDens, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
+   real ControlPosi[3], ControlPosj[3], ControlPosk[3];
    real Corner_Array[3]; // the corner of the ghost zone
    real GasMFracLeft;
 
@@ -157,10 +157,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
            idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
          continue;
 
-      ParCellPos[0] = Corner_Array[0] + idx[0]*dh;
-      ParCellPos[1] = Corner_Array[1] + idx[1]*dh;
-      ParCellPos[2] = Corner_Array[2] + idx[2]*dh;
-
       int NRemove = 0;
 
 //    Check the control volume
@@ -173,7 +169,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          ControlPosi[0] = Corner_Array[0] + vii*dh;
          ControlPosi[1] = Corner_Array[1] + vji*dh;
          ControlPosi[2] = Corner_Array[2] + vki*dh;
-         Cell2Sinki = SQRT(SQR(ControlPosi[0] - ParCellPos[0])+SQR(ControlPosi[1] - ParCellPos[1])+SQR(ControlPosi[2] - ParCellPos[2])); // distance to the sink
+         Cell2Sinki = SQRT(SQR(ControlPosi[0] - xyz[0])+SQR(ControlPosi[1] - xyz[1])+SQR(ControlPosi[2] - xyz[2])); // distance to the sink
          if ( Cell2Sinki > AccRadius )                 continue; // check whether it is inside the control volume
 
 //       Density threshold
@@ -282,7 +278,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       int i, j, k;
-      real M0, MomX0, MomX1, MomTotX0, MomTotX1;
+      real MomTotX0 = (real)0.0, MomTotX1 = (real)0.0;
+      real DeltaM;
+      real DeltaMTot = (real)0.0;
+      real DeltaMom[3] = { (real)0.0, (real)0.0, (real)0.0 };
+
+#  ifdef MY_DEBUG
+         MomTotX0 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+#  endif
+
       for (int N=0; N<NRemove; N++)
       {
          i = RemovalIdx[N][0];
@@ -291,45 +295,79 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
          GasDens = Fluid[DENS][k][j][i];
 
-         DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
+         DeltaM     = (GasDens - GasDensThres)*dv; // the mass to be accreted
+         DeltaMTot  += DeltaM;
 
-         DeltaMom[0] = DeltaM*Fluid[MOMX][k][j][i]/GasDens; // the momentum of DeltaM
-         DeltaMom[1] = DeltaM*Fluid[MOMY][k][j][i]/GasDens;
-         DeltaMom[2] = DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
-
-#  ifdef MY_DEBUG
-         MomTotX0 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         MomX0 = DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         M0 = ParAtt[PAR_MASS][p];
-#  endif
-
-//       Update particle mass and velocity
-//       ===========================================================================================================
-         ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
-         ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
-         ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
-         ParAtt[PAR_MASS][p] +=  DeltaM;
+         DeltaMom[0] += DeltaM*Fluid[MOMX][k][j][i]/GasDens; // the momentum of DeltaM
+         DeltaMom[1] += DeltaM*Fluid[MOMY][k][j][i]/GasDens;
+         DeltaMom[2] += DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
 
 #  ifdef MY_DEBUG
-         MomX1 = ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomX = %13.7e, MomX1 = %13.7e", NRemove, idx[0], idx[1], idx[2], 
-                        i, j, k, MomX1-MomX0, MomX1);
-         fprintf( File, "\n" );
+         MomTotX0 += Fluid[MOMX][k][j][i]*dv;
 #  endif
 
 //       Update the cells
 //       ===========================================================================================================
          for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
+         Fluid[v][k][j][i] = GasDensThres*Fluid[v][k][j][i]/GasDens;
 
 #  ifdef MY_DEBUG
-         MomTotX1 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-         fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", NRemove, idx[0], idx[1], idx[2], 
-                        i, j, k, MomTotX1-MomTotX0, MomTotX1);
-         fprintf( File, "\n" );
+         MomTotX1 += Fluid[MOMX][k][j][i]*dv;
+#  endif
+      } // for (int N=0; N<NRemove; N++)
+
+//    Update particle mass and velocity
+//    ===========================================================================================================
+      ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
+      ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
+      ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
+      ParAtt[PAR_MASS][p] +=  DeltaMTot;
+
+#  ifdef MY_DEBUG
+      MomTotX1 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+      fprintf( File,"%d DeltaMomTotX = %13.7e, MomTotX = %13.7e", NRemove, MomTotX1-MomTotX0, MomTotX1);
+      fprintf( File, "\n" );
 #  endif
 
-      } // for (int N=0; N<NRemove; N++)
+
+//       for (int N=0; N<NRemove; N++)
+//       {
+//          i = RemovalIdx[N][0];
+//          j = RemovalIdx[N][1];
+//          k = RemovalIdx[N][2];
+
+//          GasDens = Fluid[DENS][k][j][i];
+
+//          DeltaM = (GasDens - GasDensThres)*dv; // the mass to be accreted
+
+//          DeltaMom[0] = DeltaM*Fluid[MOMX][k][j][i]/GasDens; // the momentum of DeltaM
+//          DeltaMom[1] = DeltaM*Fluid[MOMY][k][j][i]/GasDens;
+//          DeltaMom[2] = DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
+
+// #  ifdef MY_DEBUG
+//          MomTotX0 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+// #  endif
+
+// //       Update particle mass and velocity
+// //       ===========================================================================================================
+//          ParAtt[PAR_VELX][p] =  (DeltaMom[0] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p])/(DeltaM + ParAtt[PAR_MASS][p]);  // COM velocity of the sink after accretion
+//          ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaM + ParAtt[PAR_MASS][p]);
+//          ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaM + ParAtt[PAR_MASS][p]);
+//          ParAtt[PAR_MASS][p] +=  DeltaM;
+
+// //       Update the cells
+// //       ===========================================================================================================
+//          for (int v=0; v<NCOMP_TOTAL; v++)
+//          Fluid[v][k][j][i] -= DeltaM*_dv*Fluid[v][k][j][i]/GasDens;
+
+// #  ifdef MY_DEBUG
+//          MomTotX1 = Fluid[MOMX][k][j][i]*dv + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+//          fprintf( File,"%d (%d, %d, %d), (%d, %d, %d), DeltaMomTotX = %13.7e, MomTotX = %13.7e", NRemove, idx[0], idx[1], idx[2], 
+//                         i, j, k, MomTotX1-MomTotX0, MomTotX1);
+//          fprintf( File, "\n" );
+// #  endif
+
+      // } // for (int N=0; N<NRemove; N++)
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
