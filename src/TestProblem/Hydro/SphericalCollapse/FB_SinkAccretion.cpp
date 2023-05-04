@@ -133,24 +133,24 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       int idx[3]; // cell idx in FB_NXT^3
       for (int d=0; d<3; d++)    idx[d] = (int)floor( ( xyz[d] - EdgeL[d] )*_dh );
 
-// //    skip particles too close to coarse-fine boundaries
-//       bool Skip = false;
+//    skip particles too close to coarse-fine boundaries
+      bool Skip = false;
 
-//       if ( CheckCF )
-//       {
-// //       only need to check the 27 extreme cases
-//          int ijk[3];
-//          for (int dk=-1; dk<=1; dk++)  {  if ( Skip )  break;  ijk[2] = idx[2] + dk*AccCellNum;
-//          for (int dj=-1; dj<=1; dj++)  {  if ( Skip )  break;  ijk[1] = idx[1] + dj*AccCellNum;
-//          for (int di=-1; di<=1; di++)  {  if ( Skip )  break;  ijk[0] = idx[0] + di*AccCellNum;
+      if ( CheckCF )
+      {
+//       only need to check the 27 extreme cases
+         int ijk[3];
+         for (int dk=-1; dk<=1; dk++)  {  if ( Skip )  break;  ijk[2] = idx[2] + dk*AccCellNum;
+         for (int dj=-1; dj<=1; dj++)  {  if ( Skip )  break;  ijk[1] = idx[1] + dj*AccCellNum;
+         for (int di=-1; di<=1; di++)  {  if ( Skip )  break;  ijk[0] = idx[0] + di*AccCellNum;
 
-//             const int CellPatchRelPos = FB_Aux_CellPatchRelPos( ijk );
-//             if ( CellPatchRelPos != -1   &&  CoarseFine[CellPatchRelPos] )    Skip = true;   // cell is in a coarse patch
+            const int CellPatchRelPos = FB_Aux_CellPatchRelPos( ijk );
+            if ( CoarseFine[CellPatchRelPos] )    Skip = true;   // cell is in a coarse patch
 
-//          }}}
-//       }
+         }}}
+      }
 
-//       if ( Skip )    continue;
+      if ( Skip )    continue;
 
       if ( idx[0] < FB_GHOST_SIZE-AccCellNum  ||  idx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
            idx[1] < FB_GHOST_SIZE-AccCellNum  ||  idx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
