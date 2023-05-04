@@ -543,7 +543,7 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 
 #        ifdef MY_DEBUG
-         fprintf( File,"Par_mass = %13.7e", (GasDens - GasDensThres)*dv);
+         fprintf( File,"%13.7e %13.7e %13.7e, Par_mass = %13.7e", x, y, z, (GasDens - GasDensThres)*dv);
          fprintf( File, "\n" );
 #        endif
 
@@ -555,17 +555,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        endif
 #        pragma omp critical
          {
-            // NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
-            NewParAtt[NNewPar][PAR_MASS] = 0.0;
+            NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
+            // NewParAtt[NNewPar][PAR_MASS] = 0.0;
             NewParAtt[NNewPar][PAR_POSX] = x;
             NewParAtt[NNewPar][PAR_POSY] = y;
             NewParAtt[NNewPar][PAR_POSZ] = z;
-            // NewParAtt[NNewPar][PAR_VELX] = VelX;
-            // NewParAtt[NNewPar][PAR_VELY] = VelY;
-            // NewParAtt[NNewPar][PAR_VELZ] = VelZ;
-            NewParAtt[NNewPar][PAR_VELX] = 0.0;
-            NewParAtt[NNewPar][PAR_VELY] = 0.0;
-            NewParAtt[NNewPar][PAR_VELZ] = 0.0;
+            NewParAtt[NNewPar][PAR_VELX] = VelX;
+            NewParAtt[NNewPar][PAR_VELY] = VelY;
+            NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+            // NewParAtt[NNewPar][PAR_VELX] = 0.0;
+            // NewParAtt[NNewPar][PAR_VELY] = 0.0;
+            // NewParAtt[NNewPar][PAR_VELZ] = 0.0;
             NewParAtt[NNewPar][PAR_TIME] = TimeNew;
             NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
@@ -591,9 +591,9 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
                   const int Neighbort = t + delta_t;
                   PotNeighbor[NeighborID] = Pot_Array_USG_F[Neighbort];
                }
-               GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1]);
-               GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3]);
-               GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5]);
+               GasAcc[0] += GraConst*(PotNeighbor[0] - PotNeighbor[1])/NewParAtt[NNewPar][PAR_MASS];
+               GasAcc[1] += GraConst*(PotNeighbor[2] - PotNeighbor[3])/NewParAtt[NNewPar][PAR_MASS];
+               GasAcc[2] += GraConst*(PotNeighbor[4] - PotNeighbor[5])/NewParAtt[NNewPar][PAR_MASS];
             }
 
             NewParAtt[NNewPar][PAR_ACCX] = GasAcc[0];
