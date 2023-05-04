@@ -202,10 +202,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             ControlPosj[1] = Corner_Array[1] + vjj*dh;
             ControlPosj[2] = Corner_Array[2] + vkj*dh;
 
-            real rij = SQRT(SQR(ControlPosj[0] - ControlPosi[0])+SQR(ControlPosj[1] - ControlPosi[1])+SQR(ControlPosj[2] - ControlPosi[2]));
+            real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
             if ( rij == 0.0 )                        continue;
 
-            Cell2Sinkj = SQRT(SQR(ControlPosj[0] - xyz[0])+SQR(ControlPosj[1] - xyz[1])+SQR(ControlPosj[2] - xyz[2])); // distance to the center cell
+            Cell2Sinkj = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
             if ( Cell2Sinkj > AccRadius )            continue; // check whether it is inside the control volume
 
             SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
@@ -227,11 +227,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             if ( pp == p )              continue;
 
             const double xxyyzz[3] = { ParAtt[PAR_POSX][pp], ParAtt[PAR_POSY][pp], ParAtt[PAR_POSZ][pp] }; // particle position
-            Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
-            if ( Cell2Sink2 > AccRadius )       continue;
             
             int idxx[3]; // cell idx in FB_NXT^3
             for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
+
+            Cell2Sink2 = dh*SQRT(SQR(vii - idxx[0])+SQR(vji - idxx[1])+SQR(vki - idxx[2])); // distance to the sink
+            if ( Cell2Sink2 > AccRadius )       continue;
 
             if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
                  idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
@@ -247,10 +248,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                ControlPosk[1] = Corner_Array[1] + vjk*dh;
                ControlPosk[2] = Corner_Array[2] + vkk*dh;
 
-               real rik = SQRT(SQR(ControlPosk[0] - ControlPosi[0])+SQR(ControlPosk[1] - ControlPosi[1])+SQR(ControlPosk[2] - ControlPosi[2]));
+               real rik = dh*SQRT(SQR(vik - vii)+SQR(vjk - vji)+SQR(vkk - vki));
                if ( rik == 0.0 )                        continue;
 
-               Cell2Sinkk = SQRT(SQR(ControlPosk[0] - xxyyzz[0])+SQR(ControlPosk[1] - xxyyzz[1])+SQR(ControlPosk[2] - xxyyzz[2])); // distance to the center cell
+               Cell2Sinkk = dh*SQRT(SQR(vik - idxx[0])+SQR(vjk - idxx[1])+SQR(vkk - idxx[2])); // distance to the center cell
                if ( Cell2Sinkk > AccRadius )            continue; // check whether it is inside the control volume
 
                SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
