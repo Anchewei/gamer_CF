@@ -95,7 +95,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  endif
 
    real GasDens, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-   real ControlPosi[3], ControlPosj[3], ControlPosk[3];
+   real ControlPosi[3];
    real Corner_Array[3]; // the corner of the ghost zone
    real GasMFracLeft;
 
@@ -169,7 +169,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          ControlPosi[0] = Corner_Array[0] + vii*dh;
          ControlPosi[1] = Corner_Array[1] + vji*dh;
          ControlPosi[2] = Corner_Array[2] + vki*dh;
-         Cell2Sinki = dh*SQRT(SQR(vii - idx[0])+SQR(vji - idx[1])+SQR(vki - idx[2])); // distance to the sink
+         Cell2Sinki = dh*SQRT(SQR(vii - idx[0])+SQR(vji - idx[1])+SQR(vki - idx[2])); // distance to the sink's cell
          if ( Cell2Sinki > AccRadius )                 continue; // check whether it is inside the control volume
 
 //       Density threshold
@@ -198,10 +198,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
          for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
          {  
-            ControlPosj[0] = Corner_Array[0] + vij*dh;
-            ControlPosj[1] = Corner_Array[1] + vjj*dh;
-            ControlPosj[2] = Corner_Array[2] + vkj*dh;
-
             real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
             if ( rij == 0.0 )                        continue;
 
@@ -211,6 +207,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
          } // vij, vjj, vkj
 
+         Cell2Sinki = SQRT(SQR(ControlPosi[0] - xyz[0])+SQR(ControlPosi[1] - xyz[1])+SQR(ControlPosi[2] - xyz[2])); // distance to the sink
          SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
 
          Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
@@ -231,7 +228,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             int idxx[3]; // cell idx in FB_NXT^3
             for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
 
-            Cell2Sink2 = dh*SQRT(SQR(vii - idxx[0])+SQR(vji - idxx[1])+SQR(vki - idxx[2])); // distance to the sink
+            Cell2Sink2 = dh*SQRT(SQR(vii - idxx[0])+SQR(vji - idxx[1])+SQR(vki - idxx[2])); // distance to the sink's cell
             if ( Cell2Sink2 > AccRadius )       continue;
 
             if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
@@ -244,10 +241,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
             for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
             for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
             {
-               ControlPosk[0] = Corner_Array[0] + vik*dh;
-               ControlPosk[1] = Corner_Array[1] + vjk*dh;
-               ControlPosk[2] = Corner_Array[2] + vkk*dh;
-
                real rik = dh*SQRT(SQR(vik - vii)+SQR(vjk - vji)+SQR(vkk - vki));
                if ( rik == 0.0 )                        continue;
 
@@ -257,6 +250,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
             } // vik, vjk, vkk
 
+            Cell2Sink2 =  = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
             SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/(Cell2Sink2+epsilon); // potential from the sink
 
             Eg2   = GasDens*dv*SelfPhi2;
