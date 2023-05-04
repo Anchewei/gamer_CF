@@ -4,6 +4,7 @@
         "variant": "cpp",
         "random": "cpp",
         "__bit_reference": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "limits": "cpp"
     }
 }
