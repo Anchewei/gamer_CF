@@ -95,7 +95,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 #  endif
 
    real GasDens, DeltaM, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
-   real ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
+   real ParCellPos[3], ControlPosi[3], ControlPosj[3], ControlPosk[3], DeltaMom[3];
    real Corner_Array[3]; // the corner of the ghost zone
    real GasMFracLeft;
 
@@ -157,6 +157,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
            idx[2] < FB_GHOST_SIZE-AccCellNum  ||  idx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
          continue;
 
+      ParCellPos[0] = Corner_Array[0] + idx[0]*dh;
+      ParCellPos[1] = Corner_Array[1] + idx[1]*dh;
+      ParCellPos[2] = Corner_Array[2] + idx[2]*dh;
+
       int NRemove = 0;
 
 //    Check the control volume
@@ -169,7 +173,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          ControlPosi[0] = Corner_Array[0] + vii*dh;
          ControlPosi[1] = Corner_Array[1] + vji*dh;
          ControlPosi[2] = Corner_Array[2] + vki*dh;
-         Cell2Sinki = SQRT(SQR(ControlPosi[0] - xyz[0])+SQR(ControlPosi[1] - xyz[1])+SQR(ControlPosi[2] - xyz[2])); // distance to the sink
+         Cell2Sinki = SQRT(SQR(ControlPosi[0] - ParCellPos[0])+SQR(ControlPosi[1] - ParCellPos[1])+SQR(ControlPosi[2] - ParCellPos[2])); // distance to the sink
          if ( Cell2Sinki > AccRadius )                 continue; // check whether it is inside the control volume
 
 //       Density threshold
