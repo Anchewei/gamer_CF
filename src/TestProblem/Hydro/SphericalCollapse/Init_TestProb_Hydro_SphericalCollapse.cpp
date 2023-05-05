@@ -47,6 +47,7 @@ static double     Core_Mass;
 static double     Delta_Dens;
 static double     Dens_Contrast;
 static double     Inner_R0;                      // for Plummer_like
+static double     Rho0_P;                        // for Plummer_like
 // =======================================================================================
 
 #ifdef FEEDBACK
@@ -174,9 +175,7 @@ void SetParameter()
    ReadPara->Add( "rho_AD_SC",         &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Plummer_like",      &Plummer_like,            0,             0,              NoMax_int         );
    ReadPara->Add( "Inner_R0",          &Inner_R0,              0.0,           0.0,              NoMax_double      );
-
-   if ( Plummer_like == 1 )
-   ReadPara->Add( "Rho0",              &Rho0,                  0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "Rho0_P",            &Rho0_P,                0.0,           0.0,              NoMax_double      );
 
    ReadPara->Read( FileName );
 
@@ -213,7 +212,14 @@ void SetParameter()
    R0 /= UNIT_L;
 
    if ( Plummer_like == 0)
-   Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
+   {
+      Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
+   }
+   else
+   {
+      Rh0 = Rho0_P/UNIT_D;
+   }
+
 
    Omega0 /= 1/UNIT_T;
    rho_AD_SC /= UNIT_D;
