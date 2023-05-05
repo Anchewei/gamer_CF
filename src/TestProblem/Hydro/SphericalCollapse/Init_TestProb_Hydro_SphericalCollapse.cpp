@@ -174,6 +174,10 @@ void SetParameter()
    ReadPara->Add( "rho_AD_SC",         &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Plummer_like",      &Plummer_like,            0,             0,              NoMax_int         );
    ReadPara->Add( "Inner_R0",          &Inner_R0,              0.0,           0.0,              NoMax_double      );
+
+   if (Plummer_like)
+   ReadPara->Add( "Rho0",              &Rho0,                  0.0,           0.0,              NoMax_double      );
+
    ReadPara->Read( FileName );
 
    delete ReadPara;
@@ -207,7 +211,10 @@ void SetParameter()
    Core_Mass *= Const_Msun;
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
    R0 /= UNIT_L;
+
+   if (!Plummer_like)
    Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
+   
    Omega0 /= 1/UNIT_T;
    rho_AD_SC /= UNIT_D;
 
@@ -242,7 +249,7 @@ void SetParameter()
       Aux_Message( stdout, "  Omega0                = %13.7e /s\n",     Omega0*UNIT_T                        );
       Aux_Message( stdout, "  Core Mass             = %13.7e M_sun\n",  Core_Mass/Const_Msun                 );
       Aux_Message( stdout, "  rho_AD_SC             = %13.7e \n",       rho_AD_SC                            );
-      
+
       if (Plummer_like)
       Aux_Message( stdout, "  Inner_R0              = %13.7e \n",       Inner_R0                             );
 
