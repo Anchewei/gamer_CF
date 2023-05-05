@@ -211,13 +211,13 @@ void SetParameter()
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
    R0 /= UNIT_L;
 
-   if ( Plummer_like == 0)
+   if ( Plummer_like == 1)
    {
-      Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
+      Rho0 = Rho0_P/UNIT_D;
    }
    else
    {
-      Rh0 = Rho0_P/UNIT_D;
+      Rho0 = 3.0 * Core_Mass / (4.0 * M_PI * CUBE(R0));
    }
 
 
