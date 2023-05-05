@@ -555,17 +555,17 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
 #        endif
 #        pragma omp critical
          {
-            NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
-            // NewParAtt[NNewPar][PAR_MASS] = 0.0;
+            // NewParAtt[NNewPar][PAR_MASS] = (GasDens - GasDensThres)*dv;
+            NewParAtt[NNewPar][PAR_MASS] = 0.0;
             NewParAtt[NNewPar][PAR_POSX] = x;
             NewParAtt[NNewPar][PAR_POSY] = y;
             NewParAtt[NNewPar][PAR_POSZ] = z;
-            NewParAtt[NNewPar][PAR_VELX] = VelX;
-            NewParAtt[NNewPar][PAR_VELY] = VelY;
-            NewParAtt[NNewPar][PAR_VELZ] = VelZ;
-            // NewParAtt[NNewPar][PAR_VELX] = 0.0;
-            // NewParAtt[NNewPar][PAR_VELY] = 0.0;
-            // NewParAtt[NNewPar][PAR_VELZ] = 0.0;
+            // NewParAtt[NNewPar][PAR_VELX] = VelX;
+            // NewParAtt[NNewPar][PAR_VELY] = VelY;
+            // NewParAtt[NNewPar][PAR_VELZ] = VelZ;
+            NewParAtt[NNewPar][PAR_VELX] = 0.0;
+            NewParAtt[NNewPar][PAR_VELY] = 0.0;
+            NewParAtt[NNewPar][PAR_VELZ] = 0.0;
             NewParAtt[NNewPar][PAR_TIME] = TimeNew;
             NewParAtt[NNewPar][PAR_TYPE] = PTYPE_STAR;
 
