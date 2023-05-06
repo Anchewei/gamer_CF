@@ -27,6 +27,7 @@ void Init_TestProb_Hydro_CDM_LSS();
 void Init_TestProb_Hydro_Zeldovich();
 void Init_TestProb_Hydro_EnergyPowerSpectrum();
 void Init_TestProb_Hydro_CF();
+void Init_TestProb_Hydro_BBTest();
 void Init_TestProb_ELBDM_ExtPot();
 
 
