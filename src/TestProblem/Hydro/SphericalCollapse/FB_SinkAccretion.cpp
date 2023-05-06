@@ -290,7 +290,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Update the cells
 //       ===========================================================================================================
          for (int v=0; v<NCOMP_TOTAL; v++)
-         Fluid[v][k][j][i] = GasDensThres*Fluid[v][k][j][i]/GasDens;
+         Fluid[v][k][j][i] *= GasDensThres/GasDens;
       } // for (int N=0; N<NRemove; N++)
 
 //    Update particle mass and velocity
