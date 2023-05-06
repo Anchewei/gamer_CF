@@ -7,6 +7,7 @@
 // =======================================================================================
 static double     Cs;                             // sound spped
 static double     R0;
+static double     Rho0;
 static double     Omega0;
 static double     Core_Mass;
 static double     Delta_Dens;
