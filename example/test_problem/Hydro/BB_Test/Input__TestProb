@@ -1,0 +1,8 @@
+# problem-specific runtime parameters
+# The following parameters follow Hubber et al.
+R0                           3.0856776e+16  # cm
+Omega0                       1.6e-12        # s^-1
+Core_Mass                    1.0            # M_sun
+Delta_Dens                   0.5            # m=2 density perturbation
+Dens_Contrast                100            # density contrast outside R0
+rho_AD_SC                    1e-14          # transition density for Barotropic EOS
