@@ -89,15 +89,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 #  endif // #ifdef GAMER_DEBUG
 
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_Acc";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
    real GasDens, Eg, Eg2, Ekin, Cell2Sinki, Cell2Sinkj, Cell2Sinkk, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3];
    real Corner_Array[3]; // the corner of the ghost zone
-   real GasMFracLeft;
 
    const int    AccCellNum     = 4;
    const int    MaxRemovalGas  = 10000;
@@ -273,14 +267,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // vii, vji, vki
 
       int i, j, k;
-      real MomTotX0 = (real)0.0, MomTotX1 = (real)0.0;
       real DeltaM;
       real DeltaMTot = (real)0.0;
       real DeltaMom[3] = { (real)0.0, (real)0.0, (real)0.0 };
 
-#  ifdef MY_DEBUG
-         MomTotX0 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-#  endif
 
       for (int N=0; N<NRemove; N++)
       {
@@ -297,18 +287,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          DeltaMom[1] += DeltaM*Fluid[MOMY][k][j][i]/GasDens;
          DeltaMom[2] += DeltaM*Fluid[MOMZ][k][j][i]/GasDens;
 
-#  ifdef MY_DEBUG
-         MomTotX0 += Fluid[MOMX][k][j][i]*dv;
-#  endif
-
 //       Update the cells
 //       ===========================================================================================================
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] = GasDensThres*Fluid[v][k][j][i]/GasDens;
-
-#  ifdef MY_DEBUG
-         MomTotX1 += Fluid[MOMX][k][j][i]*dv;
-#  endif
       } // for (int N=0; N<NRemove; N++)
 
 //    Update particle mass and velocity
@@ -317,23 +299,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_MASS][p] +=  DeltaMTot;
-
-#  ifdef MY_DEBUG
-      MomTotX1 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-      if (NRemove>0)
-      {
-         fprintf( File,"%d (%d, %d, %d) Time = %13.7e, DeltaMomTotX = %13.7e, MomTotX = %13.7e, ParMass = %13.7e", NRemove, idx[0], idx[1], idx[2], TimeNew,
-                        MomTotX1-MomTotX0, MomTotX1, ParAtt[PAR_MASS][p]);
-         fprintf( File, "\n" );
-      }
-#  endif
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
-
-#  ifdef MY_DEBUG
-   fclose( File );
-#  endif
 
    return GAMER_SUCCESS;
 

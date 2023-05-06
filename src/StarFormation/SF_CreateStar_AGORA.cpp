@@ -78,11 +78,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
       Aux_Error( ERROR_INFO, "Idx_ParCreTime is undefined !!\n" );
 #  endif // #ifdef GAMER_DEBUG
 
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_debug";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
 // constant parameters
    const double dh             = amr->dh[lv];
 
@@ -542,11 +537,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
          if ( FABS(Egtot) <= 2*Ethtot )                      continue;
          if (( Egtot + Ethtot + Ekintot + Emagtot ) >= 0)    continue;
 
-#        ifdef MY_DEBUG
-         fprintf( File,"%13.7e %13.7e %13.7e, Par_mass = %13.7e", x, y, z, (GasDens - GasDensThres)*dv);
-         fprintf( File, "\n" );
-#        endif
-
 //       Store the information of new star particles
 //       ===========================================================================================================
 #        ifdef GAMER_DEBUG
@@ -751,10 +741,6 @@ void SF_CreateStar_AGORA( const int lv, const real TimeNew, const real dt, Rando
    delete [] NewParAtt;
    delete [] NewParID;
    delete [] NewParPID;
-
-#  ifdef MY_DEBUG
-   fclose( File );
-#  endif
 
 // free memory
    Par_CollectParticle2OneLevel_FreeMemory( lv, SibBufPatch_Yes, FaSibBufPatch_No );
