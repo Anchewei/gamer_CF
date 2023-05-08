@@ -8,3 +8,7 @@ gamer
 GAMER_CompareData
 GAMER_ExtractUniform
 GAMER_ExtractProfile
+src/TestProblem/.DS_Store
+src/.DS_Store
+src/TestProblem/.DS_Store
+.gitignore
