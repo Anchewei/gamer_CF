@@ -192,9 +192,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 
 
-         if ( GasRelVel[0]*SIGN(ControlPosi[0] - xyz[0]) >= 0 ||  
-              GasRelVel[1]*SIGN(ControlPosi[1] - xyz[1]) >= 0 || 
-              GasRelVel[2]*SIGN(ControlPosi[2] - xyz[2]) >= 0 )
+         if ( (GasRelVel[0]*SIGN(ControlPosi[0] - xyz[0]) >= 0  ||  
+               GasRelVel[1]*SIGN(ControlPosi[1] - xyz[1]) >= 0  || 
+               GasRelVel[2]*SIGN(ControlPosi[2] - xyz[2]) >= 0) && NotCentralCell)
                continue;
 
 //       Bound state check
