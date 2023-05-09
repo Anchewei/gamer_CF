@@ -101,7 +101,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    const double _dh     = 1.0 / dh;
    const double dv      = CUBE( dh );
    const double _dv     = 1.0 / dv;
-   const double epsilon = 0.001*dh;
+   const double epsilon = 1e-5*dh;
 
    long   (*RemovalIdx)[3]         = new long [MaxRemovalGas][3];
 
@@ -176,26 +176,27 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
-         // if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )        NotCentralCell = false; // if pass, the following checks are skipped
-         if ( Cell2Sinkidh == 0)  continue; 
+         // if ( Cell2Sinkidh )        NotCentralCell = false; // if pass, the following checks are skipped
+         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki ) NotCentralCell = false; // if pass, the following checks are skipped
+
 //       Negative radial velocity
 //       ===========================================================================================================
          GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
          GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
          GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
+         if ( GasRelVel[0]*(vii - idx[0]) >= 0 ||  GasRelVel[1]*(vji - idx[1]) >= 0 || GasRelVel[2]*(vki - idx[2]) >= 0 )
+            continue;
+
          // if ( (GasRelVel[0]*(vii - idx[0]) >= 0 ||  
          //       GasRelVel[1]*(vji - idx[1]) >= 0 || 
          //       GasRelVel[2]*(vki - idx[2]) >= 0) )
          //       continue;
 
-         if ( NotCentralCell )
-         {
-            if ( GasRelVel[0]*(ControlPosi[0] - xyz[0]) >= 0 ||  
-                 GasRelVel[1]*(ControlPosi[1] - xyz[1]) >= 0 || 
-                 GasRelVel[2]*(ControlPosi[2] - xyz[2]) >= 0 )
-                 continue;
-         }
+         // if ( ( GasRelVel[0]*(ControlPosi[0] - xyz[0]) >= 0 ||  
+         //        GasRelVel[1]*(ControlPosi[1] - xyz[1]) >= 0 || 
+         //        GasRelVel[2]*(ControlPosi[2] - xyz[2]) >= 0 ) && NotCentralCell )
+         //       continue;
 
 //       Bound state check
 //       ===========================================================================================================
