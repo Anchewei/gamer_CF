@@ -174,21 +174,21 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
-         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )        NotCentralCell = false; // if pass, the following checks are skipped
-
+         // if ( idx[0] == vii && idx[1] == vji && idx[2] == vki )        NotCentralCell = false; // if pass, the following checks are skipped
+         if ( Cell2Sinki <= dh)  NotCentralCell = false; 
 //       Negative radial velocity
 //       ===========================================================================================================
          GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
          GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
          GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
-         // if ( NotCentralCell )
-         // {
-         //    if ( GasRelVel[0]*(ControlPosi[0] - xyz[0]) >= 0 ||  
-         //         GasRelVel[1]*(ControlPosi[1] - xyz[1]) >= 0 || 
-         //         GasRelVel[2]*(ControlPosi[2] - xyz[2]) >= 0 )
-         //         continue;
-         // }
+         if ( NotCentralCell )
+         {
+            if ( GasRelVel[0]*(ControlPosi[0] - xyz[0]) >= 0 ||  
+                 GasRelVel[1]*(ControlPosi[1] - xyz[1]) >= 0 || 
+                 GasRelVel[2]*(ControlPosi[2] - xyz[2]) >= 0 )
+                 continue;
+         }
 
 //       Bound state check
 //       ===========================================================================================================
