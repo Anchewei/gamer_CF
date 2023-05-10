@@ -89,6 +89,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 #  endif // #ifdef GAMER_DEBUG
 
+#  ifdef MY_DEBUG
+   const char  FileName[] = "Record__Par_Acc";
+   FILE *File = fopen( FileName, "a" );
+#  endif
+
    real GasDens, Eg, Eg2, Ekin, Cell2Sinkidh, Cell2Sinkjdh, Cell2Sinkkdh, Cell2Sink2dh, Cell2Sinki, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3];
    real Corner_Array[3]; // the corner of the ghost zone
@@ -175,102 +180,102 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Central cell check
 //       ===========================================================================================================
-         bool NotCentralCell = true;
-         real RadialVel;
-         // if ( Cell2Sinkidh )        NotCentralCell = false; // if pass, the following checks are skipped
-         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki ) NotCentralCell = false; // if pass, the following checks are skipped
+         // bool NotCentralCell = true;
+         // if ( idx[0] == vii && idx[1] == vji && idx[2] == vki ) NotCentralCell = false; // if pass, the following checks are skipped
 
 //       Negative radial velocity
 //       ===========================================================================================================
+         real RadialVel;
+
          GasRelVel[0] = Fluid[MOMX][vki][vji][vii]/GasDens - ParAtt[PAR_VELX][p];
          GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
          GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
          RadialVel = (GasRelVel[0]*(ControlPosi[0] - xyz[0]) + GasRelVel[1]*(ControlPosi[1] - xyz[1]) + GasRelVel[2]*(ControlPosi[2] - xyz[2]))/Cell2Sinki;
 
-         if ( SIGN(RadialVel) >= 0 )    continue;
-
-         // if ( (GasRelVel[0]*SIGN(ControlPosi[0] - xyz[0]) >= 0  ||  
-         //       GasRelVel[1]*SIGN(ControlPosi[1] - xyz[1]) >= 0  || 
-         //       GasRelVel[2]*SIGN(ControlPosi[2] - xyz[2]) >= 0) && NotCentralCell)
-         //       continue;
+         if ( SIGN(RadialVel) != -1.0 )    continue;
 
 //       Bound state check
 //       ===========================================================================================================
-         real SelfPhi = (real)0.0; // self-potential
-         for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
-         for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
-         for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         {  
-            real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
-            if ( rij == 0.0 )                        continue;
+         // real SelfPhi = (real)0.0; // self-potential
+         // for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
+         // for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
+         // for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         // {  
+         //    real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
+         //    if ( rij == 0.0 )                        continue;
 
-            Cell2Sinkjdh = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
-            if ( Cell2Sinkjdh > AccRadius )            continue; // check whether it is inside the control volume
+         //    Cell2Sinkjdh = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
+         //    if ( Cell2Sinkjdh > AccRadius )            continue; // check whether it is inside the control volume
 
-            SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
-         } // vij, vjj, vkj
+         //    SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
+         // } // vij, vjj, vkj
 
-         SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
+         // SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
 
-         Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
-         Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
+         // Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
+         // Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
-         if ( ( Eg + Ekin ) >= 0 )                     continue;
+         // if ( ( Eg + Ekin ) >= 0 )      continue;
 
 //       Overlapped accretion radius check
 //       ===========================================================================================================
-         bool NotMinEg = false;
-         for (int tt=0; tt<NPar; tt++) // find the nearby sink
-         {
-            const int    pp      = ParSortID[tt];
-            if ( pp == p )              continue;
+         // bool NotMinEg = false;
+         // for (int tt=0; tt<NPar; tt++) // find the nearby sink
+         // {
+         //    const int    pp      = ParSortID[tt];
+         //    if ( pp == p )              continue;
 
-            const double xxyyzz[3] = { ParAtt[PAR_POSX][pp], ParAtt[PAR_POSY][pp], ParAtt[PAR_POSZ][pp] }; // particle position
+         //    const double xxyyzz[3] = { ParAtt[PAR_POSX][pp], ParAtt[PAR_POSY][pp], ParAtt[PAR_POSZ][pp] }; // particle position
             
-            int idxx[3]; // cell idx in FB_NXT^3
-            for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
+         //    int idxx[3]; // cell idx in FB_NXT^3
+         //    for (int d=0; d<3; d++)    idxx[d] = (int)floor( ( xxyyzz[d] - EdgeL[d] )*_dh );
 
-            Cell2Sink2dh = dh*SQRT(SQR(vii - idxx[0])+SQR(vji - idxx[1])+SQR(vki - idxx[2])); // distance to the sink's cell
-            Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
-            if ( Cell2Sink2dh > AccRadius )       continue;
+         //    Cell2Sink2dh = dh*SQRT(SQR(vii - idxx[0])+SQR(vji - idxx[1])+SQR(vki - idxx[2])); // distance to the sink's cell
+         //    Cell2Sink2 = SQRT(SQR(ControlPosi[0] - xxyyzz[0])+SQR(ControlPosi[1] - xxyyzz[1])+SQR(ControlPosi[2] - xxyyzz[2])); // distance to the sink
+         //    if ( Cell2Sink2dh > AccRadius )       continue;
 
-            if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-                 idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
-                 idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
-               continue;
+         //    if ( idxx[0] < FB_GHOST_SIZE-AccCellNum  ||  idxx[0] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+         //         idxx[1] < FB_GHOST_SIZE-AccCellNum  ||  idxx[1] >= FB_GHOST_SIZE+PS2+AccCellNum  ||
+         //         idxx[2] < FB_GHOST_SIZE-AccCellNum  ||  idxx[2] >= FB_GHOST_SIZE+PS2+AccCellNum   ) // we want completed control volume
+         //       continue;
 
-            real SelfPhi2 = (real)0.0; // self-potential
-            for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
-            for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
-            for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
-            {
-               real rik = dh*SQRT(SQR(vik - vii)+SQR(vjk - vji)+SQR(vkk - vki));
-               if ( rik == 0.0 )                        continue;
+         //    real SelfPhi2 = (real)0.0; // self-potential
+         //    for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
+         //    for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
+         //    for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         //    {
+         //       real rik = dh*SQRT(SQR(vik - vii)+SQR(vjk - vji)+SQR(vkk - vki));
+         //       if ( rik == 0.0 )                        continue;
 
-               Cell2Sinkkdh = dh*SQRT(SQR(vik - idxx[0])+SQR(vjk - idxx[1])+SQR(vkk - idxx[2])); // distance to the center cell
-               if ( Cell2Sinkkdh > AccRadius )            continue; // check whether it is inside the control volume
+         //       Cell2Sinkkdh = dh*SQRT(SQR(vik - idxx[0])+SQR(vjk - idxx[1])+SQR(vkk - idxx[2])); // distance to the center cell
+         //       if ( Cell2Sinkkdh > AccRadius )            continue; // check whether it is inside the control volume
 
-               SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
-            } // vik, vjk, vkk
+         //       SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
+         //    } // vik, vjk, vkk
 
-            SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/(Cell2Sink2+epsilon); // potential from the sink
+         //    SelfPhi2 += -NEWTON_G*ParAtt[PAR_MASS][pp]/(Cell2Sink2+epsilon); // potential from the sink
 
-            Eg2   = GasDens*dv*SelfPhi2;
-            if ( Eg2 <= Eg )
-            {
-               NotMinEg = true;
-               break;
-            }
-         } // for (int tt=0; tt<NPar; tt++)
+         //    Eg2   = GasDens*dv*SelfPhi2;
+         //    if ( Eg2 <= Eg )
+         //    {
+         //       NotMinEg = true;
+         //       break;
+         //    }
+         // } // for (int tt=0; tt<NPar; tt++)
 
-         if ( NotMinEg )                              continue; 
+         // if ( NotMinEg )                              continue; 
 
 //       Record the index
 //       ===========================================================================================================
          RemovalIdx[NRemove][0] = vii;
          RemovalIdx[NRemove][1] = vji;
          RemovalIdx[NRemove][2] = vki;
+
+#  ifdef MY_DEBUG
+         fprintf( File,"NotCentralCell = %d", NotCentralCell);
+         fprintf( File, "\n" );
+#  endif
 
          NRemove ++;
       } // vii, vji, vki
@@ -311,6 +316,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
+
+#  ifdef MY_DEBUG
+   fclose( File );
+#  endif
 
    return GAMER_SUCCESS;
 
