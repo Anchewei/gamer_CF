@@ -176,7 +176,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Central cell check
 //       ===========================================================================================================
          bool NotCentralCell = true;
-         real RaidalVel;
+         real RadialVel;
          // if ( Cell2Sinkidh )        NotCentralCell = false; // if pass, the following checks are skipped
          if ( idx[0] == vii && idx[1] == vji && idx[2] == vki ) NotCentralCell = false; // if pass, the following checks are skipped
 
@@ -186,9 +186,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          GasRelVel[1] = Fluid[MOMY][vki][vji][vii]/GasDens - ParAtt[PAR_VELY][p];
          GasRelVel[2] = Fluid[MOMZ][vki][vji][vii]/GasDens - ParAtt[PAR_VELZ][p];
 
-         RaidalVel = (GasRelVel[0]*(ControlPosi[0] - xyz[0]) + GasRelVel[1]*(ControlPosi[1] - xyz[1]) + GasRelVel[2]*(ControlPosi[2] - xyz[2]))/Cell2Sinki;
+         RadialVel = (GasRelVel[0]*(ControlPosi[0] - xyz[0]) + GasRelVel[1]*(ControlPosi[1] - xyz[1]) + GasRelVel[2]*(ControlPosi[2] - xyz[2]))/Cell2Sinki;
 
-         if ( SIGN(RaidalVel) >= 0 && NotCentralCell )    continue;
+         if ( SIGN(RadialVel) >= 0 )    continue;
 
          // if ( (GasRelVel[0]*SIGN(ControlPosi[0] - xyz[0]) >= 0  ||  
          //       GasRelVel[1]*SIGN(ControlPosi[1] - xyz[1]) >= 0  || 
@@ -216,7 +216,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
          Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
-         if ( ( Eg + Ekin ) >= 0  && NotCentralCell )                     continue;
+         if ( ( Eg + Ekin ) >= 0 )                     continue;
 
 //       Overlapped accretion radius check
 //       ===========================================================================================================
