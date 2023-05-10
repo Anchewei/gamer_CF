@@ -277,6 +277,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          {
             fprintf( File,"TimeNew = %13.7e, NotCentralCell = %d", TimeNew, NotCentralCell);
             fprintf( File, "\n" );
+            fprintf( File,"dx/dh = %13.7e", (ControlPosi[0] - xyz[0])/dh);
+            fprintf( File, "\n" );
          }
 #  endif
 
