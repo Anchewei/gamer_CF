@@ -180,8 +180,8 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Central cell check
 //       ===========================================================================================================
-         // bool NotCentralCell = true;
-         // if ( idx[0] == vii && idx[1] == vji && idx[2] == vki ) NotCentralCell = false; // if pass, the following checks are skipped
+         bool NotCentralCell = true;
+         if ( idx[0] == vii && idx[1] == vji && idx[2] == vki ) NotCentralCell = false; // if pass, the following checks are skipped
 
 //       Negative radial velocity
 //       ===========================================================================================================
@@ -273,8 +273,11 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          RemovalIdx[NRemove][2] = vki;
 
 #  ifdef MY_DEBUG
-         fprintf( File,"NotCentralCell = %d", NotCentralCell);
-         fprintf( File, "\n" );
+         if ( !NotCentralCell )
+         {
+            fprintf( File,"TimeNew = %13.7e, NotCentralCell = %d", TimeNew, NotCentralCell);
+            fprintf( File, "\n" );
+         }
 #  endif
 
          NRemove ++;
