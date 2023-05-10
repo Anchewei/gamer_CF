@@ -197,26 +197,26 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Bound state check
 //       ===========================================================================================================
-         // real SelfPhi = (real)0.0; // self-potential
-         // for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
-         // for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
-         // for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         // {  
-         //    real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
-         //    if ( rij == 0.0 )                        continue;
+         real SelfPhi = (real)0.0; // self-potential
+         for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
+         for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
+         for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         {  
+            real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
+            if ( rij == 0.0 )                        continue;
 
-         //    Cell2Sinkjdh = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
-         //    if ( Cell2Sinkjdh > AccRadius )            continue; // check whether it is inside the control volume
+            Cell2Sinkjdh = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
+            if ( Cell2Sinkjdh > AccRadius )            continue; // check whether it is inside the control volume
 
-         //    SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
-         // } // vij, vjj, vkj
+            SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
+         } // vij, vjj, vkj
 
-         // SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
+         SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
 
-         // Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
-         // Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
+         Eg   = GasDens*dv*SelfPhi; // no double counting here, since i is fixed
+         Ekin = 0.5*GasDens*dv*( SQR(GasRelVel[0]) + SQR(GasRelVel[1]) + SQR(GasRelVel[2]));
 
-         // if ( ( Eg + Ekin ) >= 0 )      continue;
+         if ( ( Eg + Ekin ) >= 0 )      continue;
 
 //       Overlapped accretion radius check
 //       ===========================================================================================================
