@@ -162,9 +162,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       // for (int vki=idx[2]-AccCellNum; vki<=idx[2]+AccCellNum; vki++)
       // for (int vji=idx[1]-AccCellNum; vji<=idx[1]+AccCellNum; vji++)
       // for (int vii=idx[0]-AccCellNum; vii<=idx[0]+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
-      for (int vki=0; vki<FB_NXT; vki++)
-      for (int vji=0; vji<FB_NXT; vji++)
-      for (int vii=0; vii<FB_NXT; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
+      for (int vki=0; vki<=FB_NXT; vki++)
+      for (int vji=0; vji<=FB_NXT; vji++)
+      for (int vii=0; vii<=FB_NXT; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
       {
 //       Inside the accretion radius
 //       ===========================================================================================================
@@ -204,9 +204,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          // for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
          // for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
          // for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         for (int vkj=0; vkj<FB_NXT; vkj++)
-         for (int vjj=0; vjj<FB_NXT; vjj++)
-         for (int vij=0; vij<FB_NXT; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         for (int vkj=0; vkj<=FB_NXT; vkj++)
+         for (int vjj=0; vjj<=FB_NXT; vjj++)
+         for (int vij=0; vij<=FB_NXT; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
          {  
             real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
             if ( rij == 0.0 )                        continue;
