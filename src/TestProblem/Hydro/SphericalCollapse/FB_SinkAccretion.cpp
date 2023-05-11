@@ -159,9 +159,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       int NRemove = 0;
 
 //    Check the control volume
-      for (int vki=idx[2]-AccCellNum; vki<=idx[2]+AccCellNum; vki++)
-      for (int vji=idx[1]-AccCellNum; vji<=idx[1]+AccCellNum; vji++)
-      for (int vii=idx[0]-AccCellNum; vii<=idx[0]+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
+      // for (int vki=idx[2]-AccCellNum; vki<=idx[2]+AccCellNum; vki++)
+      // for (int vji=idx[1]-AccCellNum; vji<=idx[1]+AccCellNum; vji++)
+      // for (int vii=idx[0]-AccCellNum; vii<=idx[0]+AccCellNum; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
+      for (int vki=0; vki<FB_NXT; vki++)
+      for (int vji=0; vji<FB_NXT; vji++)
+      for (int vii=0; vii<FB_NXT; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
       {
 //       Inside the accretion radius
 //       ===========================================================================================================
@@ -197,9 +200,12 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Bound state check
 //       ===========================================================================================================
          real SelfPhi = (real)0.0; // self-potential
-         for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
-         for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
-         for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         // for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
+         // for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
+         // for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         for (int vkj=0; vkj<FB_NXT; vki++)
+         for (int vjj=0; vjj<FB_NXT; vji++)
+         for (int vij=0; vij<FB_NXT; vii++) // loop the nearby cells, to find the cells inside the control volumne (v)
          {  
             ControlPosj[0] = Corner_Array[0] + vij*dh;
             ControlPosj[1] = Corner_Array[1] + vjj*dh;
@@ -251,11 +257,16 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
                ControlPosk[1] = Corner_Array[1] + vjk*dh;
                ControlPosk[2] = Corner_Array[2] + vkk*dh;
 
-               real rik = SQRT(SQR(ControlPosk[0] - ControlPosi[0])+SQR(ControlPosk[1] - ControlPosi[1])+SQR(ControlPosk[2] - ControlPosi[2]));
-               if ( rik == 0.0 )                        continue;
+         //    real SelfPhi2 = (real)0.0; // self-potential
+         //    for (int vkk=idxx[2]-AccCellNum; vkk<=idxx[2]+AccCellNum; vkk++)
+         //    for (int vjk=idxx[1]-AccCellNum; vjk<=idxx[1]+AccCellNum; vjk++)
+         //    for (int vik=idxx[0]-AccCellNum; vik<=idxx[0]+AccCellNum; vik++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         //    {
+         //       real rik = dh*SQRT(SQR(vik - vii)+SQR(vjk - vji)+SQR(vkk - vki));
+         //       if ( rik == 0.0 )                        continue;
 
-               Cell2Sinkk = SQRT(SQR(ControlPosk[0] - xxyyzz[0])+SQR(ControlPosk[1] - xxyyzz[1])+SQR(ControlPosk[2] - xxyyzz[2])); // distance to the center cell
-               if ( Cell2Sinkk > AccRadius )            continue; // check whether it is inside the control volume
+         //       Cell2Sinkkdh = dh*SQRT(SQR(vik - idxx[0])+SQR(vjk - idxx[1])+SQR(vkk - idxx[2])); // distance to the center cell
+         //       if ( Cell2Sinkkdh > AccRadius )            continue; // check whether it is inside the control volume
 
                SelfPhi2 += -NEWTON_G*Fluid[DENS][vkk][vjk][vik]*dv/rik; // potential
             } // vik, vjk, vkk
