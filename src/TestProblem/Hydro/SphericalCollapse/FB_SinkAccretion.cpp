@@ -144,7 +144,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          for (int di=-1; di<=1; di++)  {  if ( Skip )  break;  ijk[0] = idx[0] + di*AccCellNum;
 
             const int CellPatchRelPos = FB_Aux_CellPatchRelPos( ijk );
-            if ( CoarseFine[CellPatchRelPos] )    Skip = true;   // cell is in a coarse patch
+            if ( CellPatchRelPos != -1  &&  CoarseFine[CellPatchRelPos] )    Skip = true;   // cell is in a coarse patch
 
          }}}
       }
