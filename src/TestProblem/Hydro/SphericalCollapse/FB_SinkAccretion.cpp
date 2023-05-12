@@ -307,6 +307,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Update the cells
 //       ===========================================================================================================
+#  ifdef MY_DEBUG
+         M0 += Fluid[DENS][k][j][i]*dv;
+#  endif
+
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] *= GasDensThres/GasDens;
 
@@ -316,7 +320,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // for (int N=0; N<NRemove; N++)
 
 #  ifdef MY_DEBUG
-      M0 = DeltaMTot + ParAtt[PAR_MASS][p];
+      M0 += ParAtt[PAR_MASS][p];
 #  endif
 
 //    Update particle mass and velocity
