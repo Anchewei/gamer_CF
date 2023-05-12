@@ -316,7 +316,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       } // for (int N=0; N<NRemove; N++)
 
 #  ifdef MY_DEBUG
-      M0 = DeltaM + ParAtt[PAR_MASS][p];
+      M0 = DeltaMTot + ParAtt[PAR_MASS][p];
 #  endif
 
 //    Update particle mass and velocity
