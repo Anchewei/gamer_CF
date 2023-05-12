@@ -201,21 +201,21 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Bound state check
 //       ===========================================================================================================
          real SelfPhi = (real)0.0; // self-potential
-         // for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
-         // for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
-         // for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         // for (int vkj=0; vkj<FB_NXT; vkj++)
-         // for (int vjj=0; vjj<FB_NXT; vjj++)
-         // for (int vij=0; vij<FB_NXT; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
-         // {  
-         //    real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
-         //    if ( rij == 0.0 )                        continue;
+         for (int vkj=idx[2]-AccCellNum; vkj<=idx[2]+AccCellNum; vkj++)
+         for (int vjj=idx[1]-AccCellNum; vjj<=idx[1]+AccCellNum; vjj++)
+         for (int vij=idx[0]-AccCellNum; vij<=idx[0]+AccCellNum; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         for (int vkj=0; vkj<FB_NXT; vkj++)
+         for (int vjj=0; vjj<FB_NXT; vjj++)
+         for (int vij=0; vij<FB_NXT; vij++) // loop the nearby cells, to find the cells inside the control volumne (v)
+         {  
+            real rij = dh*SQRT(SQR(vij - vii)+SQR(vjj - vji)+SQR(vkj - vki));
+            if ( rij == 0.0 )                        continue;
 
-         //    Cell2Sinkjdh = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
-         //    if ( Cell2Sinkjdh > AccRadius )            continue; // check whether it is inside the control volume
+            Cell2Sinkjdh = dh*SQRT(SQR(vij - idx[0])+SQR(vjj - idx[1])+SQR(vkj - idx[2])); // distance to the sink
+            if ( Cell2Sinkjdh > AccRadius )            continue; // check whether it is inside the control volume
 
-         //    SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
-         // } // vij, vjj, vkj
+            SelfPhi += -NEWTON_G*Fluid[DENS][vkj][vjj][vij]*dv/rij; // potential
+         } // vij, vjj, vkj
 
          SelfPhi += -NEWTON_G*ParAtt[PAR_MASS][p]/(Cell2Sinki+epsilon); // potential from the sink
 
@@ -278,16 +278,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          RemovalIdx[NRemove][1] = vji;
          RemovalIdx[NRemove][2] = vki;
 
-#  ifdef MY_DEBUG
-         if ( !NotCentralCell )
-         {
-            fprintf( File,"TimeNew = %13.7e, NotCentralCell = %d", TimeNew, NotCentralCell);
-            fprintf( File, "\n" );
-            fprintf( File,"dx/dh = %13.7e", (ControlPosi[0] - xyz[0])/dh);
-            fprintf( File, "\n" );
-         }
-#  endif
-
          NRemove ++;
       } // vii, vji, vki
 
@@ -296,6 +286,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       real DeltaMTot = (real)0.0;
       real DeltaMom[3] = { (real)0.0, (real)0.0, (real)0.0 };
 
+#  ifdef MY_DEBUG
+      real M0 = (real) 0.0, M1 = (real) 0.0;
+#  endif
 
       for (int N=0; N<NRemove; N++)
       {
@@ -316,7 +309,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       ===========================================================================================================
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] *= GasDensThres/GasDens;
+
+#  ifdef MY_DEBUG
+         M1 += Fluid[Dens][k][j][i]*dv;
+#  endif
       } // for (int N=0; N<NRemove; N++)
+
+#  ifdef MY_DEBUG
+      M0 = DeltaM + ParAtt[PAR_MASS][p];
+#  endif
 
 //    Update particle mass and velocity
 //    ===========================================================================================================
@@ -324,6 +325,15 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_MASS][p] +=  DeltaMTot;
+
+#  ifdef MY_DEBUG
+      M1 += ParAtt[PAR_MASS][p];
+      if ( (M1 - M0) != 0.0 )
+      {
+         fprintf( File,"%d %13.7e %13.7e", t, TimeNew, (M1 - M0)/M0);
+         fprintf( File, "\n" );
+      }
+#  endif
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
