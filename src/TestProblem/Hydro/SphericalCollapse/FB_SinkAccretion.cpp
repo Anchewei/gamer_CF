@@ -311,7 +311,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
          Fluid[v][k][j][i] *= GasDensThres/GasDens;
 
 #  ifdef MY_DEBUG
-         M1 += Fluid[Dens][k][j][i]*dv;
+         M1 += Fluid[DENS][k][j][i]*dv;
 #  endif
       } // for (int N=0; N<NRemove; N++)
 
