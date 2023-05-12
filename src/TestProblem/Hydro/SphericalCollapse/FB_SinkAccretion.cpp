@@ -287,7 +287,7 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       real DeltaMom[3] = { (real)0.0, (real)0.0, (real)0.0 };
 
 #  ifdef MY_DEBUG
-      real M0 = (real) 0.0, M1 = (real) 0.0;
+      real Q0 = (real) 0.0, M1 = (real) 0.0;
 #  endif
 
       for (int N=0; N<NRemove; N++)
@@ -308,19 +308,19 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 //       Update the cells
 //       ===========================================================================================================
 #  ifdef MY_DEBUG
-         M0 += Fluid[DENS][k][j][i]*dv;
+         Q0 += Fluid[MOMX][k][j][i]*dv;
 #  endif
 
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] *= GasDensThres/GasDens;
 
 #  ifdef MY_DEBUG
-         M1 += Fluid[DENS][k][j][i]*dv;
+         M1 += Fluid[MOMX][k][j][i]*dv;
 #  endif
       } // for (int N=0; N<NRemove; N++)
 
 #  ifdef MY_DEBUG
-      M0 += ParAtt[PAR_MASS][p];
+      Q0 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
 #  endif
 
 //    Update particle mass and velocity
@@ -331,10 +331,10 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       ParAtt[PAR_MASS][p] +=  DeltaMTot;
 
 #  ifdef MY_DEBUG
-      M1 += ParAtt[PAR_MASS][p];
-      if ( (M1 - M0) != 0.0 )
+      M1 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
+      if ( (M1 - Q0) != 0.0 )
       {
-         fprintf( File,"%d %13.7e %13.7e", t, TimeNew, (M1 - M0)/M0);
+         fprintf( File,"%d %13.7e %13.7e", t, TimeNew, (M1 - Q0)/Q0);
          fprintf( File, "\n" );
       }
 #  endif
