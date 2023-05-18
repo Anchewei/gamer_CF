@@ -175,6 +175,7 @@ void SetParameter()
    ReadPara->Add( "Core_Mass",         &Core_Mass,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Delta_Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Dens_Contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "EOS_type",          &EOS_type,              0,             0,                NoMax_int         );
    ReadPara->Add( "rho_AD_SC",         &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "rho_PW_SC",         &rho_PW_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Plummer_like",      &Plummer_like,            0,             0,              NoMax_int         );
