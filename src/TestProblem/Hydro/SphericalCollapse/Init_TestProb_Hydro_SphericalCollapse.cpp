@@ -36,8 +36,10 @@ static double     Cs;                             // sound spped
 
 static char       CF_Tur_Table[MAX_STRING];
 static double     CF_vflow;
-double            rho_AD_SC;                      // adiabatic density thresheld
+double            rho_AD_SC;                      // adiabatic density thresheld for barotropic EOS
+double            rho_PW_SC;                      // adiabatic density thresheld for piecewise EOS
 static int        Plummer_like;                   // use Plummer like density profile
+static int        EOS_type;                       // 0: barotropic EOS, 1: piecewise EOS
 
 static double     Mach;
 static double     Rho0;
@@ -55,6 +57,7 @@ void FB_Init_SinkAccretion();
 #endif
 #  if ( EOS == EOS_USER )
 void EoS_Init_Barotropic_SC();
+void EoS_Init_Piecewise_SC();
 #  endif
 
 
@@ -173,6 +176,7 @@ void SetParameter()
    ReadPara->Add( "Delta_Dens",        &Delta_Dens,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Dens_Contrast",     &Dens_Contrast,         0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "rho_AD_SC",         &rho_AD_SC,             0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "rho_PW_SC",         &rho_PW_SC,             0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Plummer_like",      &Plummer_like,            0,             0,              NoMax_int         );
    ReadPara->Add( "Inner_R0",          &Inner_R0,              0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "Rho0_P",            &Rho0_P,                0.0,           0.0,              NoMax_double      );
@@ -245,7 +249,7 @@ void SetParameter()
    {
       Aux_Message( stdout, "=============================================================================\n" );
       Aux_Message( stdout, "  test problem ID           = %d\n",     TESTPROB_ID       );
-      Aux_Message( stdout, "  Mach number           = %13.7e \n",       Mach                              );
+      Aux_Message( stdout, "  Mach number           = %13.7e \n",       Mach                                 );
       Aux_Message( stdout, "  Flow velocity         = %13.7e km/s\n",   CF_vflow                             );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
@@ -254,7 +258,17 @@ void SetParameter()
       Aux_Message( stdout, "  Rho0                  = %13.7e g/cm3\n",  Rho0*UNIT_D                          );
       Aux_Message( stdout, "  Omega0                = %13.7e /s\n",     Omega0*UNIT_T                        );
       Aux_Message( stdout, "  Core Mass             = %13.7e M_sun\n",  Core_Mass/Const_Msun                 );
-      Aux_Message( stdout, "  rho_AD_SC             = %13.7e \n",       rho_AD_SC                            );
+      Aux_Message( stdout, "  EOS_type              = %d \n",           EOS_type                             );
+
+      if ( EOS_type == 0 )
+      {
+         Aux_Message( stdout, "  rho_AD_SC             = %13.7e \n",       rho_AD_SC                         );
+      }
+      else
+      {
+         Aux_Message( stdout, "  rho_PW_SC             = %13.7e \n",       rho_PW_SC                         );
+      }
+
 
       if ( Plummer_like == 1)
       Aux_Message( stdout, "  Inner_R0              = %13.7e \n",       Inner_R0                             );
@@ -451,7 +465,15 @@ void Init_TestProb_Hydro_SphericalCollapse()
    FB_Init_User_Ptr        = FB_Init_SinkAccretion;
 #  endif
 #  if ( EOS == EOS_USER )
-   EoS_Init_Ptr                      = EoS_Init_Barotropic_SC; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
+   if ( EOS_type == 0 )
+   {
+      EoS_Init_Ptr                      = EoS_Init_Barotropic_SC; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
+   }
+   else
+   {
+      EoS_Init_Ptr                      = EoS_Init_Piecewise_SC; // option: EOS in the Makefile;     example: EoS/User_Template/CPU_EoS_User_Template.cpp
+   }
+
    EoS_End_Ptr                       = NULL;
 #  endif
 
