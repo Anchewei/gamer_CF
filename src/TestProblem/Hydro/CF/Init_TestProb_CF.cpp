@@ -163,6 +163,7 @@ void SetParameter()
 // (2) set the problem-specific derived parameters
    Cs = SQRT( ( Const_kB*ISO_TEMP/UNIT_E ) / ( MOLECULAR_WEIGHT*Const_amu/UNIT_M ));
    rho_AD /= UNIT_D;
+   CF_theta_B = CF_theta_B*M_PI/180; // degree to radian
 
 // (3) reset other general-purpose parameters
 //     --> a helper macro PRINT_WARNING is defined in TestProb.h
@@ -191,6 +192,7 @@ void SetParameter()
       Aux_Message( stdout, "  Temperature           = %13.7e K\n",      ISO_TEMP                             );
       Aux_Message( stdout, "  Sound speed           = %13.7e km/s\n",   Cs*UNIT_V/Const_km                   );
       Aux_Message( stdout, "  Magnetic field        = %13.7e G\n",      CF_B                                 );
+      Aux_Message( stdout, "  Magnetic field angle  = %13.7e radian\n", CF_theta_B                           );
       Aux_Message( stdout, "  Turbulence table      = %s\n",            CF_Tur_Table                         );
       Aux_Message( stdout, "  rho_AD                = %13.7e g/cm3\n",  rho_AD                               );
       Aux_Message( stdout, "=============================================================================\n" );
