@@ -89,11 +89,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
    }
 #  endif // #ifdef GAMER_DEBUG
 
-#  ifdef MY_DEBUG
-   const char  FileName[] = "Record__Par_Acc";
-   FILE *File = fopen( FileName, "a" );
-#  endif
-
    real GasDens, Eg, Eg2, Ekin, Cell2Sinkidh, Cell2Sinkjdh, Cell2Sinkkdh, Cell2Sink2dh, Cell2Sinki, Cell2Sink2, GasRelVel[3]; 
    real ControlPosi[3];
    real Corner_Array[3]; // the corner of the ghost zone
@@ -275,10 +270,6 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       real DeltaMTot = (real)0.0;
       real DeltaMom[3] = { (real)0.0, (real)0.0, (real)0.0 };
 
-#  ifdef MY_DEBUG
-      real Q0 = (real) 0.0, M1 = (real) 0.0;
-#  endif
-
       for (int N=0; N<NRemove; N++)
       {
          i = RemovalIdx[N][0];
@@ -296,21 +287,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
 
 //       Update the cells
 //       ===========================================================================================================
-#  ifdef MY_DEBUG
-         Q0 += Fluid[MOMX][k][j][i]*dv;
-#  endif
-
          for (int v=0; v<NCOMP_TOTAL; v++)
          Fluid[v][k][j][i] *= GasDensThres/GasDens;
-
-#  ifdef MY_DEBUG
-         M1 += Fluid[MOMX][k][j][i]*dv;
-#  endif
       } // for (int N=0; N<NRemove; N++)
-
-#  ifdef MY_DEBUG
-      Q0 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-#  endif
 
 //    Update particle mass and velocity
 //    ===========================================================================================================
@@ -318,22 +297,9 @@ int FB_SinkAccretion( const int lv, const double TimeNew, const double TimeOld, 
       ParAtt[PAR_VELY][p] =  (DeltaMom[1] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELY][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_VELZ][p] =  (DeltaMom[2] + ParAtt[PAR_MASS][p]*ParAtt[PAR_VELZ][p])/(DeltaMTot + ParAtt[PAR_MASS][p]);
       ParAtt[PAR_MASS][p] +=  DeltaMTot;
-
-#  ifdef MY_DEBUG
-      M1 += ParAtt[PAR_MASS][p]*ParAtt[PAR_VELX][p];
-      if ( (M1 - Q0) != 0.0 )
-      {
-         fprintf( File,"%d %13.7e %13.7e", t, TimeNew, (M1 - Q0)/Q0);
-         fprintf( File, "\n" );
-      }
-#  endif
    } // for (int t=0; t<NPar; t++)
 
    delete [] RemovalIdx;
-
-#  ifdef MY_DEBUG
-   fclose( File );
-#  endif
 
    return GAMER_SUCCESS;
 
