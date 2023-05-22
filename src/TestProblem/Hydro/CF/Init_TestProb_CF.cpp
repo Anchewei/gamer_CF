@@ -126,7 +126,7 @@ void SetParameter()
    ReadPara->Add( "CF_B",              &CF_B,                  0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_theta_B",        &CF_theta_B,            0.0,           0.0,              NoMax_double      );
    ReadPara->Add( "CF_Tur_Table",      CF_Tur_Table,           NoDef_str,     Useless_str,      Useless_str       );
-   ReadPara->Add( "rho_AD",            &rho_AD,                0.0,           0.0,              NoMax_double      );
+   ReadPara->Add( "rho_AD",            &rho_AD,                1e-14,         0.0,              NoMax_double      );
 
    ReadPara->Read( FileName );
 
@@ -295,7 +295,9 @@ void SetGridIC( real fluid[], const double x, const double y, const double z, co
    MomY = Dens * VelY;
    MomZ = Dens * VelZ;
    // Eint = Dens * SQR(Cs) / ( GAMMA - 1.0 );
-   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Dens * SQR(Cs), NULL, EoS_AuxArray_Flt,
+   Pres = EoS_DensTemp2Pres_CPUPtr( Dens, ISO_TEMP, NULL, EoS_AuxArray_Flt,
+                                    EoS_AuxArray_Int, h_EoS_Table );
+   Eint = EoS_DensPres2Eint_CPUPtr( Dens, Pres, NULL, EoS_AuxArray_Flt,
                                     EoS_AuxArray_Int, h_EoS_Table );
    Etot = Hydro_ConEint2Etot( Dens, MomX, MomY, MomZ, Eint, 0.0 );     // do NOT include magnetic energy here
 
