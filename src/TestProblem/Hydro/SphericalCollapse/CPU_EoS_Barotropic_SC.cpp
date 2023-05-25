@@ -131,17 +131,17 @@ static real EoS_DensEint2Pres_Barotropic_SC( const real Dens, const real Eint, c
 
 
 // check
-#  ifdef GAMER_DEBUG
-   if ( Hydro_CheckUnphysical( UNPHY_MODE_SING, &Pres, "output pressure", ERROR_INFO, UNPHY_VERBOSE ) )
-   {
-      printf( "Dens=%13.7e, Eint=%13.7e\n", Dens, Eint );
-#     if ( NCOMP_PASSIVE > 0 )
-      printf( "Passive scalars:" );
-      for (int v=0; v<NCOMP_PASSIVE; v++)    printf( " %d=%13.7e", v, Passive[v] );
-      printf( "\n" );
-#     endif
-   }
-#  endif // GAMER_DEBUG
+// #  ifdef GAMER_DEBUG
+//    if ( Hydro_CheckUnphysical( UNPHY_MODE_SING, &Pres, "output pressure", ERROR_INFO, UNPHY_VERBOSE ) )
+//    {
+//       printf( "Dens=%13.7e, Eint=%13.7e\n", Dens, Eint );
+// #     if ( NCOMP_PASSIVE > 0 )
+//       printf( "Passive scalars:" );
+//       for (int v=0; v<NCOMP_PASSIVE; v++)    printf( " %d=%13.7e", v, Passive[v] );
+//       printf( "\n" );
+// #     endif
+//    }
+// #  endif // GAMER_DEBUG
 
 
    return Pres;
