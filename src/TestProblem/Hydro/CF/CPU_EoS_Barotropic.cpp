@@ -115,7 +115,7 @@ static real EoS_DensEint2Pres_Barotropic( const real Dens, const real Eint, cons
 
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Dens, "input density",         ERROR_INFO, UNPHY_VERBOSE );
 // note that some EoS may support Eint<0
-   Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
+   // Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
 
@@ -298,7 +298,7 @@ static real EoS_DensEint2Temp_Barotropic( const real Dens, const real Eint, cons
    if ( AuxArray_Flt == NULL )   printf( "ERROR : AuxArray_Flt == NULL in %s !!\n", __FUNCTION__ );
 
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Dens, "input density"        , ERROR_INFO, UNPHY_VERBOSE );
-   Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
+   // Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
    const real Gamma_m1  = (real)AuxArray_Flt[1];
@@ -410,7 +410,7 @@ static real EoS_DensEint2Entr_Barotropic( const real Dens, const real Eint, cons
    if ( AuxArray_Flt == NULL )   printf( "ERROR : AuxArray_Flt == NULL in %s !!\n", __FUNCTION__ );
 
    Hydro_CheckUnphysical( UNPHY_MODE_SING, &Dens, "input density"        , ERROR_INFO, UNPHY_VERBOSE );
-   Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
+   // Hydro_CheckUnphysical( UNPHY_MODE_SING, &Eint, "input internal energy", ERROR_INFO, UNPHY_VERBOSE );
 #  endif // GAMER_DEBUG
 
 
